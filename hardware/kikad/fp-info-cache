@@ -1,4 +1,4 @@
-26774627217726736
+26776401490514760
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -106373,6 +106373,13 @@ PN532 NFC RFID
 12
 esp_32_c3_supper_mini
 esp_32_c3_supper_mini
+
+
+0
+16
+16
+esp_32_c3_supper_mini
+esp_32_c3_supper_mini_tht_smd
 
 
 0
