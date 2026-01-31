@@ -1,17 +1,18 @@
 import gc
+print("Booting Prismo...")
 import color
 import buzzer
 
 gc.enable()
 
-color.turn_off_all()
-buzzer.turn_off()
+if False:
+    print('[Start] turn off all')
+    color.turn_off_all()
+    buzzer.turn_off()
 
-color.play_start_animation()
+    print('[Start] play start checkers')
+    color.play_start_animation()
 
-# color.play_start_animation()
-
-# buzzer.play_success_sound()
-
-# color.main_diode_show_error()
-# color.main_diode_show_success()
+    buzzer.play_success_sound()
+else:
+    print('Skip load animation')

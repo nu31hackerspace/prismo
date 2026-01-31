@@ -1,12 +1,12 @@
 %TF.GenerationSoftware,KiCad,Pcbnew,9.0.6*%
-%TF.CreationDate,2026-01-16T21:18:51+02:00*%
+%TF.CreationDate,2026-01-18T12:36:42+02:00*%
 %TF.ProjectId,pcb,7063622e-6b69-4636-9164-5f7063625858,rev?*%
 %TF.SameCoordinates,Original*%
 %TF.FileFunction,Soldermask,Top*%
 %TF.FilePolarity,Negative*%
 %FSLAX46Y46*%
 G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
-G04 Created by KiCad (PCBNEW 9.0.6) date 2026-01-16 21:18:51*
+G04 Created by KiCad (PCBNEW 9.0.6) date 2026-01-18 12:36:42*
 %MOMM*%
 %LPD*%
 G01*
@@ -61,8 +61,8 @@ G04 Aperture macros list*
 0 create outline with 8 corners*
 4,1,8,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$1,$2,$17*%
 G04 Aperture macros list end*
-%ADD10R,1.700000X1.700000*%
-%ADD11C,1.700000*%
+%ADD10C,1.700000*%
+%ADD11R,1.700000X1.700000*%
 %ADD12C,1.400000*%
 %ADD13R,1.800000X1.800000*%
 %ADD14C,1.800000*%
@@ -73,9 +73,9 @@ G04 Aperture macros list end*
 G04 APERTURE END LIST*
 D10*
 %TO.C,J2*%
-X149700000Y-75600000D03*
-D11*
 X147160000Y-75600000D03*
+D11*
+X149700000Y-75600000D03*
 %TD*%
 D12*
 %TO.C,R5*%

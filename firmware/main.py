@@ -1,9 +1,9 @@
 import wifi_manager
 
-wm = wifi_manager.WiFiManager()
+# wm = wifi_manager.WiFiManager()
 
-wm.start_ap_mode()
+# wm.start_ap_mode()
 
-import time
-while True:
-    time.sleep(1)
+print('Start reader...')
+import reader
+reader.run()

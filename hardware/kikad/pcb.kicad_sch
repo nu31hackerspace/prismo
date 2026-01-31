@@ -2385,15 +2385,15 @@
 	(symbol
 		(lib_id "Device:LED_Dual_AKA")
 		(at 38.1 86.36 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "267abe7e-8c55-4161-95af-53b125de2da6")
 		(property "Reference" "D7"
-			(at 38.1635 74.93 0)
+			(at 38.1635 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2401,7 +2401,7 @@
 			)
 		)
 		(property "Value" "LED_Dual_AKA"
-			(at 38.1635 77.47 0)
+			(at 38.1635 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
