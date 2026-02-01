@@ -16,7 +16,7 @@ class WebServer:
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Prismo Setup</title>
+                <title>Prismo configuration</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
                     body { font-family: sans-serif; text-align: center; padding: 20px; }
@@ -29,7 +29,7 @@ class WebServer:
                 <form action="/configuration" method="post">
                     <input type="text" name="ssid" placeholder="WiFi SSID" required><br>
                     <input type="password" name="password" placeholder="Password" required><br>
-                    <button type="submit">Connect</button>
+                    <button type="submit">Apply</button>
                 </form>
             </body>
             </html>
