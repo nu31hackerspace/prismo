@@ -1,4 +1,4 @@
-DEBUG=True
+DEBUG=False
 QUICK_START=True
 
 PWM_FREQ = 1000
