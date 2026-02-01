@@ -1,5 +1,9 @@
-DEBUG=False
+DEBUG=True
 QUICK_START=True
+
+AP_SSID = "00_prismo"
+HOSTNAME = "prismo"
+RUN_TIME_CONFIG_FILE = "config.json"
 
 # DEVICE_MODE = 'ACCESS' 
 DEVICE_MODE = 'MACHINE'
@@ -26,3 +30,23 @@ PIN_OUTPUT_SUCESS = 9
 
 PIN_BUZZER = 10
 PIN_RELAY = 21
+
+import json
+
+def save_config(ssid, password):
+    config = {'ssid': ssid, 'password': password}
+    with open(RUN_TIME_CONFIG_FILE, 'w') as f:
+        json.dump(config, f)
+
+
+def load_config():
+    try:
+        with open(RUN_TIME_CONFIG_FILE, 'r') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+if DEBUG:
+    print('[CONFIG] Debug mode')
+    print('Print configuration')
+    print(load_config())

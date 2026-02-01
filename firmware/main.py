@@ -3,8 +3,7 @@ import reader
 import reader_ui
 
 wifi_manager = wifi_manager.WiFiManager()
-
-wifi_manager.start_ap_mode()
+wifi_manager.connect()
 
 ui = reader_ui.ReaderUI()
 

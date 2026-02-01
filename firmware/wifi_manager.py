@@ -8,11 +8,7 @@ from microdot import Microdot, send_file
 import uasyncio as asyncio
 import socket
 import struct
-
-AP_SSID = "Prismo-Setup"
-AP_PASSWORD = "" # Open network for setup
-HOSTNAME = "prismo"
-CONFIG_FILE = "config.json"
+import config
 
 class DNSServer:
     def __init__(self, ip):
@@ -98,23 +94,11 @@ class WiFiManager:
         self.wlan_ap = network.WLAN(network.AP_IF)
         self.app = None
 
-    def load_config(self):
-        try:
-            with open(CONFIG_FILE, 'r') as f:
-                return json.load(f)
-        except (OSError, ValueError):
-            return None
-
-    def save_config(self, ssid, password):
-        config = {'ssid': ssid, 'password': password}
-        with open(CONFIG_FILE, 'w') as f:
-            json.dump(config, f)
-
     def start_ap_mode(self):
         print("Starting AP Mode...")
         self.wlan_sta.active(False)
         self.wlan_ap.active(True)
-        self.wlan_ap.config(essid=AP_SSID, password=AP_PASSWORD)
+        self.wlan_ap.config(txpower=8.5, essid=config.AP_SSID, password="")
         
         # Configure IP for AP if needed, default is usually 192.168.4.1
         ip = self.wlan_ap.ifconfig()[0]
@@ -183,11 +167,12 @@ class WiFiManager:
                     password = params.get('password')
                     
                     if ssid:
-                        self.save_config(ssid, password)
+                        config.save_config(ssid, password)
+                        print('ssid ', ssid, 'pass ', password)
                         
                         from machine import Timer
                         print("Rebooting in 2 seconds...")
-                        Timer(-1).init(period=2000, mode=Timer.ONE_SHOT, callback=lambda t: machine.reset())
+                        Timer(0).init(period=2000, mode=Timer.ONE_SHOT, callback=lambda t: machine.reset())
                         
                         return "Saved! Rebooting...", 200
 
@@ -200,24 +185,23 @@ class WiFiManager:
         self.app.run(port=80)
 
     def connect(self):
-        self.wlan_ap.active(False)
-        self.wlan_sta.active(True)
-        
-        # Set hostname
-        try:
-             self.wlan_sta.config(hostname=HOSTNAME)
-        except ValueError:
-             # Some ports don't support hostname setting or use dhcp_hostname
-             pass
-
-        config = self.load_config()
-        if not config:
+        run_time_config = config.load_config()
+        if not run_time_config:
             print("No config found. Starting AP.")
             self.start_ap_mode()
             return
 
-        ssid = config.get('ssid')
-        password = config.get('password')
+        self.wlan_ap.active(False)
+        self.wlan_sta.active(True)
+        self.wlan_sta.config(txpower=8.5)
+        
+        try:
+             self.wlan_sta.config(hostname=config.HOSTNAME)
+        except ValueError:
+             pass
+
+        ssid = run_time_config.get('ssid')
+        password = run_time_config.get('password')
         
         print(f"Connecting to {ssid}...")
         self.wlan_sta.connect(ssid, password)
