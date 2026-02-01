@@ -6,17 +6,27 @@ from web_server import WebServer
 import _thread
 
 class WiFiManager:
-    def __init__(self):
+    def __init__(self, web_server, on_ap_start_callback=None):
         self.wlan_sta = network.WLAN(network.STA_IF)
         self.wlan_ap = network.WLAN(network.AP_IF)
         self.dns_server = None
-        self.web_server = None
+        self.web_server = web_server
+        self.on_ap_start_callback = on_ap_start_callback
 
     def start_ap_mode(self):
         print("Starting AP Mode...")
+        if self.on_ap_start_callback:
+            self.on_ap_start_callback()
+
         self.wlan_sta.active(False)
         self.wlan_ap.active(True)
         self.wlan_ap.config(txpower=8.5, essid=config.AP_SSID, password="")
+        
+        try:
+            self.wlan_ap.config(hostname=config.HOSTNAME)
+        except ValueError as e:
+            print('[WIFI] hostname did not setup, because of', e)
+            pass
         
         # Configure IP for AP if needed, default is usually 192.168.4.1
         ip = self.wlan_ap.ifconfig()[0]
@@ -29,7 +39,6 @@ class WiFiManager:
         self.start_web_server()
 
     def start_web_server(self):
-        self.web_server = WebServer()
         self.web_server.run(port=80)
 
     def connect(self):

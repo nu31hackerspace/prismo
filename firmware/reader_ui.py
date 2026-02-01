@@ -11,6 +11,14 @@ class ReaderUI:
         self.error_pin = Pin(config.PIN_OUTPUT_ERROR, Pin.OUT)
         self.machine_active = False
 
+    def ap_mode(self):
+        color.set_sub_light_color(0x0000FF)
+        buzzer.play_success_sound()
+
+    def show_configuration_save(self):
+        color.set_sub_light_color(0x00FF00)
+        buzzer.play_success_sound()
+
     def success(self):
         if self.mode == 'ACCESS':
             self._handle_access_success()

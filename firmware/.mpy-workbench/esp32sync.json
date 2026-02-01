@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "syncId": "e8aaae0d-037b-4ef1-8641-b71959764c58",
+  "syncId": "5579bf9c-64e6-40f5-a167-f761954002cb",
   "root": "/Users/volodymyrs/Desktop/Github/prismo/firmware",
-  "generatedAt": 1769962240956,
+  "generatedAt": 1769966453958,
   "files": {
     "PN532.py": {
       "size": 15354,
-      "mtime": 1769958907853
+      "mtime": 1769966428758
     },
     "boot.py": {
       "size": 459,
@@ -22,11 +22,11 @@
     },
     "config.py": {
       "size": 916,
-      "mtime": 1769962189729
+      "mtime": 1769962375683
     },
     "main.py": {
-      "size": 273,
-      "mtime": 1769961047940
+      "size": 267,
+      "mtime": 1769966444015
     },
     "microdot.py": {
       "size": 58558,
@@ -45,8 +45,8 @@
       "mtime": 1769716172820
     },
     "wifi_manager.py": {
-      "size": 8142,
-      "mtime": 1769961927345
+      "size": 2090,
+      "mtime": 1769966428759
     }
   }
 }
