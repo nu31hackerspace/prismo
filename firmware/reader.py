@@ -1,35 +1,32 @@
 import time
 import machine
 from machine import SPI, Pin
-import hardware_config
+import config
 from PN532 import PN532
 
 def run():
     print("Starting Prismo Reader (SPI)...")
     
-    # Setup SPI
-    # Using Hardware SPI (ID 1) as requested.
-    # Baudrate set to 1MHz.
     try:
-        spi = SPI(1, baudrate=1000000, polarity=0, phase=0, 
-                  sck=Pin(hardware_config.PIN_NFC_SCK), 
-                  mosi=Pin(hardware_config.PIN_NFC_MOSI), 
-                  miso=Pin(hardware_config.PIN_NFC_MISO))
+        spi = SPI(1, baudrate=config.NFC_BAUDRATE, polarity=0, phase=0, 
+                  sck=Pin(config.PIN_NFC_SCK), 
+                  mosi=Pin(config.PIN_NFC_MOSI), 
+                  miso=Pin(config.PIN_NFC_MISO))
         print(f"SPI Initialized: {spi}")
     except Exception as e:
         print("Hardware SPI init failed:", e)
         return
 
     # Chip Select Pin
-    cs_pin = Pin(hardware_config.PIN_NFC_SS, Pin.OUT)
+    cs_pin = Pin(config.PIN_NFC_SS, Pin.OUT)
     cs_pin.on()
 
     # Hardware Reset (RSTPD_N)
     # The PN532 needs to be reset to ensure it's in a known state.
     # Pulse Low for > 100ns, then High. We use 100ms/500ms to be safe.
-    if hasattr(hardware_config, 'PIN_NFC_RESET'):
+    if hasattr(config, 'PIN_NFC_RESET'):
         print("Performing Hard Reset...")
-        rst_pin = Pin(hardware_config.PIN_NFC_RESET, Pin.OUT)
+        rst_pin = Pin(config.PIN_NFC_RESET, Pin.OUT)
         rst_pin.off()
         time.sleep(0.1)
         rst_pin.on()
@@ -40,7 +37,7 @@ def run():
     while True:
         try:
             # Re-instantiate each time to ensure fresh state
-            nfc = PN532(spi, cs_pin, debug=True)
+            nfc = PN532(spi, cs_pin, debug=config.DEBUG)
             
             # Additional wake-up/stabilization delay
             time.sleep(0.1)

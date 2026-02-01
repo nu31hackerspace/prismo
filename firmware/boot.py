@@ -1,11 +1,12 @@
 import gc
 print("Booting Prismo...")
+import config
 import color
 import buzzer
 
 gc.enable()
 
-if False:
+if not config.QUICK_START:
     print('[Start] turn off all')
     color.turn_off_all()
     buzzer.turn_off()

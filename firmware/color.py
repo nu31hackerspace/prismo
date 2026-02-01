@@ -1,11 +1,27 @@
 import utime
+import machine
 
-from hardware_config import (
-    red_pwm, green_pwm, blue_pwm,
-    main_diode_red_pin, main_diode_green_pin
+from config import (
+    PWM_FREQ,
+    PIN_RGB_RED,
+    PIN_RGB_GREEN,
+    PIN_RGB_BLUE,
+    PIN_MAIN_RED,
+    PIN_MAIN_GREEN
 )
 
 MAX_BRIGHTNESS = 255
+
+_red_pin = machine.Pin(PIN_RGB_RED)
+_green_pin = machine.Pin(PIN_RGB_GREEN)
+_blue_pin = machine.Pin(PIN_RGB_BLUE)
+
+red_pwm = machine.PWM(_red_pin, freq=PWM_FREQ, duty_u16=0)
+green_pwm = machine.PWM(_green_pin, freq=PWM_FREQ, duty_u16=0)
+blue_pwm = machine.PWM(_blue_pin, freq=PWM_FREQ, duty_u16=0)
+
+main_diode_red_pin = machine.Pin(PIN_MAIN_RED, machine.Pin.OUT)
+main_diode_green_pin = machine.Pin(PIN_MAIN_GREEN, machine.Pin.OUT)
 
 def _set_sub_light_color(hex_int):
     r = (hex_int >> 16) & 0xFF
@@ -52,7 +68,7 @@ def main_diode_show_error():
     _control_main_diode("OFF")
 
 def play_start_animation():
-    colors = [0xFF0000, 0x00FF00, 0x0000FF, 0xFFFFFF]
+    colors = [0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFFFFFF]
     fade_steps = 15
     step_delay_ms = 15
 
@@ -80,3 +96,6 @@ def play_start_animation():
             utime.sleep_ms(step_delay_ms)
     
     _set_sub_light_color(0x000000)
+
+    main_diode_show_error()
+    main_diode_show_success()

@@ -1,8 +1,11 @@
 import utime
+import machine
 
-from hardware_config import (
-    buzzer_pin
+from config import (
+    PIN_BUZZER
 )
+
+buzzer_pin = machine.Pin(PIN_BUZZER, machine.Pin.OUT)
 
 def turn_on():
     buzzer_pin.value(1)

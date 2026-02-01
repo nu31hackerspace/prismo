@@ -22,3 +22,4 @@ ESP32 Firmware for Prismo project.
 
 - `main.py`: Entry point.
 - `wifi_manager.py`: Handles AP/Station switching and the Web Server.
+- `PN532.py`: some AI generated code for works with PN532 board via SPI.
