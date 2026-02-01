@@ -1,24 +1,16 @@
 import wifi_manager
-import color
 import reader
-import buzzer
+import reader_ui
 
-# wm = wifi_manager.WiFiManager()
+wifi_manager = wifi_manager.WiFiManager()
 
-# wm.start_ap_mode()
+wifi_manager.start_ap_mode()
 
-last_uid = None
+ui = reader_ui.ReaderUI()
+
 def on_key_read(uid):
-    global last_uid
-    
     print("New UID:", uid)
-    if uid == last_uid:
-        return
-    
-    color.main_diode_show_success()
-    buzzer.play_success_sound()
-    
-    last_uid = uid
+    ui.success()
 
 print('Start reader...')
 reader.subscribe(on_key_read)

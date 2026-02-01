@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "syncId": "d9709243-1825-46b3-a332-d489ee81f7ce",
+  "syncId": "25302611-d7eb-4e32-af33-d66aefb8cdd4",
   "root": "/Users/volodymyrs/Desktop/Github/prismo/firmware",
-  "generatedAt": 1769948246454,
+  "generatedAt": 1769951011591,
   "files": {
     "PN532.py": {
       "size": 15354,
@@ -10,23 +10,23 @@
     },
     "boot.py": {
       "size": 414,
-      "mtime": 1769948226952
+      "mtime": 1769948292078
     },
     "buzzer.py": {
       "size": 908,
       "mtime": 1769948027305
     },
     "color.py": {
-      "size": 2848,
-      "mtime": 1769944710062
+      "size": 1716,
+      "mtime": 1769950894217
     },
     "config.py": {
-      "size": 275,
-      "mtime": 1769947649250
+      "size": 383,
+      "mtime": 1769950981693
     },
     "main.py": {
-      "size": 355,
-      "mtime": 1769946588645
+      "size": 258,
+      "mtime": 1769950948991
     },
     "microdot.py": {
       "size": 58558,
@@ -35,6 +35,10 @@
     "reader.py": {
       "size": 1719,
       "mtime": 1769945792437
+    },
+    "reader_ui.py": {
+      "size": 1360,
+      "mtime": 1769950939729
     },
     "supper_mini_pins.jpg": {
       "size": 41665,

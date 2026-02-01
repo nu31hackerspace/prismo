@@ -7,6 +7,8 @@ import utime
 
 gc.enable()
 
+print('Prismo boot as', config.DEVICE_MODE)
+
 if not config.QUICK_START:
     print('[Start] turn off all')
     color.turn_off_all()
