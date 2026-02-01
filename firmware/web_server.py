@@ -12,23 +12,30 @@ class WebServer:
     def setup_routes(self):
         @self.app.route('/', methods=['GET'])
         def index(request):
-            html = """
+            current_config = config.load_config()
+            ssid = ""
+            password = ""
+            if current_config:
+                ssid = current_config.get('ssid', '')
+                password = current_config.get('password', '')
+
+            html = f"""
             <!DOCTYPE html>
             <html>
             <head>
                 <title>Prismo configuration</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
-                    body { font-family: sans-serif; text-align: center; padding: 20px; }
-                    input { padding: 10px; margin: 10px; width: 80%; }
-                    button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; }
+                    body {{ font-family: sans-serif; text-align: center; padding: 20px; }}
+                    input {{ padding: 10px; margin: 10px; width: 80%; }}
+                    button {{ padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; }}
                 </style>
             </head>
             <body>
-                <h1>Prismo Setup</h1>
+                <h1>Prismo configuration</h1>
                 <form action="/configuration" method="post">
-                    <input type="text" name="ssid" placeholder="WiFi SSID" required><br>
-                    <input type="password" name="password" placeholder="Password" required><br>
+                    <input type="text" name="ssid" placeholder="WiFi SSID" value="{ssid}" required><br>
+                    <input type="password" name="password" placeholder="Password" value="{password}" required><br>
                     <button type="submit">Apply</button>
                 </form>
             </body>
