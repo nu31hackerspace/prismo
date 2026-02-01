@@ -10,7 +10,7 @@ class WebServer:
         self.on_new_config_callback = on_new_config_callback
 
     def setup_routes(self):
-        @self.app.route('/')
+        @self.app.route('/', methods=['GET'])
         def index(request):
             html = """
             <!DOCTYPE html>
@@ -26,7 +26,7 @@ class WebServer:
             </head>
             <body>
                 <h1>Prismo Setup</h1>
-                <form action="/configure" method="post">
+                <form action="/configuration" method="post">
                     <input type="text" name="ssid" placeholder="WiFi SSID" required><br>
                     <input type="password" name="password" placeholder="Password" required><br>
                     <button type="submit">Connect</button>
@@ -36,7 +36,7 @@ class WebServer:
             """
             return html, 200, {'Content-Type': 'text/html'}
 
-        @self.app.route('/configure', methods=['POST'])
+        @self.app.route('/configuration', methods=['POST'])
         def configure(request):
             print("Received configuration")
             try:
@@ -61,12 +61,12 @@ class WebServer:
                         print("Rebooting in 2 seconds...")
                         Timer(0).init(period=2000, mode=Timer.ONE_SHOT, callback=lambda t: machine.reset())
                         
-                        return "Saved! Rebooting...", 200
+                        return '', 302, {'Location': '/'}
 
             except Exception as e:
                 print("Error parsing config:", e)
             
-            return "Error saving config", 400
+            return '', 302, {'Location': '/'}
 
     def unquote(self, string):
         """Simple URL decoder for MicroPython"""

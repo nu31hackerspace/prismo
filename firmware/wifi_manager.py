@@ -1,6 +1,7 @@
 import network
 import time
 import config
+from mdns_server import MDNSServer
 from dns_server import DNSServer
 from web_server import WebServer
 import _thread
@@ -10,6 +11,7 @@ class WiFiManager:
         self.wlan_sta = network.WLAN(network.STA_IF)
         self.wlan_ap = network.WLAN(network.AP_IF)
         self.dns_server = None
+        self.mdns_server = None
         self.web_server = web_server
         self.on_ap_start_callback = on_ap_start_callback
 
@@ -36,10 +38,16 @@ class WiFiManager:
         self.dns_server = DNSServer(ip)
         _thread.start_new_thread(self.dns_server.run, ())
 
+        self.start_mdns_server(ip)
         self.start_web_server()
 
+    def start_mdns_server(self, ip):
+        self.mdns_server = MDNSServer(ip)
+        _thread.start_new_thread(self.mdns_server.run, ())
+
     def start_web_server(self):
-        self.web_server.run(port=80)
+        # Start web server in a new thread so it doesn't block main loop
+        _thread.start_new_thread(self.web_server.run, (80,))
 
     def connect(self):
         run_time_config = config.load_config()
@@ -72,8 +80,10 @@ class WiFiManager:
             time.sleep(1)
 
         if self.wlan_sta.isconnected():
-            print("Connected! IP:", self.wlan_sta.ifconfig()[0])
-            # Here we could start mDNS if supported or use a library
+            ip = self.wlan_sta.ifconfig()[0]
+            print("Connected! IP:", ip)
+            self.start_mdns_server(ip)
+            self.start_web_server()
         else:
             print("Failed to connect. Starting AP.")
             self.start_ap_mode()

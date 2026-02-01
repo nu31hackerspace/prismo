@@ -16,6 +16,7 @@ def on_new_config_callback():
 web_server = web_server.WebServer(on_new_config_callback)
 wifi_manager = wifi_manager.WiFiManager(web_server=web_server, on_ap_start_callback=on_ap_start_callback)
 wifi_manager.connect()
+ui.ready_to_read()
 
 
 def on_key_read(uid):

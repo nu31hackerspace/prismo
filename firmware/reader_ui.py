@@ -12,16 +12,21 @@ class ReaderUI:
         self.machine_active = False
 
     def ap_mode(self):
-        color.set_sub_light_color(0x0000FF)
         buzzer.play_success_sound()
+        color.set_sub_light_color(0x0000FF)
 
     def show_configuration_save(self):
         color.set_sub_light_color(0x00FF00)
         buzzer.play_success_sound()
 
+    def ready_to_read(self):
+        color.set_sub_light_color(0x800080)
+
     def success(self):
+        color.set_sub_light_color(0x000000)
         if self.mode == 'ACCESS':
             self._handle_access_success()
+            self.ready_to_read()
         elif self.mode == 'MACHINE':
             self._handle_machine_success()
 
