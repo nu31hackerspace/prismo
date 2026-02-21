@@ -1,2 +1,3 @@
 .DS_Store
 .mpy-workbench
+__pycache__
