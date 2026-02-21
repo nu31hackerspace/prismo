@@ -1,4 +1,4 @@
-name: Build & Release Prismo Firmware
+name: Build ESP32 MicroPython Firmware
 
 on:
   push:
@@ -18,7 +18,6 @@ env:
 
 jobs:
   build:
-    name: Build Firmware
     runs-on: ubuntu-latest
     container:
       image: espressif/idf:release-v5.4
@@ -26,51 +25,36 @@ jobs:
       run:
         shell: bash
 
-    outputs:
-      firmware_bin: micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/build-${{ env.BOARD }}/firmware.bin
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Trust workspace for git
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        run: git config --global --add safe.directory "*"
 
-      - name: Cache MicroPython source tarball
-        id: cache-mpy
-        uses: actions/cache@v4
-        with:
-          path: micropython-${{ env.MICROPYTHON_VERSION }}.tar.xz
-          key: micropython-src-${{ env.MICROPYTHON_VERSION }}
-
-      - name: Download MicroPython source
-        if: steps.cache-mpy.outputs.cache-hit != 'true'
+      - name: Clone MicroPython
         run: |
-          wget -q \
-            https://micropython.org/resources/source/micropython-${{ env.MICROPYTHON_VERSION }}.tar.xz
+          git clone --depth 1 -b v${{ env.MICROPYTHON_VERSION }} \
+            https://github.com/micropython/micropython.git \
+            micropython-${{ env.MICROPYTHON_VERSION }}
 
-      - name: Extract MicroPython source
-        run: |
-          tar -xf micropython-${{ env.MICROPYTHON_VERSION }}.tar.xz
-
-      - name: Build mpy-cross (cross-compiler)
+      - name: Build mpy-cross
         run: |
           . $IDF_PATH/export.sh
-          cd micropython-${{ env.MICROPYTHON_VERSION }}/mpy-cross
-          make -j$(nproc)
+          make -C micropython-${{ env.MICROPYTHON_VERSION }}/mpy-cross -j$(nproc)
 
       - name: Freeze custom Python modules
         run: |
-          DEST=micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/modules
-          find firmware -maxdepth 1 -name "*.py" -exec cp {} "$DEST/" \;
+          find firmware -maxdepth 1 -name "*.py" \
+            -exec cp {} micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/modules/ \;
 
-      - name: Initialise ESP32 port submodules
+      - name: Initialise port submodules
         run: |
           . $IDF_PATH/export.sh
           cd micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32
           make BOARD=${{ env.BOARD }} submodules
 
-      - name: Compile ESP32-C3 firmware
+      - name: Compile firmware
         run: |
           . $IDF_PATH/export.sh
           cd micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32
@@ -83,50 +67,8 @@ jobs:
           path: micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/build-${{ env.BOARD }}/firmware.bin
           if-no-files-found: error
 
-  release:
-    name: Publish GitHub Release
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Download firmware artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: prismo-esp32-c3-firmware
-          path: dist/
-
-      - name: Rename binary
-        run: |
-          TAG="${GITHUB_REF_NAME}"
-          mv dist/firmware.bin dist/prismo-firmware-${TAG}.bin
-          echo "ASSET=dist/prismo-firmware-${TAG}.bin" >> "$GITHUB_ENV"
-          echo "TAG=${TAG}" >> "$GITHUB_ENV"
-
-      - name: Create GitHub Release
+      - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
         with:
-          tag_name: ${{ env.TAG }}
-          name: "Prismo Firmware ${{ env.TAG }}"
-          body: |
-            ## Prismo Firmware ${{ env.TAG }}
-
-            ### Flashing instructions
-
-            Install **esptool** (one-time):
-            ```bash
-            pip install esptool
-            ```
-
-            Erase flash and write firmware (replace `/dev/ttyUSB0` with your port):
-            ```bash
-            esptool.py --chip esp32c3 --port /dev/ttyUSB0 erase_flash
-            esptool.py --chip esp32c3 --port /dev/ttyUSB0 write_flash 0x0 prismo-firmware-${{ env.TAG }}.bin
-            ```
-
-            > **macOS / Windows**: Use `/dev/cu.usbserial-*` or `COM*` respectively.
-
-            Built from MicroPython ${{ env.MICROPYTHON_VERSION }} for **ESP32-C3 (Generic)**.
-          files: ${{ env.ASSET }}
-          draft: false
-          prerelease: false
+          files: micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/build-${{ env.BOARD }}/firmware.bin
