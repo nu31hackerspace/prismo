@@ -28,7 +28,9 @@ jobs:
         run: make -C micropython/mpy-cross
 
       - name: Build ESP32-C3 Firmware
+        shell: bash
         run: |
+          . /opt/esp/idf/export.sh
           cd micropython/ports/esp32
           make submodules
           make BOARD=ESP32_GENERIC_C3 FROZEN_MANIFEST="${GITHUB_WORKSPACE}/firmware/manifest.py"
