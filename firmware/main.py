@@ -21,10 +21,7 @@ ui.ready_to_read()
 
 def on_key_read(uid):
     print("New UID:", uid)
-    if (uid == 'e7c1b3d9'):
-        ui.error()
-    else:
-        ui.success()
+    ui.success()
 
 print('Start reader...')
 reader.subscribe(on_key_read)

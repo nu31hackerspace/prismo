@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "syncId": "133d8ad5-b43b-45dd-8b76-50352ac647ab",
+  "syncId": "5579bf9c-64e6-40f5-a167-f761954002cb",
   "root": "/Users/volodymyrs/Desktop/Github/prismo/firmware",
-  "generatedAt": 1771678066041,
+  "generatedAt": 1769966453958,
   "files": {
     "PN532.py": {
       "size": 15354,
-      "mtime": 1771091475769
+      "mtime": 1769966428758
     },
     "boot.py": {
       "size": 459,
@@ -14,51 +14,39 @@
     },
     "buzzer.py": {
       "size": 908,
-      "mtime": 1769967503857
+      "mtime": 1769948027305
     },
     "color.py": {
       "size": 1716,
-      "mtime": 1769968229122
+      "mtime": 1769950894217
     },
     "config.py": {
-      "size": 941,
-      "mtime": 1771675372292
-    },
-    "dns_server.py": {
-      "size": 2519,
-      "mtime": 1769967082025
+      "size": 916,
+      "mtime": 1769962375683
     },
     "main.py": {
-      "size": 603,
-      "mtime": 1771093161113
-    },
-    "mdns_server.py": {
-      "size": 3424,
-      "mtime": 1769968839704
+      "size": 267,
+      "mtime": 1769966444015
     },
     "microdot.py": {
       "size": 58558,
       "mtime": 1769717393939
     },
     "reader.py": {
-      "size": 1556,
-      "mtime": 1771093144762
+      "size": 1719,
+      "mtime": 1769958907853
     },
     "reader_ui.py": {
-      "size": 1688,
-      "mtime": 1771674826103
+      "size": 1240,
+      "mtime": 1769951156677
     },
     "supper_mini_pins.jpg": {
       "size": 41665,
       "mtime": 1769716172820
     },
-    "web_server.py": {
-      "size": 5459,
-      "mtime": 1769980330585
-    },
     "wifi_manager.py": {
-      "size": 2792,
-      "mtime": 1769969185431
+      "size": 2090,
+      "mtime": 1769966428759
     }
   }
 }
