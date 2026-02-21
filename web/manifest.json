@@ -1,0 +1,15 @@
+{
+    "name": "Custom ESP32-C3 Firmware",
+    "version": "1.0.0",
+    "builds": [
+        {
+            "chipFamily": "ESP32-C3",
+            "parts": [
+                {
+                    "path": "firmware.bin",
+                    "offset": 0
+                }
+            ]
+        }
+    ]
+}
