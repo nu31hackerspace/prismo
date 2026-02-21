@@ -10,8 +10,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: espressif/idf:release-v5.2 
-    
+    container: espressif/idf:release-v5.2
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -34,10 +37,7 @@ jobs:
 
       - name: Compile ESP32-C3 Firmware
         run: |
-          # 1. Activate the ESP-IDF toolchain environment
           . /opt/esp/idf/export.sh
-          
-          # 2. Proceed with compiling
           cd micropython-1.27.0/ports/esp32
           make submodules
           make BOARD=ESP32_GENERIC_C3 -j$(nproc)
