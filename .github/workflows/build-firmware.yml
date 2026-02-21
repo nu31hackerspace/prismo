@@ -21,7 +21,10 @@ jobs:
     name: Build Firmware
     runs-on: ubuntu-latest
     container:
-      image: espressif/idf:release-v5.2
+      image: espressif/idf:release-v5.4
+    defaults:
+      run:
+        shell: bash
 
     outputs:
       firmware_bin: micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/build-${{ env.BOARD }}/firmware.bin
