@@ -1,0 +1,40 @@
+name: Build MicroPython Firmware
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v5.0.4
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Checkout MicroPython
+        uses: actions/checkout@v4
+        with:
+          repository: micropython/micropython
+          path: micropython
+          ref: v1.22.1
+          submodules: true
+
+      - name: Build mpy-cross
+        run: make -C micropython/mpy-cross
+
+      - name: Build ESP32-C3 Firmware
+        run: |
+          cd micropython/ports/esp32
+          make submodules
+          make BOARD=ESP32_GENERIC_C3 FROZEN_MANIFEST="${GITHUB_WORKSPACE}/firmware/manifest.py"
+
+      - name: Upload Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prismo-firmware
+          path: micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
