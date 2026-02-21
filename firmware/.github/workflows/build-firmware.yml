@@ -1,0 +1,46 @@
+name: Build Prismo Firmware (v1.27.0)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'firmware/**'  # Only run this action if files inside /firmware change
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: espressif/idf:release-v5.2 
+    
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Download & Extract MicroPython Source
+        run: |
+          wget https://micropython.org/resources/source/micropython-1.27.0.tar.xz
+          tar -xf micropython-1.27.0.tar.xz
+          
+      - name: Build the Cross-Compiler (mpy-cross)
+        run: |
+          cd micropython-1.27.0/mpy-cross
+          make -j$(nproc)
+
+      - name: Freeze Custom Python Code
+        run: |
+          # Recursively copy all your application files from the firmware folder 
+          # directly into the MicroPython modules directory for freezing.
+          cp -r ./firmware/* micropython-1.27.0/ports/esp32/modules/
+
+      - name: Compile ESP32-C3 Firmware
+        run: |
+          cd micropython-1.27.0/ports/esp32
+          make submodules
+          make BOARD=ESP32_GENERIC_C3 -j$(nproc)
+
+      - name: Upload Final Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prismo-esp32-c3-firmware
+          # This outputs the final, ready-to-deploy binary
+          path: micropython-1.27.0/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
