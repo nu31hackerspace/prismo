@@ -20,13 +20,6 @@ def subscribe(callback):
     cs_pin = Pin(config.PIN_NFC_SS, Pin.OUT)
     cs_pin.on()
 
-    print("Performing Hard Reset...")
-    rst_pin = Pin(config.PIN_NFC_RESET, Pin.OUT)
-    rst_pin.off()
-    time.sleep(0.1)
-    rst_pin.on()
-    time.sleep(0.5)
-
     print("Initializing PN532...")
     while True:
         try:

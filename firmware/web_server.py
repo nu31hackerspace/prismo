@@ -2,6 +2,7 @@ from microdot import Microdot
 import config
 import machine
 from machine import Timer
+import os
 
 class WebServer:
     def __init__(self, on_new_config_callback=None):
@@ -15,9 +16,15 @@ class WebServer:
             current_config = config.load_config()
             ssid = ""
             password = ""
+            device_mode = config.DEVICE_MODE
+            
             if current_config:
                 ssid = current_config.get('ssid', '')
                 password = current_config.get('password', '')
+                device_mode = current_config.get('device_mode', config.DEVICE_MODE)
+
+            access_selected = "selected" if device_mode == 'ACCESS' else ""
+            machine_selected = "selected" if device_mode == 'MACHINE' else ""
 
             html = f"""
             <!DOCTYPE html>
@@ -27,8 +34,9 @@ class WebServer:
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
                     body {{ font-family: sans-serif; text-align: center; padding: 20px; }}
-                    input {{ padding: 10px; margin: 10px; width: 80%; }}
+                    input, select {{ padding: 10px; margin: 10px; width: 80%; }}
                     button {{ padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; }}
+                    .danger {{ background-color: #dc3545; }}
                 </style>
             </head>
             <body>
@@ -36,7 +44,18 @@ class WebServer:
                 <form action="/configuration" method="post">
                     <input type="text" name="ssid" placeholder="WiFi SSID" value="{ssid}" required><br>
                     <input type="password" name="password" placeholder="Password" value="{password}" required><br>
+                    <select name="device_mode">
+                        <option value="ACCESS" {access_selected}>Access Control</option>
+                        <option value="MACHINE" {machine_selected}>Machine Control</option>
+                    </select><br>
                     <button type="submit">Apply</button>
+                </form>
+                
+                <hr style="margin-top: 30px; margin-bottom: 30px;">
+                
+                <h2>Danger Zone</h2>
+                <form action="/reset" method="post" onsubmit="return confirm('Are you sure you want to factory reset? This will delete all settings and reboot.');">
+                    <button type="submit" class="danger">Factory Reset</button>
                 </form>
             </body>
             </html>
@@ -57,10 +76,11 @@ class WebServer:
                     
                     ssid = params.get('ssid')
                     password = params.get('password')
+                    device_mode = params.get('device_mode', config.DEVICE_MODE)
                     
                     if ssid:
-                        config.save_config(ssid, password)
-                        print('ssid ', ssid, 'pass ', password)
+                        config.save_config(ssid, password, device_mode)
+                        print('ssid ', ssid, 'pass ', password, 'mode', device_mode)
 
                         if self.on_new_config_callback:
                             self.on_new_config_callback()
@@ -73,6 +93,19 @@ class WebServer:
             except Exception as e:
                 print("Error parsing config:", e)
             
+            return '', 302, {'Location': '/'}
+
+        @self.app.route('/reset', methods=['POST'])
+        def reset(request):
+            print("Factory reset requested")
+            try:
+                os.remove(config.RUN_TIME_CONFIG_FILE)
+                print("Config deleted")
+            except Exception as e:
+                print("Error deleting config (maybe didn't exist):", e)
+            
+            print("Rebooting in 1 second...")
+            Timer(0).init(period=1000, mode=Timer.ONE_SHOT, callback=lambda t: machine.reset())
             return '', 302, {'Location': '/'}
 
     def unquote(self, string):

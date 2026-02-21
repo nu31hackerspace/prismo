@@ -1,5 +1,5 @@
 DEBUG=False
-QUICK_START=True
+QUICK_START=False
 
 AP_SSID = "00_prismo"
 HOSTNAME = "prismo"
@@ -14,27 +14,24 @@ ERROR_SIGNAL_DURATION = 1000
 PWM_FREQ = 1000
 NFC_BAUDRATE = 1000000
 
-PIN_RGB_RED = 0
-PIN_RGB_GREEN = 1
-PIN_RGB_BLUE = 2
+PIN_RGB_RED = 10
+PIN_RGB_GREEN = 20
+PIN_RGB_BLUE = 21
 
-PIN_NFC_RESET = 3
 PIN_NFC_SCK = 4
 PIN_NFC_MISO = 5
 PIN_NFC_MOSI = 6
-
 PIN_NFC_SS = 7
 
-PIN_OUTPUT_ERROR = 8
-PIN_OUTPUT_SUCESS = 9
+PIN_OUTPUT_ERROR = 1
+PIN_OUTPUT_SUCESS = 2
 
-PIN_BUZZER = 10
-PIN_RELAY = 21
+PIN_BUZZER = 9
 
 import json
 
-def save_config(ssid, password):
-    config = {'ssid': ssid, 'password': password}
+def save_config(ssid, password, device_mode=DEVICE_MODE):
+    config = {'ssid': ssid, 'password': password, 'device_mode': device_mode}
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(config, f)
 
