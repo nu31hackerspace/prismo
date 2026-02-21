@@ -1,46 +1,126 @@
-name: Build Prismo Firmware (v1.27.0)
+name: Build & Release Prismo Firmware
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+    tags: ["v*.*.*"]
     paths:
-      - 'firmware/**'  # Only run this action if files inside /firmware change
+      - "firmware/**"
+      - ".github/workflows/build-firmware.yml"
   workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  MICROPYTHON_VERSION: "1.27.0"
+  BOARD: "ESP32_GENERIC_C3"
 
 jobs:
   build:
+    name: Build Firmware
     runs-on: ubuntu-latest
-    container: espressif/idf:release-v5.2 
-    
+    container:
+      image: espressif/idf:release-v5.2
+
+    outputs:
+      firmware_bin: micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/build-${{ env.BOARD }}/firmware.bin
+
     steps:
-      - name: Checkout Repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download & Extract MicroPython Source
+      - name: Cache MicroPython source tarball
+        id: cache-mpy
+        uses: actions/cache@v4
+        with:
+          path: micropython-${{ env.MICROPYTHON_VERSION }}.tar.xz
+          key: micropython-src-${{ env.MICROPYTHON_VERSION }}
+
+      - name: Download MicroPython source
+        if: steps.cache-mpy.outputs.cache-hit != 'true'
         run: |
-          wget https://micropython.org/resources/source/micropython-1.27.0.tar.xz
-          tar -xf micropython-1.27.0.tar.xz
-          
-      - name: Build the Cross-Compiler (mpy-cross)
+          wget -q \
+            https://micropython.org/resources/source/micropython-${{ env.MICROPYTHON_VERSION }}.tar.xz
+
+      - name: Extract MicroPython source
         run: |
-          cd micropython-1.27.0/mpy-cross
+          tar -xf micropython-${{ env.MICROPYTHON_VERSION }}.tar.xz
+
+      - name: Build mpy-cross (cross-compiler)
+        run: |
+          . $IDF_PATH/export.sh
+          cd micropython-${{ env.MICROPYTHON_VERSION }}/mpy-cross
           make -j$(nproc)
 
-      - name: Freeze Custom Python Code
+      - name: Freeze custom Python modules
         run: |
-          # Recursively copy all your application files from the firmware folder 
-          # directly into the MicroPython modules directory for freezing.
-          cp -r ./firmware/* micropython-1.27.0/ports/esp32/modules/
+          DEST=micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/modules
+          find firmware -maxdepth 1 -name "*.py" -exec cp {} "$DEST/" \;
 
-      - name: Compile ESP32-C3 Firmware
+      - name: Initialise ESP32 port submodules
         run: |
-          cd micropython-1.27.0/ports/esp32
-          make submodules
-          make BOARD=ESP32_GENERIC_C3 -j$(nproc)
+          . $IDF_PATH/export.sh
+          cd micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32
+          make BOARD=${{ env.BOARD }} submodules
 
-      - name: Upload Final Firmware Artifact
+      - name: Compile ESP32-C3 firmware
+        run: |
+          . $IDF_PATH/export.sh
+          cd micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32
+          make BOARD=${{ env.BOARD }} -j$(nproc)
+
+      - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: prismo-esp32-c3-firmware
-          # This outputs the final, ready-to-deploy binary
-          path: micropython-1.27.0/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin
+          path: micropython-${{ env.MICROPYTHON_VERSION }}/ports/esp32/build-${{ env.BOARD }}/firmware.bin
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download firmware artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: prismo-esp32-c3-firmware
+          path: dist/
+
+      - name: Rename binary
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          mv dist/firmware.bin dist/prismo-firmware-${TAG}.bin
+          echo "ASSET=dist/prismo-firmware-${TAG}.bin" >> "$GITHUB_ENV"
+          echo "TAG=${TAG}" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: "Prismo Firmware ${{ env.TAG }}"
+          body: |
+            ## Prismo Firmware ${{ env.TAG }}
+
+            ### Flashing instructions
+
+            Install **esptool** (one-time):
+            ```bash
+            pip install esptool
+            ```
+
+            Erase flash and write firmware (replace `/dev/ttyUSB0` with your port):
+            ```bash
+            esptool.py --chip esp32c3 --port /dev/ttyUSB0 erase_flash
+            esptool.py --chip esp32c3 --port /dev/ttyUSB0 write_flash 0x0 prismo-firmware-${{ env.TAG }}.bin
+            ```
+
+            > **macOS / Windows**: Use `/dev/cu.usbserial-*` or `COM*` respectively.
+
+            Built from MicroPython ${{ env.MICROPYTHON_VERSION }} for **ESP32-C3 (Generic)**.
+          files: ${{ env.ASSET }}
+          draft: false
+          prerelease: false
