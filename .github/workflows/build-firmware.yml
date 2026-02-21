@@ -33,6 +33,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Trust workspace for git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Cache MicroPython source tarball
         id: cache-mpy
         uses: actions/cache@v4
