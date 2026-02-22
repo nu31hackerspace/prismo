@@ -1,5 +1,5 @@
-from microdot import Microdot
-import config
+from libs.microdot import Microdot
+from src import config
 import machine
 from machine import Timer
 import os

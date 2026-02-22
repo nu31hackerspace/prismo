@@ -1,7 +1,7 @@
 import utime
-import config
-import color
-import buzzer
+from src import config
+from src import color
+from src import buzzer
 from machine import Pin
 
 class ReaderUI:

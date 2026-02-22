@@ -1,7 +1,7 @@
 import utime
 import machine
 
-from config import (
+from src.config import (
     PWM_FREQ,
     PIN_RGB_RED,
     PIN_RGB_GREEN,

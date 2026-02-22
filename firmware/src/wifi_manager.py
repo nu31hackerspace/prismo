@@ -1,9 +1,9 @@
 import network
 import time
-import config
-from mdns_server import MDNSServer
-from dns_server import DNSServer
-from web_server import WebServer
+from src import config
+from src.mdns_server import MDNSServer
+from src.dns_server import DNSServer
+from src.web_server import WebServer
 import _thread
 
 class WiFiManager:

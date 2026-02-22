@@ -38,5 +38,5 @@ jobs:
       - name: Upload Firmware Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: prismo-firmware
+          name: prismo-firmware.bin
           path: micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin

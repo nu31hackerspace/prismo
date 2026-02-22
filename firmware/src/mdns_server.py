@@ -1,7 +1,7 @@
 import socket
 import struct
 import time
-import config
+from src import config
 
 class MDNSServer:
     def __init__(self, ip):

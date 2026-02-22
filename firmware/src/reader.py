@@ -1,8 +1,8 @@
 import time
 import machine
 from machine import SPI, Pin
-import config
-from PN532 import PN532
+from src import config
+from libs.PN532 import PN532
 
 def subscribe(callback):
     print("Starting Prismo Reader (SPI)...")

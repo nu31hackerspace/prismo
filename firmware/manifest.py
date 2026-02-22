@@ -2,4 +2,5 @@
 include("$(PORT_DIR)/boards/manifest.py")
 
 # Freeze our custom firmware directory
-freeze(".")
+freeze("src")
+freeze("libs")

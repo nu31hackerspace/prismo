@@ -1,4 +1,4 @@
-DEBUG=False
+DEBUG=True
 QUICK_START=False
 
 AP_SSID = "00_prismo"
