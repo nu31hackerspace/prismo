@@ -65,7 +65,7 @@ Connect to device
 mpremote connect /dev/cu.usbmodem1101
 ```
 
-## Build & Flash
+## Build & Flash (binary version)
 
 ### 1. Build the firmware
 

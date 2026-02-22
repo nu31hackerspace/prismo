@@ -13,7 +13,7 @@ echo " Port: $PORT"
 echo "======================================================"
 
 # Check required files exist
-if [ ! -f "$DIST/bootloader.bin" ] || [ ! -f "$DIST/micropython.bin" ] || [ ! -f "$DIST/partition-table.bin" ]; then
+if [ ! -f "$DIST/firmware.bin" ]; then
     echo "❌ ERROR: Build artifacts not found in ./dist/"
     echo "   Please run ./build.sh first."
     exit 1
@@ -31,16 +31,12 @@ esptool --chip esp32c3 --port "$PORT" erase-flash
 # --------------------------------------------------------------
 echo ""
 echo "[2/2] Flashing firmware..."
-echo "      bootloader  → 0x00000"
-echo "      partitions  → 0x08000"
-echo "      application → 0x10000"
+echo "      firmware.bin → 0x00000"
 esptool --chip esp32c3 --port "$PORT" --baud 460800 \
   --before default-reset --after hard-reset \
   write-flash \
   --flash-mode dio --flash-size 4MB --flash-freq 80m \
-  0x00000 "$DIST/bootloader.bin" \
-  0x08000 "$DIST/partition-table.bin" \
-  0x10000 "$DIST/micropython.bin"
+  0x00000 "$DIST/firmware.bin"
 
 echo ""
 echo "======================================================"
