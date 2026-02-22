@@ -1,54 +1,78 @@
 # Prismo Firmware
 
-ESP32 Firmware for Prismo project.
-
-## Requirements
-
-- ESP32 running MicroPython
+ESP32-C3 firmware for the Prismo NFC reader project. Built on MicroPython with all application code **frozen into the binary** — no files need to be uploaded separately after flashing.
 
 ## Usage
 
-1. **First Boot**:
-   - The device will start an Access Point named **Prismo-Setup**.
-   - Connect to this network.
-2. **Provisioning**:
-   - A captive portal should open. If not, navigate to `http://prismo.local` or `http://192.168.4.1`.
-   - Enter your home WiFi credentials.
-3. **Run**:
-   - The device will save credentials, reboot, and connect to your WiFi.
-   - It will still be accessible via `http://prismo.local` on your network (if mDNS is supported by your router/client).
+1. **First Boot** — The device starts a WiFi Access Point named **00_prismo**
+2. **Provisioning** — Connect to that network. A captive portal opens (or navigate to `http://192.168.4.1`)
+3. **Enter your WiFi credentials and configuration** and save
+4. **Done** — The device reboots, connects to your WiFi, and is accessible at `http://prismo.local`
 
-## Development
+## Project Structure
 
-- `src/main.py`: Entry point.
-- `src/wifi_manager.py`: Handles AP/Station switching and the Web Server.
-- `libs/PN532.py`: some AI generated code for works with PN532 board via SPI.
-
-## Building Firmware
-
-This project is configured to automatically build a complete `firmware.bin` for ESP32-C3 using GitHub Actions. The build process compiles MicroPython and freezes all the `.py` files in `src/` and `libs/` directly into the binary to save RAM and improve startup time.
-
-### How it works
-- The `manifest.py` file in this directory tells the MicroPython compiler to freeze all Python code in `src/` and `libs/`.
-- The `.github/workflows/build-and-deploy.yml` workflow automatically builds the firmware for the `ESP32_GENERIC_C3` board and utilizes the Docker image provided by Espressif.
-
-### Verify the Build
-1. Commit and push your changes to GitHub.
-2. Go to the "Actions" tab in the GitHub repository.
-3. Download the `prismo-firmware` artifact from the latest successful build.
-4. Flash the resulting `firmware.bin` to your ESP32-C3 using:
-   ```bash
-   esptool.py --chip esp32c3 --port /dev/ttyACM0 write_flash -z 0x0 firmware.bin
-   ```
-
-## Flashing Instructions
-
-Command to erase the flash on the board:
-```bash
-esptool --chip esp32c3 --port /dev/cu.usbmodem1401 erase_flash
+```
+firmware/
+├── boot.py            # Root entry-point (frozen into binary) → imports src/prismo_boot
+├── main.py            # Root entry-point (frozen into binary) → imports src/prismo_main
+├── manifest.py        # Tells MicroPython what to freeze into the binary
+├── build.sh           # Builds the firmware
+├── flash.sh           # Flashes the firmware to the board
+├── dist/              # Output binaries (created by build.sh)
+├── src/               # Application code (frozen as src.* package)
+│   ├── prismo_boot.py # Boot sequence (WiFi setup, LED check)
+│   ├── prismo_main.py # Main loop (NFC reader, web server)
+│   ├── config.py      # Device configuration
+│   ├── wifi_manager.py
+│   ├── web_server.py
+│   ├── reader.py
+│   ├── reader_ui.py
+│   ├── color.py
+│   ├── buzzer.py
+│   ├── dns_server.py
+│   └── mdns_server.py
+└── libs/              # Third-party libraries (frozen as libs.* package)
+    ├── PN532.py       # NFC reader driver (SPI)
+    └── microdot.py    # Lightweight HTTP server
 ```
 
-Command to install MicroPython on Super Mini ESP:
+## Build & Flash
+
+### 1. Build the firmware
+
 ```bash
-esptool --baud 460800 write_flash 0 ESP32_GENERIC_C3-20251209-v1.27.0.bin
+./build.sh
 ```
+
+Produces binaries in `dist/`. Only needs to run once (or after code changes).
+
+> **First build only** — will clone ESP-IDF and MicroPython (~1-2 GB, takes 10-20 min).
+> Subsequent builds are fast (incremental).
+
+### 2. Flash to the board
+
+Connect your ESP32-C3 via USB, then:
+
+```bash
+./flash.sh
+```
+
+That's it. The script erases flash and writes the complete firmware. The board auto-reboots — **Prismo-Setup** WiFi AP should appear within a few seconds.
+
+> If the board doesn't reboot automatically after flashing, unplug and replug the USB cable once.
+
+#### Custom port
+
+```bash
+./flash.sh /dev/tty.usbmodem1101   # macOS
+./flash.sh /dev/ttyUSB0            # Linux
+```
+
+## How It Works
+
+All Python code is **frozen** (compiled and embedded directly) into `micropython.bin` at build time:
+
+- `boot` and `main` modules → MicroPython finds them automatically on startup (no filesystem needed)
+- `src.*` and `libs.*` packages → imported by boot/main
+
+This means zero RAM is used for module storage and startup is instant.

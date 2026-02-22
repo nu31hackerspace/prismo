@@ -1,1 +1,1 @@
-import src.main
+import src.prismo_main

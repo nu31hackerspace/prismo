@@ -1,4 +1,4 @@
-26778190744562553
+26783506626232767
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -70273,6 +70273,13 @@ LED diameter 5.0mm 2 pins diameter 5.0mm 3 pins diameter 5.0mm 4 pins RGB RGBLED
 4
 4
 LED_THT
+LED_D5.0mm-4_RGB_Wide_Pins_CNC_read
+LED, diameter 5.0mm, 4 pins, WP154A4, https://www.kingbright.com/attachments/file/psearch/000/00/00/L-154A4SUREQBFZGEW(Ver.11A).pdf
+LED diameter 5.0mm 2 pins diameter 5.0mm 3 pins diameter 5.0mm 4 pins RGB RGBLED
+0
+4
+4
+LED_THT
 LED_D5.0mm-4_RGB_Wide_Pins_custom
 LED, diameter 5.0mm, 4 pins, WP154A4, https://www.kingbright.com/attachments/file/psearch/000/00/00/L-154A4SUREQBFZGEW(Ver.11A).pdf
 LED diameter 5.0mm 2 pins diameter 5.0mm 3 pins diameter 5.0mm 4 pins RGB RGBLED
@@ -96397,6 +96404,13 @@ SMD Shunt Resistor
 4
 2
 Resistor_THT
+CNC_Ready_R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal
+Resistor, Axial_DIN0204 series, Axial, Horizontal, pin pitch=7.62mm, 0.167W, length*diameter=3.6*1.6mm^2, http://cdn-reichelt.de/documents/datenblatt/B400/1_4W%23YAG.pdf
+Resistor Axial_DIN0204 series Axial Horizontal pin pitch 7.62mm 0.167W length 3.6mm diameter 1.6mm
+0
+2
+2
+Resistor_THT
 R_Array_SIP4
 4-pin Resistor SIP pack
 R
@@ -106378,6 +106392,13 @@ PN532 NFC RFID
 0
 12
 12
+esp_32_c3_supper_mini
+PN532 NFC RFID simple (one row)
+
+
+0
+8
+8
 esp_32_c3_supper_mini
 esp_32_c3_supper_mini
 

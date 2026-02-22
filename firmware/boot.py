@@ -1,1 +1,1 @@
-import src.boot
+import src.prismo_boot
