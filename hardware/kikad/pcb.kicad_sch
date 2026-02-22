@@ -1798,7 +1798,7 @@
 		(uuid "40b0f480-242a-4fba-9459-ce3a22949626")
 	)
 	(no_connect
-		(at 73.66 80.01)
+		(at 105.41 87.63)
 		(uuid "5ad5f080-b0e9-448a-98e5-b0895c3229f7")
 	)
 	(no_connect
@@ -2089,6 +2089,16 @@
 	)
 	(wire
 		(pts
+			(xy 52.07 80.01) (xy 73.66 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6a15e0d6-76db-4d0e-848a-7ef560f66cd7")
+	)
+	(wire
+		(pts
 			(xy 246.38 63.5) (xy 246.38 67.31)
 		)
 		(stroke
@@ -2229,16 +2239,6 @@
 	)
 	(wire
 		(pts
-			(xy 113.03 87.63) (xy 105.41 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9d40070b-a7fe-4ddb-8f92-6267e87e82a7")
-	)
-	(wire
-		(pts
 			(xy 198.12 63.5) (xy 194.31 63.5)
 		)
 		(stroke
@@ -2316,16 +2316,6 @@
 			(type default)
 		)
 		(uuid "af7888f8-839e-46e0-904d-abb9e259590c")
-	)
-	(wire
-		(pts
-			(xy 113.03 93.98) (xy 113.03 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b0763bd4-04d0-41d6-baf6-0b5b16159ea4")
 	)
 	(wire
 		(pts
@@ -2932,7 +2922,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 113.03 97.79 0)
+		(at 48.26 80.01 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -2941,7 +2931,7 @@
 		(fields_autoplaced yes)
 		(uuid "2efe0022-a900-412a-bdda-c774e3b0aceb")
 		(property "Reference" "R13"
-			(at 119.38 97.79 90)
+			(at 48.26 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2949,7 +2939,7 @@
 			)
 		)
 		(property "Value" "100"
-			(at 116.84 97.79 90)
+			(at 48.26 83.82 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2957,7 +2947,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_THT:CNC_Ready_R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal"
-			(at 111.252 97.79 90)
+			(at 48.26 78.232 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2966,7 +2956,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 113.03 97.79 0)
+			(at 48.26 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2975,7 +2965,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 113.03 97.79 0)
+			(at 48.26 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3534,7 +3524,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 107.95 101.6 180)
+		(at 44.45 74.93 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3543,7 +3533,7 @@
 		(fields_autoplaced yes)
 		(uuid "758ae221-d23b-4583-b0bd-1278c3134b87")
 		(property "Reference" "#PWR08"
-			(at 107.95 95.25 0)
+			(at 50.8 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3552,7 +3542,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 107.95 96.52 0)
+			(at 49.53 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3560,7 +3550,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 107.95 101.6 0)
+			(at 44.45 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3569,7 +3559,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 107.95 101.6 0)
+			(at 44.45 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3578,7 +3568,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 107.95 101.6 0)
+			(at 44.45 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4366,7 +4356,7 @@
 	)
 	(symbol
 		(lib_id "Device:Buzzer")
-		(at 110.49 104.14 270)
+		(at 41.91 77.47 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4375,7 +4365,7 @@
 		(fields_autoplaced yes)
 		(uuid "d05c50d9-6d0c-4a40-bf7d-32620604d38c")
 		(property "Reference" "BZ1"
-			(at 111.7601 107.95 0)
+			(at 38.1 78.7401 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4384,7 +4374,7 @@
 			)
 		)
 		(property "Value" "Buzzer"
-			(at 109.2201 107.95 0)
+			(at 38.1 76.2001 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4393,7 +4383,7 @@
 			)
 		)
 		(property "Footprint" "Buzzer_Beeper:MagneticBuzzer_ProSignal_ABI-010-RC"
-			(at 113.03 103.505 90)
+			(at 42.545 80.01 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4402,7 +4392,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 113.03 103.505 90)
+			(at 42.545 80.01 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4411,7 +4401,7 @@
 			)
 		)
 		(property "Description" "Buzzer, polarized"
-			(at 110.49 104.14 0)
+			(at 41.91 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)

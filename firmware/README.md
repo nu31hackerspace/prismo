@@ -36,6 +36,35 @@ firmware/
     └── microdot.py    # Lightweight HTTP server
 ```
 
+## Development
+
+Flash micro python on esp32c3 board
+```bash
+esptool --port /dev/cu.usbmodem1101 --baud 460800 write_flash 0 ESP32_GENERIC_C3-20251209-v1.27.0.bin
+```
+
+Create needed directory
+
+```bash
+mpremote mkdir :libs
+mpremote mkdir :src
+```
+
+Copy lib
+```bash
+mpremote cp libs/* :libs/
+```
+
+Copy src
+```bash
+mpremote cp src/* :src/
+```
+
+Connect to device
+```bash
+mpremote connect /dev/cu.usbmodem1101
+```
+
 ## Build & Flash
 
 ### 1. Build the firmware
