@@ -38,6 +38,11 @@ firmware/
 
 ## Development
 
+Erase board 
+```bash
+esptool --chip esp32c3 --port /dev/cu.usbmodem1101 erase-flash
+```
+
 Flash micro python on esp32c3 board
 ```bash
 esptool --port /dev/cu.usbmodem1101 --baud 460800 write_flash 0 ESP32_GENERIC_C3-20251209-v1.27.0.bin
