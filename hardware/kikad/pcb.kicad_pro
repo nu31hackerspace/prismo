@@ -503,7 +503,7 @@
       "plot": "gerbe/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "../prismo/hardware/led_pcb.step",
+      "step": "../led_pcb.step",
       "svg": "",
       "vrml": ""
     },
