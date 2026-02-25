@@ -51,13 +51,14 @@ class WiFiManager:
         _thread.start_new_thread(self.web_server.run, (80,))
 
     def connect(self):
-        run_time_config = config.load_config()
-        if not run_time_config:
-            print("No config found. Starting AP.")
+        from src import wifi_config
+        
+        hostname = config.get_hostname()
+
+        if not wifi_config.has_wifi():
+            print("No WiFi configured. Starting AP.")
             self.start_ap_mode()
             return
-
-        hostname = config.get_hostname()
 
         gc.collect()
         wlan_sta = network.WLAN(network.STA_IF)
@@ -69,8 +70,7 @@ class WiFiManager:
         except ValueError:
              pass
 
-        ssid = run_time_config.get('ssid')
-        password = run_time_config.get('password')
+        ssid, password = wifi_config.get_wifi()
         
         print(f"Connecting to {ssid}...")
         wlan_sta.connect(ssid, password)

@@ -47,10 +47,11 @@ def add_user_to_white_list(username, uid):
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
 
-def save_config(ssid, password, hostname, admin_password):
-    config = {'ssid': ssid, 'password': password, 'hostname': hostname, 'admin_password': admin_password}
+def save_config(hostname):
+    cfg = load_config() or {}
+    cfg['hostname'] = hostname
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
-        json.dump(config, f)
+        json.dump(cfg, f)
 
 
 def load_config():
@@ -66,11 +67,7 @@ def get_hostname():
         return cfg['hostname']
     return HOSTNAME
 
-def get_admin_password():
-    cfg = load_config()
-    if cfg:
-        return cfg.get('admin_password', '')
-    return ''
+
 
 if DEBUG:
     print('[CONFIG] Debug mode')

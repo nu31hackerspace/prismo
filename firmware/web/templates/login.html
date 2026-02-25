@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Prismo - Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
     <h1>Prismo Login</h1>
-    {error_html}
-    <form action="/login" method="post">
-        <input type="password" name="admin_password" placeholder="Device Password" required><br>
-        <button type="submit">Login</button>
-    </form>
+
+    <div class="card">
+        {error_html}
+        <form action="/login" method="post">
+            <div class="form-group">
+                <label for="admin_password">Device Password</label>
+                <input type="password" id="admin_password" name="admin_password" placeholder="Enter password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
 </body>
+
 </html>
