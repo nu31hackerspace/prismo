@@ -54,19 +54,29 @@ Create needed directory and upload the libraries
 mpremote mkdir :libs
 mpremote mkdir :src
 mpremote cp boot.py :boot.py
-mpremote cp main.py :main.py
 mpremote cp libs/* :libs/
-mpremote cp src/* :src/
+mpremote cp src/*.py :src/
 ```
 
 Copy src and run the soft restart of
 ```bash
-mpremote cp src/* :src/ + reset
+mpremote cp src/*.py :src/ + reset
+```
+
+In case you update the UI files (HTML/CSS) in `web/`, you need to generate the frozen assets python file first, then copy it to the device and soft restart:
+```bash
+python3 scripts/generate_frozen_assets.py
+mpremote cp src/frozen_assets.py :src/frozen_assets.py + reset
 ```
 
 Connect to device
 ```bash
 mpremote connect <port>
+```
+
+For start the app run the following into mpremote process
+```bash
+import src.prismo_main
 ```
 
 ### Helpful commands 
@@ -75,6 +85,11 @@ Show the connected usb devices (first column is a path to usb port)
 ```bash
 mpremote devs
 ```
+
+### Side notes
+
+The HTML and css files moved to the separated files to make it easier to edit them. 
+Also it the critical optization for not store them into python code. (We have ~308Kb of memory on the supper mini the python code with template for web part just doesn't fit the memory)
 
 ## Build & Flash (binary version)
 

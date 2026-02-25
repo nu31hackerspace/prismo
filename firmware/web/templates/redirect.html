@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Configuration Saved</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <h1>Configuration Saved!</h1>
+    <p>Your device is restarting and connecting to WiFi...</p>
+    <p class="status">Redirecting to <b>{hostname}.local</b> in</p>
+    <p class="countdown" id="timer">15</p>
+    <p class="status">seconds</p>
+    <p><a href="http://{hostname}.local" id="link">Go to {hostname}.local now</a></p>
+    <script>
+        var seconds = 15;
+        var timer = document.getElementById('timer');
+        var interval = setInterval(function () {
+            seconds--;
+            timer.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = 'http://{hostname}.local';
+            }
+        }, 1000);
+    </script>
+</body>
+
+</html>

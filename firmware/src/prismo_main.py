@@ -2,6 +2,7 @@ from src import wifi_manager
 from src import reader
 from src import reader_ui
 from src import web_server
+from src import config
 
 ui = reader_ui.ReaderUI()
 
@@ -21,6 +22,7 @@ ui.ready_to_read()
 
 def on_key_read(uid):
     print("New UID:", uid)
+    config.save_last_key(uid)
     if (uid == 'e7c1b3d9'):
         ui.error()
     else:

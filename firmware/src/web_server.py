@@ -10,17 +10,41 @@ class WebServer:
         self.setup_routes()
         self.on_new_config_callback = on_new_config_callback
 
-    def common_styles(self):
-        return """
-            body { font-family: sans-serif; text-align: center; padding: 20px; }
-            input, select { padding: 10px; margin: 10px; width: 80%; }
-            button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-            .danger { background-color: #dc3545; }
-            .hint { font-size: 0.85em; color: #666; margin-top: -5px; }
-            .error { color: #dc3545; font-weight: bold; }
-        """
+    def render_template(self, filename, **kwargs):
+        def stream():
+            try:
+                import src.frozen_assets as frozen_assets
+                import io
+                content = frozen_assets.FILES.get(f"templates/{filename}")
+                if content:
+                    f = io.StringIO(content)
+                    for line in f:
+                        for key, val in kwargs.items():
+                            if '{' + key + '}' in line:
+                                line = line.replace('{' + key + '}', str(val))
+                        yield line
+                else:
+                    yield "Template not found: " + filename
+            except ImportError:
+                yield "Template not found: " + filename
+        return stream()
 
     def setup_routes(self):
+        @self.app.route('/static/<path:path>')
+        def static_file(request, path):
+            if '..' in path:
+                return 'Not found', 404
+            def send_file():
+                try:
+                    import src.frozen_assets as frozen_assets
+                    content = frozen_assets.FILES.get(f"static/{path}")
+                    if content:
+                        yield content.encode('utf-8')
+                except ImportError:
+                    pass
+            hdr = {'Content-Type': 'text/css'} if path.endswith('.css') else {}
+            return send_file(), 200, hdr
+
         @self.app.route('/', methods=['GET'])
         def index(request):
             saved_password = config.get_admin_password()
@@ -107,119 +131,42 @@ class WebServer:
             return '', 302, {'Location': '/'}
 
     def login_page(self, error=""):
-        error_html = f'<p class="error">{error}</p>' if error else ''
-        return f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Prismo - Login</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <style>{self.common_styles()}</style>
-        </head>
-        <body>
-            <h1>Prismo Login</h1>
-            {error_html}
-            <form action="/login" method="post">
-                <input type="password" name="admin_password" placeholder="Device Password" required><br>
-                <button type="submit">Login</button>
-            </form>
-        </body>
-        </html>
-        """
+        err = f'<p class="error">{error}</p>' if error else ''
+        return self.render_template('login.html', error_html=err)
 
     def config_page(self, admin_password=""):
-        current_config = config.load_config()
-        ssid = ""
-        password = ""
+        cfg = config.load_config() or {}
+        ssid = cfg.get('ssid', '')
+        password = cfg.get('password', '')
         hostname = config.get_hostname()
-        saved_password = config.get_admin_password()
-        is_first_setup = not saved_password
+        saved_pwd = config.get_admin_password()
+        is_first = not saved_pwd
 
-        if current_config:
-            ssid = current_config.get('ssid', '')
-            password = current_config.get('password', '')
+        if not admin_password and saved_pwd:
+            admin_password = saved_pwd
 
-        # If authenticated via login, carry the password through as hidden field
-        if not admin_password and saved_password:
-            admin_password = saved_password
+        pwd_lbl = "Device Password" if is_first else "New Password (empty to keep)"
+        req = "required" if is_first else ""
 
-        admin_password_label = "Device Password" if is_first_setup else "New Device Password (leave empty to keep current)"
-        admin_password_required = "required" if is_first_setup else ""
-
-        return f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Prismo configuration</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <style>{self.common_styles()}</style>
-        </head>
-        <body>
-            <h1>Prismo configuration</h1>
-            <form action="/configuration" method="post">
-                <label for="hostname">Device Name</label><br>
-                <input type="text" id="hostname" name="hostname" placeholder="Device Name" value="{hostname}" pattern="[a-z]+" minlength="1" title="Only lowercase English letters (a-z)" required><br>
-                <p class="hint">Your device will be available at <b>{hostname}.local</b></p>
-
-                <input type="text" name="ssid" placeholder="WiFi SSID" value="{ssid}" required><br>
-                <input type="password" name="password" placeholder="WiFi Password" value="{password}" required><br>
-
-                <hr style="margin-top: 20px; margin-bottom: 20px;">
-
-                <label for="new_admin_password">{admin_password_label}</label><br>
-                <input type="password" id="new_admin_password" name="new_admin_password" placeholder="Device Password" {admin_password_required}><br>
-
-                <input type="hidden" name="admin_password" value="{admin_password}">
-                <button type="submit">Apply</button>
-            </form>
-
-            <hr style="margin-top: 30px; margin-bottom: 30px;">
-
-            <h2>Danger Zone</h2>
-            <form action="/reset" method="post" onsubmit="return confirm('Are you sure you want to factory reset? This will delete all settings and reboot.');">
-                <input type="hidden" name="admin_password" value="{admin_password}">
-                <button type="submit" class="danger">Factory Reset</button>
-            </form>
-        </body>
-        </html>
-        """
+        return self.render_template(
+            'config.html',
+            last_key_html=self._last_key_html(),
+            hostname=hostname,
+            ssid=ssid,
+            password=password,
+            admin_password_label=pwd_lbl,
+            admin_password_required=req,
+            admin_password=admin_password
+        )
 
     def redirect_page(self, hostname):
-        return f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Configuration Saved</title>
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <style>
-                body {{ font-family: sans-serif; text-align: center; padding: 40px 20px; }}
-                .countdown {{ font-size: 2em; font-weight: bold; color: #007bff; margin: 20px 0; }}
-                .status {{ color: #666; margin: 10px 0; }}
-                a {{ color: #007bff; }}
-            </style>
-        </head>
-        <body>
-            <h1>Configuration Saved!</h1>
-            <p>Your device is restarting and connecting to WiFi...</p>
-            <p class="status">Redirecting to <b>{hostname}.local</b> in</p>
-            <p class="countdown" id="timer">15</p>
-            <p class="status">seconds</p>
-            <p><a href="http://{hostname}.local" id="link">Go to {hostname}.local now</a></p>
-            <script>
-                var seconds = 15;
-                var timer = document.getElementById('timer');
-                var interval = setInterval(function() {{
-                    seconds--;
-                    timer.textContent = seconds;
-                    if (seconds <= 0) {{
-                        clearInterval(interval);
-                        window.location.href = 'http://{hostname}.local';
-                    }}
-                }}, 1000);
-            </script>
-        </body>
-        </html>
-        """
+        return self.render_template('redirect.html', hostname=hostname)
+
+    def _last_key_html(self):
+        k = config.get_last_key()
+        if k:
+            return f'<p><b>Last Key:</b> <code style="font-size:1.2em;background:#f0f0f0;padding:4px 8px;border-radius:4px">{k}</code></p><input type="text" id="username" placeholder="User name" style="width:60%"><button type="button">Add User</button>'
+        return '<p style="color:#999">No key scanned yet.</p>'
 
     def parse_form(self, request):
         params = {}

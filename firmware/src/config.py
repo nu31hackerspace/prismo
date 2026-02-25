@@ -27,6 +27,26 @@ PIN_BUZZER = 0
 
 import json
 
+_last_key_id = None
+
+def save_last_key(key):
+    global _last_key_id
+    _last_key_id = key
+
+def get_last_key():
+    return _last_key_id
+
+def add_user_to_white_list(username, uid):
+    cfg = load_config() or {}
+    users = cfg.get('allowed_users', [])
+    for user in users:
+        if user.get('uid') == uid:
+            raise ValueError(f"User with UID {uid} already exists")
+    users.append({'name': username, 'uid': uid})
+    cfg['allowed_users'] = users
+    with open(RUN_TIME_CONFIG_FILE, 'w') as f:
+        json.dump(cfg, f)
+
 def save_config(ssid, password, hostname, admin_password):
     config = {'ssid': ssid, 'password': password, 'hostname': hostname, 'admin_password': admin_password}
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:

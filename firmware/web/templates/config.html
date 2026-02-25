@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Prismo Config</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <h1>Prismo Config</h1>
+
+    {last_key_html}
+
+    <hr style="margin: 20px 0;">
+
+    <form action="/configuration" method="post">
+        <label for="hostname">Device Name</label><br>
+        <input type="text" id="hostname" name="hostname" placeholder="Device Name" value="{hostname}" pattern="[a-z]+"
+            minlength="1" required><br>
+        <p class="hint">Your device will be available at <b>{hostname}.local</b></p>
+
+        <input type="text" name="ssid" placeholder="WiFi SSID" value="{ssid}" required><br>
+        <input type="password" name="password" placeholder="WiFi Password" value="{password}" required><br>
+
+        <hr style="margin: 20px 0;">
+
+        <label for="new_admin_password">{admin_password_label}</label><br>
+        <input type="password" id="new_admin_password" name="new_admin_password" placeholder="Device Password"
+            {admin_password_required}><br>
+
+        <input type="hidden" name="admin_password" value="{admin_password}">
+        <button type="submit">Apply</button>
+    </form>
+
+    <hr style="margin: 30px 0;">
+
+    <h2>Danger Zone</h2>
+    <form action="/reset" method="post"
+        onsubmit="return confirm('Are you sure you want to factory reset? This will delete all settings and reboot.');">
+        <input type="hidden" name="admin_password" value="{admin_password}">
+        <button type="submit" class="danger">Factory Reset</button>
+    </form>
+</body>
+
+</html>

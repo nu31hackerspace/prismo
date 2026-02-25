@@ -1,0 +1,49 @@
+body {
+    font-family: sans-serif;
+    text-align: center;
+    padding: 20px;
+}
+input, select {
+    padding: 10px;
+    margin: 10px;
+    width: 80%;
+}
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.danger {
+    background-color: #dc3545;
+}
+.hint {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: -5px;
+}
+.error {
+    color: #dc3545;
+    font-weight: bold;
+}
+.countdown {
+    font-size: 2em;
+    font-weight: bold;
+    color: #007bff;
+    margin: 20px 0;
+}
+.status {
+    color: #666;
+    margin: 10px 0;
+}
+a {
+    color: #007bff;
+}
+code {
+    font-size: 1.2em;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+}

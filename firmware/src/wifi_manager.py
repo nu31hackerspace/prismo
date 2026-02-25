@@ -1,5 +1,6 @@
 import network
 import time
+import gc
 from src import config
 from src.mdns_server import MDNSServer
 from src.dns_server import DNSServer
@@ -8,8 +9,6 @@ import _thread
 
 class WiFiManager:
     def __init__(self, web_server, on_ap_start_callback=None):
-        self.wlan_sta = network.WLAN(network.STA_IF)
-        self.wlan_ap = network.WLAN(network.AP_IF)
         self.dns_server = None
         self.mdns_server = None
         self.web_server = web_server
@@ -22,18 +21,18 @@ class WiFiManager:
 
         hostname = config.get_hostname()
 
-        self.wlan_sta.active(False)
-        self.wlan_ap.active(True)
-        self.wlan_ap.config(txpower=8.5, essid=config.AP_SSID, password="")
+        gc.collect()
+        wlan_ap = network.WLAN(network.AP_IF)
+        wlan_ap.active(True)
+        wlan_ap.config(txpower=8.5, essid=config.AP_SSID, password="")
         
         try:
-            self.wlan_ap.config(hostname=hostname)
+            wlan_ap.config(hostname=hostname)
         except ValueError as e:
             print('[WIFI] hostname did not setup, because of', e)
             pass
         
-        # Configure IP for AP if needed, default is usually 192.168.4.1
-        ip = self.wlan_ap.ifconfig()[0]
+        ip = wlan_ap.ifconfig()[0]
         print("AP Started. IP:", ip)
         
         # Start DNS Server
@@ -60,12 +59,13 @@ class WiFiManager:
 
         hostname = config.get_hostname()
 
-        self.wlan_ap.active(False)
-        self.wlan_sta.active(True)
-        self.wlan_sta.config(txpower=8.5)
+        gc.collect()
+        wlan_sta = network.WLAN(network.STA_IF)
+        wlan_sta.active(True)
+        wlan_sta.config(txpower=8.5)
         
         try:
-             self.wlan_sta.config(hostname=hostname)
+             wlan_sta.config(hostname=hostname)
         except ValueError:
              pass
 
@@ -73,18 +73,18 @@ class WiFiManager:
         password = run_time_config.get('password')
         
         print(f"Connecting to {ssid}...")
-        self.wlan_sta.connect(ssid, password)
+        wlan_sta.connect(ssid, password)
 
         # Wait for connection
         max_wait = 10
         while max_wait > 0:
-            if self.wlan_sta.isconnected():
+            if wlan_sta.isconnected():
                 break
             max_wait -= 1
             time.sleep(1)
 
-        if self.wlan_sta.isconnected():
-            ip = self.wlan_sta.ifconfig()[0]
+        if wlan_sta.isconnected():
+            ip = wlan_sta.ifconfig()[0]
             print("Connected! IP:", ip)
             self.start_mdns_server(ip, hostname)
             self.start_web_server()

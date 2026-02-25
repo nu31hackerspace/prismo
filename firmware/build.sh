@@ -56,9 +56,10 @@ make BOARD=ESP32_GENERIC_C3 submodules
 
 # Clear stale frozen artifacts so manifest changes are always picked up
 echo "Clearing stale frozen artifacts..."
-rm -rf build-ESP32_GENERIC_C3/frozen_mpy build-ESP32_GENERIC_C3/frozen_content.c
-
 # Compile the firmware using YOUR manifest file!
+echo "Generating frozen assets..."
+python3 "$PROJECT_DIR/scripts/generate_frozen_assets.py"
+
 echo "Compiling MicroPython firmware..."
 make BOARD=ESP32_GENERIC_C3 FROZEN_MANIFEST="$PROJECT_DIR/manifest.py"
 
