@@ -69,7 +69,9 @@ Connect to device
 mpremote connect <port>
 ```
 
-Helps command 
+### Helps command 
+
+Show the connected usb devices (first column is a path to usb port)
 ```bash
 mpremote devs
 ```
