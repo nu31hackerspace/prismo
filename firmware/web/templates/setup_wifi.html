@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Prismo - WiFi Setup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <h1>Prismo WiFi Setup</h1>
+
+    <div class="card">
+        <p>Step 2: Connect your Prismo to your home WiFi network so you can access it anywhere on your local network.
+        </p>
+
+        {error_html}
+
+        <form action="/setup_wifi" method="post">
+            <div class="form-group">
+                <label for="ssid">WiFi Name (SSID)</label>
+                <input type="text" id="ssid" name="ssid" placeholder="Network Name" required>
+            </div>
+            <div class="form-group">
+                <label for="password">WiFi Password</label>
+                <input type="password" id="password" name="password" placeholder="Network Password" required>
+            </div>
+            <button type="submit">Connect & Reboot</button>
+        </form>
+    </div>
+</body>
+
+</html>

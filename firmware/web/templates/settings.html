@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Prismo - Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <h1>Device Settings</h1>
+
+    <form action="/configuration" method="post">
+        <div class="card">
+            <h2>Network & Name</h2>
+            <div class="form-group">
+                <label for="hostname">Device Name <span class="hint">(Available at {hostname}.local)</span></label>
+                <input type="text" id="hostname" name="hostname" placeholder="Device Name" value="{hostname}"
+                    pattern="[a-z]+" minlength="1" required>
+            </div>
+
+            <div class="form-group">
+                <label for="ssid">WiFi SSID</label>
+                <input type="text" id="ssid" name="ssid" placeholder="Network Name" value="{ssid}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">WiFi Password</label>
+                <input type="password" id="password" name="password" placeholder="Network Password" value="{password}"
+                    required>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Security</h2>
+            <div class="form-group">
+                <label for="new_admin_password">Change Device Password <span class="hint">(Leave blank to keep
+                        current)</span></label>
+                <input type="password" id="new_admin_password" name="new_admin_password" placeholder="New Password">
+            </div>
+        </div>
+
+        <button type="submit" style="margin-bottom: 20px;">Save Settings & Reboot</button>
+    </form>
+
+    <div class="card" style="border: 1px solid var(--danger);">
+        <h2 style="color: var(--danger); margin-top: 5px;">Danger Zone</h2>
+        <p style="font-size: 0.9em; color: var(--text-muted);">This action will wipe all WiFi configurations, allowed
+            users, and passwords. The device will reboot in setup mode.</p>
+        <form action="/reset" method="post"
+            onsubmit="return confirm('WARNING: This will delete all settings and allowed users. Are you sure?');">
+            <button type="submit" class="danger">Factory Reset</button>
+        </form>
+    </div>
+
+    <a href="/" class="btn secondary" style="margin-top: 20px;">Back to Dashboard</a>
+
+</body>
+
+</html>
