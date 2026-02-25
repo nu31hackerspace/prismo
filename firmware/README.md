@@ -53,12 +53,15 @@ Create needed directory and upload the libraries
 ```bash
 mpremote mkdir :libs
 mpremote mkdir :src
+mpremote cp boot.py :boot.py
+mpremote cp main.py :main.py
 mpremote cp libs/* :libs/
+mpremote cp src/* :src/
 ```
 
-Copy src
+Copy src and run the soft restart of
 ```bash
-mpremote cp src/* :src/
+mpremote cp src/* :src/ + reset
 ```
 
 Connect to device

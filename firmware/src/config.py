@@ -27,8 +27,8 @@ PIN_BUZZER = 0
 
 import json
 
-def save_config(ssid, password, hostname):
-    config = {'ssid': ssid, 'password': password, 'hostname': hostname}
+def save_config(ssid, password, hostname, admin_password):
+    config = {'ssid': ssid, 'password': password, 'hostname': hostname, 'admin_password': admin_password}
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(config, f)
 
@@ -45,6 +45,12 @@ def get_hostname():
     if cfg and cfg.get('hostname'):
         return cfg['hostname']
     return HOSTNAME
+
+def get_admin_password():
+    cfg = load_config()
+    if cfg:
+        return cfg.get('admin_password', '')
+    return ''
 
 if DEBUG:
     print('[CONFIG] Debug mode')
