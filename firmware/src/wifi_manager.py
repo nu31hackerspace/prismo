@@ -20,12 +20,14 @@ class WiFiManager:
         if self.on_ap_start_callback:
             self.on_ap_start_callback()
 
+        hostname = config.get_hostname()
+
         self.wlan_sta.active(False)
         self.wlan_ap.active(True)
         self.wlan_ap.config(txpower=8.5, essid=config.AP_SSID, password="")
         
         try:
-            self.wlan_ap.config(hostname=config.HOSTNAME)
+            self.wlan_ap.config(hostname=hostname)
         except ValueError as e:
             print('[WIFI] hostname did not setup, because of', e)
             pass
@@ -38,11 +40,11 @@ class WiFiManager:
         self.dns_server = DNSServer(ip)
         _thread.start_new_thread(self.dns_server.run, ())
 
-        self.start_mdns_server(ip)
+        self.start_mdns_server(ip, hostname)
         self.start_web_server()
 
-    def start_mdns_server(self, ip):
-        self.mdns_server = MDNSServer(ip)
+    def start_mdns_server(self, ip, hostname):
+        self.mdns_server = MDNSServer(ip, hostname)
         _thread.start_new_thread(self.mdns_server.run, ())
 
     def start_web_server(self):
@@ -56,12 +58,14 @@ class WiFiManager:
             self.start_ap_mode()
             return
 
+        hostname = config.get_hostname()
+
         self.wlan_ap.active(False)
         self.wlan_sta.active(True)
         self.wlan_sta.config(txpower=8.5)
         
         try:
-             self.wlan_sta.config(hostname=config.HOSTNAME)
+             self.wlan_sta.config(hostname=hostname)
         except ValueError:
              pass
 
@@ -82,8 +86,9 @@ class WiFiManager:
         if self.wlan_sta.isconnected():
             ip = self.wlan_sta.ifconfig()[0]
             print("Connected! IP:", ip)
-            self.start_mdns_server(ip)
+            self.start_mdns_server(ip, hostname)
             self.start_web_server()
         else:
             print("Failed to connect. Starting AP.")
             self.start_ap_mode()
+

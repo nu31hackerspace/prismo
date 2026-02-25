@@ -1,5 +1,5 @@
-DEBUG=True
-QUICK_START=False
+DEBUG=False
+QUICK_START=True
 
 AP_SSID = "00_prismo"
 HOSTNAME = "prismo"
@@ -27,8 +27,8 @@ PIN_BUZZER = 0
 
 import json
 
-def save_config(ssid, password):
-    config = {'ssid': ssid, 'password': password}
+def save_config(ssid, password, hostname):
+    config = {'ssid': ssid, 'password': password, 'hostname': hostname}
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(config, f)
 
@@ -39,6 +39,12 @@ def load_config():
             return json.load(f)
     except (OSError, ValueError):
         return None
+
+def get_hostname():
+    cfg = load_config()
+    if cfg and cfg.get('hostname'):
+        return cfg['hostname']
+    return HOSTNAME
 
 if DEBUG:
     print('[CONFIG] Debug mode')

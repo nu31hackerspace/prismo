@@ -1,12 +1,11 @@
 import socket
 import struct
 import time
-from src import config
 
 class MDNSServer:
-    def __init__(self, ip):
+    def __init__(self, ip, hostname):
         self.ip = ip
-        self.hostname = config.HOSTNAME
+        self.hostname = hostname
         self.sock = None
         self.running = False
 
