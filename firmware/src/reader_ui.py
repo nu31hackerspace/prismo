@@ -7,7 +7,6 @@ from machine import Pin
 class ReaderUI:
     def __init__(self):
         run_config = config.load_config()
-        self.mode = run_config.get('device_mode', config.DEVICE_MODE) if run_config else config.DEVICE_MODE
         self.success_pin = Pin(config.PIN_OUTPUT_SUCESS, Pin.OUT)
         self.error_pin = Pin(config.PIN_OUTPUT_ERROR, Pin.OUT)
         self.machine_active = False
@@ -29,12 +28,7 @@ class ReaderUI:
 
     def success(self):
         color.set_sub_light_color(0x00FF00)
-        if self.mode == 'ACCESS':
-            self._handle_access_success()
-            self.ready_to_read()
-        elif self.mode == 'MACHINE':
-            self._handle_machine_success()
-
+        self._handle_access_success()
         self.ready_to_read()
 
     def error(self):

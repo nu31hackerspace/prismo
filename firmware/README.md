@@ -5,7 +5,7 @@ ESP32-C3 firmware for the Prismo NFC reader project. Built on MicroPython with a
 ## Usage
 
 1. **First Boot** — The device starts a WiFi Access Point named **00_prismo**
-2. **Provisioning** — Connect to that network. A captive portal opens (or navigate to `http://192.168.4.1`)
+2. **Provisioning** — Connect to the network **00_prismo**. Open the web page with address `http://prismo.local`.
 3. **Enter your WiFi credentials and configuration** and save
 4. **Done** — The device reboots, connects to your WiFi, and is accessible at `http://prismo.local`
 
@@ -40,23 +40,19 @@ firmware/
 
 Erase board 
 ```bash
-esptool --chip esp32c3 --port /dev/cu.usbmodem1101 erase-flash
+esptool --chip esp32c3 erase-flash
 ```
 
 Flash micro python on esp32c3 board
 ```bash
-esptool --port /dev/cu.usbmodem1101 --baud 460800 write_flash 0 ESP32_GENERIC_C3-20251209-v1.27.0.bin
+esptool --baud 460800 write_flash 0 ESP32_GENERIC_C3-20251209-v1.27.0.bin
 ```
 
-Create needed directory
+Create needed directory and upload the libraries
 
 ```bash
 mpremote mkdir :libs
 mpremote mkdir :src
-```
-
-Copy lib
-```bash
 mpremote cp libs/* :libs/
 ```
 
@@ -67,7 +63,12 @@ mpremote cp src/* :src/
 
 Connect to device
 ```bash
-mpremote connect /dev/cu.usbmodem1101
+mpremote connect <port>
+```
+
+Helps command 
+```bash
+mpremote devs
 ```
 
 ## Build & Flash (binary version)

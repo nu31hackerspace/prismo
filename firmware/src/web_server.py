@@ -16,15 +16,10 @@ class WebServer:
             current_config = config.load_config()
             ssid = ""
             password = ""
-            device_mode = config.DEVICE_MODE
             
             if current_config:
                 ssid = current_config.get('ssid', '')
                 password = current_config.get('password', '')
-                device_mode = current_config.get('device_mode', config.DEVICE_MODE)
-
-            access_selected = "selected" if device_mode == 'ACCESS' else ""
-            machine_selected = "selected" if device_mode == 'MACHINE' else ""
 
             html = f"""
             <!DOCTYPE html>
@@ -44,10 +39,6 @@ class WebServer:
                 <form action="/configuration" method="post">
                     <input type="text" name="ssid" placeholder="WiFi SSID" value="{ssid}" required><br>
                     <input type="password" name="password" placeholder="Password" value="{password}" required><br>
-                    <select name="device_mode">
-                        <option value="ACCESS" {access_selected}>Access Control</option>
-                        <option value="MACHINE" {machine_selected}>Machine Control</option>
-                    </select><br>
                     <button type="submit">Apply</button>
                 </form>
                 
@@ -76,11 +67,10 @@ class WebServer:
                     
                     ssid = params.get('ssid')
                     password = params.get('password')
-                    device_mode = params.get('device_mode', config.DEVICE_MODE)
                     
                     if ssid:
-                        config.save_config(ssid, password, device_mode)
-                        print('ssid ', ssid, 'pass ', password, 'mode', device_mode)
+                        config.save_config(ssid, password)
+                        print('ssid ', ssid, 'pass ', password)
 
                         if self.on_new_config_callback:
                             self.on_new_config_callback()

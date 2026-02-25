@@ -5,9 +5,6 @@ AP_SSID = "00_prismo"
 HOSTNAME = "prismo"
 RUN_TIME_CONFIG_FILE = "config.json"
 
-DEVICE_MODE = 'ACCESS' 
-# DEVICE_MODE = 'MACHINE'
-
 SUCCESS_SIGNAL_DURATION = 5000 
 ERROR_SIGNAL_DURATION = 1000 
 
@@ -30,8 +27,8 @@ PIN_BUZZER = 0
 
 import json
 
-def save_config(ssid, password, device_mode=DEVICE_MODE):
-    config = {'ssid': ssid, 'password': password, 'device_mode': device_mode}
+def save_config(ssid, password):
+    config = {'ssid': ssid, 'password': password}
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(config, f)
 
