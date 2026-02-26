@@ -23,10 +23,10 @@ ui.ready_to_read()
 def on_key_read(uid):
     print("New UID:", uid)
     config.save_last_key(uid)
-    if (uid == 'e7c1b3d9'):
-        ui.error()
-    else:
+    if config.is_user_allowed(uid):
         ui.success()
+    else:
+        ui.error()
 
 print('Start reader...')
 reader.subscribe(on_key_read)

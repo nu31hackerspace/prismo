@@ -28,26 +28,22 @@ class ReaderUI:
 
     def success(self):
         color.set_sub_light_color(0x00FF00)
-        self._handle_access_success()
+        self.success_pin.on()
+        buzzer.play_success_sound()
+
+        utime.sleep_ms(config.SUCCESS_SIGNAL_DURATION)
+        self.success_pin.off()
         self.ready_to_read()
 
     def error(self):
+        self.error_pin.on()
         color.set_sub_light_color(0xFF0000)
         buzzer.play_error_sound()
         
-        self.error_pin.on()
         utime.sleep_ms(config.ERROR_SIGNAL_DURATION)
         self.error_pin.off()
 
         self.ready_to_read()
-
-    def _handle_access_success(self):
-        buzzer.play_success_sound()
-        
-        self.success_pin.on()
-        utime.sleep_ms(config.SUCCESS_SIGNAL_DURATION)
-        self.success_pin.off()
-        
 
     def _handle_machine_success(self):
         if self.machine_active:

@@ -36,6 +36,14 @@ def save_last_key(key):
 def get_last_key():
     return _last_key_id
 
+def is_user_allowed(uid):
+    cfg = load_config() or {}
+    users = cfg.get('allowed_users', [])
+    for user in users:
+        if user.get('uid') == uid:
+            return True
+    return False
+
 def add_user_to_white_list(username, uid):
     cfg = load_config() or {}
     users = cfg.get('allowed_users', [])
