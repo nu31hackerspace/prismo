@@ -37,7 +37,7 @@ Open your browser and navigate to:
 
 - **http://localhost:8080** (Recommended: Browser strictly limits Web Serial to "Secure Contexts", but localhost is an exception).
 
-In case you run the flasher on a remote machine, and you want to access it via `http://<remote-machine-ip>:8080`. You must add your host into chrome secure excption list here -> [chrome://flags/#unsafely-treat-insecure-origin-as-secure](chrome://flags/#unsafely-treat-insecure-origin-as-secure) and restart the browser. Add the full host with the schema and port
+In case you run the flasher on a remote machine, and you want to access it via `http://<remote-machine-ip>:8080`. You must add your host into chrome secure excption list here -> chrome://flags/#unsafely-treat-insecure-origin-as-secure and restart the browser. Add the full host with the schema and port
 
 5. **Stop the Container**
 ```bash

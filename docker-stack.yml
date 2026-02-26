@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+    app:
+        image: ghcr.io/${IMAGE_NAME}:${GIT_COMMIT_HASH}
+        deploy:
+            update_config:
+                order: start-first
+        networks:
+            - infra_reverse-proxy
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:80/"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+
+networks:
+    infra_reverse-proxy:
+        external: true

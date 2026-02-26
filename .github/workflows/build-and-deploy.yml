@@ -7,7 +7,10 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: prismo-web-flasher
+  IMAGE_NAME: nu31hackerspace/prismo-web-flasher
+  HOST: ${{ vars.HOST }}
+  SSH_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+  COMMIT_SHA: $${{ github.sha }}
 
 jobs:
   build-and-push-image:
@@ -58,3 +61,32 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           build-args: |
             GIT_COMMIT_SHA=${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - build-and-push-image
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create .env file for Docker Stack
+        run: |
+          echo "IMAGE_NAME='${{ env.IMAGE_NAME }}'" >> .env
+          echo "GIT_COMMIT_HASH='${{ env.COMMIT_SHA }}'" >> .env
+
+      - name: Setup docker remote context
+        uses: cssnr/stack-deploy-action@v1
+        with:
+          name: prismo-web-flasher
+          file: docker-stack.yml
+          host: ${{ env.HOST}}
+          port: 22
+          user: deploy
+          ssh_key: ${{ env.SSH_KEY }}
+          env_file: .env
+          detach: false
+          prune: true
+          resolve_image: 'always'
+          summary: true
