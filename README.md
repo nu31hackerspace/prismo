@@ -40,8 +40,9 @@ Before building more features, we wrote down what we want from this project.
 ## Project structure
 The repository is a monorepo. That means all components of the project live in one place.
 
-- `firmware/` – the software that runs on the Prismo device.This folder has its own README.md.
+- `firmware/` – the software that runs on the Prismo device. This folder has its own README.md.
 - `hardware/` – the hardware design files, such as KiCad schematics and PCB layout.
+- `web-flasher/` - the simple web app to flash the board with the firmware. This app is containerized and can be run locally or on a remote machine.
 
 ## Project CI
 The projec use github action as CI, the Ci build the '*.bin' file for the firmware. 
