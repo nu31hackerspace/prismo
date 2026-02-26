@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
     app:
-        image: ghcr.io/${IMAGE_NAME}:${GIT_COMMIT_HASH}
+        image: ghcr.io/${IMAGE_NAME}:${COMMIT_SHA}
         deploy:
             update_config:
                 order: start-first

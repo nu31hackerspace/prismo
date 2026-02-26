@@ -10,7 +10,8 @@ env:
   IMAGE_NAME: nu31hackerspace/prismo-web-flasher
   HOST: ${{ vars.HOST }}
   SSH_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
-  COMMIT_SHA: $${{ github.sha }}
+  COMMIT_SHA: ${{ github.sha }}
+  DEPLOY_USER: deploy
 
 jobs:
   build-and-push-image:
@@ -74,16 +75,16 @@ jobs:
       - name: Create .env file for Docker Stack
         run: |
           echo "IMAGE_NAME='${{ env.IMAGE_NAME }}'" >> .env
-          echo "GIT_COMMIT_HASH='${{ env.COMMIT_SHA }}'" >> .env
+          echo "COMMIT_SHA='${{ env.COMMIT_SHA }}'" >> .env
 
       - name: Setup docker remote context
         uses: cssnr/stack-deploy-action@v1
         with:
           name: prismo-web-flasher
-          file: docker-stack.yml
+          file: web-flasher/docker-stack.yml
           host: ${{ env.HOST}}
           port: 22
-          user: deploy
+          user: ${{ env.DEPLOY_USER }}
           ssh_key: ${{ env.SSH_KEY }}
           env_file: .env
           detach: false
