@@ -38,10 +38,13 @@ Before building more features, we wrote down what we want from this project.
 - Works well with AI tools
 
 ## Project structure
-his repository is a monorepo. That means all parts of the project live in one place.
+The repository is a monorepo. That means all components of the project live in one place.
 
 - `firmware/` – the software that runs on the Prismo device.This folder has its own README.md.
 - `hardware/` – the hardware design files, such as KiCad schematics and PCB layout.
 
 ## Project CI
 The projec use github action as CI, the Ci build the '*.bin' file for the firmware. 
+
+## The project stage
+⚠️⚠️⚠️ The project is in a pre-release stage, so any APIs or contracts may change in the future. Use the current version of the project at your own risk.
