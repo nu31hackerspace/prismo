@@ -9,9 +9,9 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: nu31hackerspace/prismo-web-flasher
   HOST: ${{ vars.HOST }}
-  SSH_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+  SSH_KEY: ${{ secrets.ROOT_SSH_PRIVATE_KEY }}
   COMMIT_SHA: ${{ github.sha }}
-  DEPLOY_USER: deploy
+  DEPLOY_USER: ${{ vars.USERNAME }}
 
 jobs:
   build-and-push-image:
