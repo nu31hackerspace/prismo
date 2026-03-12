@@ -36,6 +36,37 @@ firmware/
     └── microdot.py    # Lightweight HTTP server
 ```
 
+## Developer Feature Flags
+
+`src/config.py` contains compile-time flags for development. Set them before flashing or running via `mpremote`.
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `DEBUG` | `False` | Prints config on boot |
+| `QUICK_START` | `False` | Skips boot animation and startup sounds |
+| `MUTE_BUZZER` | `False` | Silences all buzzer output (success & error sounds) |
+
+**`MUTE_BUZZER`** is useful when iterating on firmware in a shared/quiet space — the board behaves identically (LED feedback, relay outputs, NFC reads) but produces no sound.
+
+> **Important:** Keep `MUTE_BUZZER=False` for production/release builds. The CI pipeline and the `web-flasher` binary are always built with `MUTE_BUZZER=False` so end users get full audio feedback.
+
+Example — enable silent mode for a dev session:
+```python
+# src/config.py
+MUTE_BUZZER = True
+```
+Then push to the device:
+```bash
+mpremote cp src/config.py :src/config.py + reset
+```
+
+> **Never commit dev flags as `True`.** A pre-commit hook and a CI gate both enforce this. Activate the hook once after cloning:
+> ```bash
+> git config core.hooksPath .githooks
+> ```
+
+---
+
 ## Development
 
 Erase board 

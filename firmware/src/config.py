@@ -1,5 +1,6 @@
 DEBUG=False
 QUICK_START=False
+MUTE_BUZZER=False
 
 AP_SSID = "00_prismo"
 HOSTNAME = "prismo"

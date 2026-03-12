@@ -1,6 +1,6 @@
 import utime
 from machine import Pin, PWM
-from src.config import PIN_BUZZER
+from src.config import PIN_BUZZER, MUTE_BUZZER
 
 NOTES = {
     'F3': 174,
@@ -27,11 +27,15 @@ def _play_tone(note_name, duration_ms):
     _buzzer.duty(0)
 
 def play_success_sound():
+    if MUTE_BUZZER:
+        return
     _play_tone('A5', 60)
     utime.sleep_ms(20)
     _play_tone('E6', 120)
 
 def play_error_sound():
+    if MUTE_BUZZER:
+        return
     _play_tone('F3', 200)
     utime.sleep_ms(20)
     _play_tone('F3', 200)

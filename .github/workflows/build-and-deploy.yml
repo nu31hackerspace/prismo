@@ -26,6 +26,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check dev flags are off
+        run: |
+          FAIL=0
+          for flag in DEBUG QUICK_START MUTE_BUZZER; do
+            if grep -qP "^${flag}\s*=\s*True" firmware/src/config.py; then
+              echo "ERROR: $flag is set to True in firmware/src/config.py — must be False for production builds"
+              FAIL=1
+            fi
+          done
+          exit $FAIL
+
       - name: Install System Dependencies
         run: sudo apt-get update && sudo apt-get install -y git wget flex bison gperf python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 

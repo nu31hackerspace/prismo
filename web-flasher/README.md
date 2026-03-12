@@ -10,7 +10,7 @@ This directory contains the web interface used to flash the generated Prismo fir
 
 The easiest way to test this locally is to use the Docker container which serves the website and the firmware using Caddy on port 80.
 
-1. **Copy the latest firmware binary**  
+1. **Copy the latest firmware binary**
    Before building the docker image, you must ensure the actual compiled `.bin` file is copied securely inside the `bin` directory (symlinks to the firmware folder will not work inside Docker).
 
 ```bash
@@ -19,12 +19,12 @@ mkdir -p bin
 cp ../firmware/dist/firmware.bin bin/
 ```
 
-2. **Build the Docker Image**  
+2. **Build the Docker Image**
 ```bash
 docker build -t prismo-web-flasher .
 ```
 
-3. **Run the Docker Container**  
+3. **Run the Docker Container**
 We will expose the internal port 80 to port 8080 on your host.
 ```bash
 docker rm -f web-flasher || true

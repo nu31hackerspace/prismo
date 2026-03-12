@@ -1,0 +1,14 @@
+#!/bin/sh
+# Prevent committing dev feature flags set to True in firmware/src/config.py
+
+CONFIG="firmware/src/config.py"
+FAIL=0
+
+for flag in DEBUG QUICK_START MUTE_BUZZER; do
+    if git diff --cached -- "$CONFIG" | grep -qP "^\+${flag}\s*=\s*True"; then
+        echo "ERROR: $flag is being committed as True in $CONFIG — reset it to False before committing"
+        FAIL=1
+    fi
+done
+
+exit $FAIL
