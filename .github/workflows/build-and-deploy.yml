@@ -11,7 +11,7 @@ env:
   HOST: ${{ vars.HOST }}
   SSH_KEY: ${{ secrets.ROOT_SSH_PRIVATE_KEY }}
   COMMIT_SHA: ${{ github.sha }}
-  DEPLOY_USER: ${{ vars.USERNAME }}
+  USERNAME: ${{ vars.USERNAME }}
 
 jobs:
   build-and-push-image:
@@ -93,7 +93,7 @@ jobs:
           file: web/docker-stack.yml
           host: ${{ env.HOST}}
           port: 22
-          user: ${{ env.DEPLOY_USER }}
+          user: ${{ env.USERNAME }}
           ssh_key: ${{ env.SSH_KEY }}
           env_file: .env
           detach: false

@@ -6,14 +6,21 @@ services:
     deploy:
       update_config:
         order: start-first
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      rollback_config:
+        order: start-first
     networks:
       - infra_reverse-proxy
     healthcheck:
-      test: ['CMD', 'curl', 'http://localhost:3000/']
-      interval: 30s
-      timeout: 10s
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/']
+      interval: 15s
+      timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 30s
 
 networks:
   infra_reverse-proxy:
