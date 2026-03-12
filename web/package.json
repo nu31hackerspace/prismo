@@ -18,6 +18,7 @@
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/vite": "^4.1.18",
+		"@types/qrcode": "^1.5.6",
 		"mdsvex": "^0.12.6",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
@@ -30,6 +31,7 @@
 	},
 	"dependencies": {
 		"@iconify/svelte": "^5.2.1",
-		"esptool-js": "^0.5.7"
+		"esptool-js": "^0.5.7",
+		"qrcode": "^1.5.4"
 	}
 }

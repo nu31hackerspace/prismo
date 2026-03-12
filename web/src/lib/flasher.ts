@@ -13,6 +13,8 @@ export type FlasherState =
 	| 'unplug'
 	| 'replug'
 	| 'complete'
+	| 'wifi_connect'
+	| 'open_settings'
 	| 'error';
 
 export interface FlasherLog {
