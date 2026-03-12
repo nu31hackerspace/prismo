@@ -71,6 +71,12 @@
 			errorMessage = '';
 			progress = 0;
 			await flashFirmware(esploader, callbacks);
+			// After flashing, disconnect cleanly so the port is free to be unplugged
+			if (transport) {
+				try { await disconnectDevice(transport); } catch { /* ignore */ }
+			}
+			esploader = null;
+			transport = null;
 		} catch (err) {
 			flasherState = 'error';
 			errorMessage = err instanceof Error ? err.message : 'Failed to flash';
@@ -95,6 +101,35 @@
 		errorMessage = '';
 	}
 
+	// Detect USB unplug / replug after flashing
+	$effect(() => {
+		if (flasherState !== 'unplug' && flasherState !== 'replug') return;
+
+		function onDisconnect() {
+			if (flasherState === 'unplug') flasherState = 'replug';
+		}
+
+		function onConnect() {
+			if (flasherState === 'replug') flasherState = 'complete';
+		}
+
+		navigator.serial.addEventListener('disconnect', onDisconnect);
+		navigator.serial.addEventListener('connect', onConnect);
+
+		return () => {
+			navigator.serial.removeEventListener('disconnect', onDisconnect);
+			navigator.serial.removeEventListener('connect', onConnect);
+		};
+	});
+
+	function handleStartOver() {
+		flasherState = 'idle';
+		chipInfo = null;
+		progress = 0;
+		logs = [];
+		errorMessage = '';
+	}
+
 	const stateConfig: Record<FlasherState, { icon: string; label: string; color: string }> = {
 		idle: { icon: 'mdi:usb-port', label: 'Ready to connect', color: 'text-label-tertiary' },
 		connecting: {
@@ -108,9 +143,45 @@
 			color: 'text-accent-primary'
 		},
 		flashing: { icon: 'mdi:flash', label: 'Flashing firmware...', color: 'text-label-primary' },
-		done: { icon: 'mdi:check-circle', label: 'Flash complete!', color: 'text-accent-primary' },
+		unplug: { icon: 'mdi:usb-port', label: 'Unplug USB cable', color: 'text-label-primary' },
+		replug: { icon: 'mdi:usb-port', label: 'Plug USB back in', color: 'text-accent-primary' },
+		complete: { icon: 'mdi:check-circle', label: 'Device ready!', color: 'text-accent-primary' },
 		error: { icon: 'mdi:alert-circle', label: 'Error occurred', color: 'text-error' }
 	};
+
+	// Steps shown after flashing completes
+	type Step = { label: string; detail: string; state: 'done' | 'active' | 'waiting' };
+	const postFlashSteps = $derived<Step[]>([
+		{
+			label: 'Firmware flashed',
+			detail: 'Firmware was written successfully.',
+			state: 'done'
+		},
+		{
+			label: 'Unplug USB cable',
+			detail: 'Remove the USB cable from your Prismo board.',
+			state: flasherState === 'unplug' ? 'active' : 'done'
+		},
+		{
+			label: 'Plug USB back in',
+			detail: 'Reconnect the USB cable to power the board.',
+			state:
+				flasherState === 'unplug'
+					? 'waiting'
+					: flasherState === 'replug'
+						? 'active'
+						: 'done'
+		},
+		{
+			label: 'Device is ready',
+			detail: 'Prismo is running the new firmware.',
+			state: flasherState === 'complete' ? 'done' : 'waiting'
+		}
+	]);
+
+	const isPostFlash = $derived(
+		flasherState === 'unplug' || flasherState === 'replug' || flasherState === 'complete'
+	);
 </script>
 
 <div class="min-h-screen bg-background-primary">
@@ -159,6 +230,58 @@
 					Ensure your ESP32-C3 board is connected via USB.
 				</p>
 			</div>
+		{:else if isPostFlash}
+			<!-- Post-flash step-by-step guide -->
+			<div class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-8">
+				<h2 class="mb-6 text-center font-display text-lg font-bold text-label-primary">
+					{flasherState === 'complete' ? 'All done!' : 'One more step…'}
+				</h2>
+
+				<ol class="space-y-4">
+					{#each postFlashSteps as step, i}
+						<li class="flex items-start gap-4">
+							<!-- Step indicator -->
+							<div class="flex-shrink-0 pt-0.5">
+								{#if step.state === 'done'}
+									<div class="flex h-8 w-8 items-center justify-center rounded-full bg-accent-primary">
+										<Icon icon="mdi:check" class="h-4 w-4 text-background-primary" />
+									</div>
+								{:else if step.state === 'active'}
+									<div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-accent-primary bg-background-primary">
+										<Icon icon="mdi:loading" class="h-4 w-4 animate-spin text-accent-primary" />
+									</div>
+								{:else}
+									<div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-separator-secondary bg-background-primary">
+										<span class="font-display text-xs font-bold text-label-tertiary">{i + 1}</span>
+									</div>
+								{/if}
+							</div>
+
+							<!-- Step content -->
+							<div class="flex-1 pb-4 {i < postFlashSteps.length - 1 ? 'border-b border-separator-secondary' : ''}">
+								<p class="font-display text-sm font-bold {step.state === 'waiting' ? 'text-label-tertiary' : 'text-label-primary'}">
+									{step.label}
+								</p>
+								<p class="mt-0.5 text-xs {step.state === 'waiting' ? 'text-label-tertiary' : 'text-label-secondary'}">
+									{step.detail}
+								</p>
+							</div>
+						</li>
+					{/each}
+				</ol>
+
+				{#if flasherState === 'complete'}
+					<div class="mt-6 flex justify-center">
+						<MainButton
+							buttonStyle="primary"
+							size="L"
+							icon="mdi:refresh"
+							label="Flash Another"
+							onclick={handleStartOver}
+						/>
+					</div>
+				{/if}
+			</div>
 		{:else}
 			<!-- Main card -->
 			<div class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-8">
@@ -203,7 +326,7 @@
 				{/if}
 
 				<!-- Progress bar -->
-				{#if flasherState === 'flashing' || flasherState === 'done'}
+				{#if flasherState === 'flashing'}
 					<div class="mb-6">
 						<div class="mb-2 flex items-center justify-between">
 							<span class="font-display text-xs font-bold text-label-secondary">Progress</span>
@@ -250,14 +373,6 @@
 							size="L"
 							icon="mdi:close"
 							label="Disconnect"
-							onclick={handleDisconnect}
-						/>
-					{:else if flasherState === 'done'}
-						<MainButton
-							buttonStyle="primary"
-							size="L"
-							icon="mdi:check"
-							label="Done"
 							onclick={handleDisconnect}
 						/>
 					{/if}

@@ -5,7 +5,15 @@ const FIRMWARE_URL = '/firmware/firmware.bin';
 const BAUD_RATE = 115200;
 const ROM_BAUD_RATE = 115200;
 
-export type FlasherState = 'idle' | 'connecting' | 'connected' | 'flashing' | 'done' | 'error';
+export type FlasherState =
+	| 'idle'
+	| 'connecting'
+	| 'connected'
+	| 'flashing'
+	| 'unplug'
+	| 'replug'
+	| 'complete'
+	| 'error';
 
 export interface FlasherLog {
 	type: 'info' | 'error' | 'debug';
@@ -115,7 +123,7 @@ export async function flashFirmware(
 
 	callbacks.onLog(createLog('info', 'Firmware flashed successfully!'));
 	callbacks.onProgress(100);
-	callbacks.onStateChange('done');
+	callbacks.onStateChange('unplug');
 }
 
 export async function disconnectDevice(transport: Transport): Promise<void> {
