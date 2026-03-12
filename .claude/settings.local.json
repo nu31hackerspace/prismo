@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /Users/volodymyrs/Desktop/Github/prismo/web && npm install qrcode && npm install --save-dev @types/qrcode)"
+    ]
+  }
+}
