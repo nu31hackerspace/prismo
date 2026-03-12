@@ -50,7 +50,8 @@
 		{
 			icon: 'mdi:flash',
 			title: 'Flash',
-			description: 'Flash the firmware to your ESP32-C3 board directly from the browser using our web flasher.'
+			description:
+				'Flash the firmware to your ESP32-C3 board directly from the browser using our web flasher.'
 		},
 		{
 			icon: 'mdi:wifi-cog',
@@ -76,13 +77,7 @@
 			prismo
 		</a>
 		<div class="flex items-center gap-3">
-			<MainButton
-				buttonStyle="ghost"
-				size="S"
-				icon="mdi:github"
-				label="GitHub"
-				link={githubUrl}
-			/>
+			<MainButton buttonStyle="ghost" size="S" icon="mdi:github" label="GitHub" link={githubUrl} />
 		</div>
 	</nav>
 </header>
@@ -114,21 +109,14 @@
 		</h1>
 
 		<p class="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-label-secondary">
-			Prismo is a simple NFC/RFID device that lets you control access to doors and machines.
-			Easy to build, free to use, and friendly for beginners.
+			Prismo is a simple NFC/RFID device that lets you control access to doors and machines. Easy to
+			build, free to use, and friendly for beginners.
 		</p>
 
 		<div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
 			<MainButton
 				buttonStyle="primary"
-				size="L"
-				icon="mdi:github"
-				label="Get Started"
-				link={githubUrl}
-			/>
-			<MainButton
-				buttonStyle="secondary"
-				size="L"
+				size="XL"
 				icon="mdi:flash"
 				label="Flash Firmware"
 				link={flasherUrl}
@@ -190,9 +178,7 @@
 <!-- CTA -->
 <section class="py-20">
 	<div class="mx-auto max-w-3xl px-6 text-center">
-		<div
-			class="rounded-3xl border border-separator-secondary bg-fill-tertiary p-12 md:p-16"
-		>
+		<div class="rounded-3xl border border-separator-secondary bg-fill-tertiary p-12 md:p-16">
 			<Icon icon="mdi:open-source-initiative" class="mx-auto mb-6 h-12 w-12 text-label-primary" />
 			<h2
 				class="mb-4 font-display text-3xl font-bold tracking-tight text-label-primary md:text-4xl"
@@ -218,9 +204,7 @@
 <footer class="border-t border-separator-secondary py-8">
 	<div class="mx-auto max-w-6xl px-6">
 		<div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
-			<span class="font-display text-sm font-bold text-label-tertiary">
-				prismo
-			</span>
+			<span class="font-display text-sm font-bold text-label-tertiary"> prismo </span>
 			<div class="flex items-center gap-6">
 				<a
 					href={githubUrl}

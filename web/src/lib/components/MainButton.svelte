@@ -4,7 +4,7 @@
 
 	interface Props {
 		label?: string;
-		size?: 'S' | 'M' | 'L';
+		size?: 'S' | 'M' | 'L' | 'XL';
 		buttonStyle?: 'primary' | 'secondary' | 'ghost';
 		state?: 'default' | 'disabled';
 		link?: string;
@@ -27,13 +27,15 @@
 	const sizeClasses: Record<string, string> = {
 		S: 'px-2 py-2 text-xs font-bold',
 		M: 'px-4 py-3 text-sm font-bold',
-		L: 'px-6 py-4 text-base font-bold'
+		L: 'px-6 py-4 text-base font-bold',
+		XL: 'px-8 py-5 text-lg font-bold'
 	};
 
 	const iconSizeClasses: Record<string, string> = {
 		S: 'w-4 h-4',
 		M: 'w-6 h-6',
-		L: 'w-8 h-8'
+		L: 'w-8 h-8',
+		XL: 'w-10 h-10'
 	};
 
 	const variantClasses: Record<string, string> = {

@@ -23,6 +23,8 @@
 	let progress: number = $state(0);
 	let chipInfo: FlasherInfo | null = $state(null);
 	let errorMessage: string = $state('');
+	let replugCountdown: number = $state(0);
+	let bootCountdown: number = $state(0);
 
 	let esploader: ESPLoader | null = null;
 	let transport: Transport | null = null;
@@ -111,7 +113,7 @@
 			if (flasherState === 'unplug') flasherState = 'replug';
 		}
 		function onConnect() {
-			if (flasherState === 'replug') flasherState = 'complete';
+			if (flasherState === 'replug' && replugCountdown <= 0) flasherState = 'booting';
 		}
 
 		navigator.serial.addEventListener('disconnect', onDisconnect);
@@ -120,6 +122,35 @@
 			navigator.serial.removeEventListener('disconnect', onDisconnect);
 			navigator.serial.removeEventListener('connect', onConnect);
 		};
+	});
+
+	// Countdown runs independently so the effect cleanup can't kill it mid-tick
+	$effect(() => {
+		if (flasherState !== 'replug') return;
+
+		replugCountdown = 10;
+		const interval = setInterval(() => {
+			replugCountdown -= 1;
+			if (replugCountdown <= 0) clearInterval(interval);
+		}, 1000);
+
+		return () => clearInterval(interval);
+	});
+
+	// Boot countdown after USB is plugged back in
+	$effect(() => {
+		if (flasherState !== 'booting') return;
+
+		bootCountdown = 10;
+		const interval = setInterval(() => {
+			bootCountdown -= 1;
+			if (bootCountdown <= 0) {
+				clearInterval(interval);
+				flasherState = 'complete';
+			}
+		}, 1000);
+
+		return () => clearInterval(interval);
 	});
 
 	function handleStartOver() {
@@ -137,6 +168,7 @@
 		flashing: { icon: 'mdi:flash', label: 'Flashing firmware...', color: 'text-label-primary' },
 		unplug: { icon: 'mdi:usb-port', label: 'Unplug USB cable', color: 'text-label-primary' },
 		replug: { icon: 'mdi:usb-port', label: 'Plug USB back in', color: 'text-accent-primary' },
+		booting: { icon: 'mdi:loading', label: 'Device booting…', color: 'text-label-secondary' },
 		complete: { icon: 'mdi:check-circle', label: 'Device ready!', color: 'text-accent-primary' },
 		wifi_connect: { icon: 'mdi:wifi', label: 'Connect to board WiFi', color: 'text-accent-primary' },
 		open_settings: { icon: 'mdi:cog', label: 'Open board settings', color: 'text-accent-primary' },
@@ -157,22 +189,47 @@
 			state: flasherState === 'unplug' ? 'active' : 'done'
 		},
 		{
+			label: replugCountdown > 0 ? `Wait ${replugCountdown}s…` : 'Wait 10 seconds',
+			detail: 'Give the board time to fully power down before restarting.',
+			state:
+				flasherState === 'unplug'
+					? 'waiting'
+					: replugCountdown > 0
+						? 'active'
+						: 'done'
+		},
+		{
 			label: 'Plug USB back in',
 			detail: 'Reconnect the USB cable to power the board.',
-			state: flasherState === 'unplug' ? 'waiting' : flasherState === 'replug' ? 'active' : 'done'
+			state:
+				flasherState === 'unplug' || replugCountdown > 0
+					? 'waiting'
+					: flasherState === 'replug'
+						? 'active'
+						: 'done'
+		},
+		{
+			label: bootCountdown > 0 ? `Wait ${bootCountdown}s…` : 'Wait 10 seconds',
+			detail: 'Give the board time to fully boot the new firmware.',
+			state:
+				flasherState === 'unplug' || replugCountdown > 0 || flasherState === 'replug'
+					? 'waiting'
+					: flasherState === 'booting'
+						? 'active'
+						: 'done'
 		},
 		{
 			label: 'Device is ready',
 			detail: 'Prismo is running the new firmware.',
-			state:
-				flasherState === 'unplug' || flasherState === 'replug'
-					? 'waiting'
-					: 'done'
+			state: flasherState === 'complete' ? 'done' : 'waiting'
 		}
 	]);
 
 	const isPostFlashStep = $derived(
-		flasherState === 'unplug' || flasherState === 'replug' || flasherState === 'complete'
+		flasherState === 'unplug' ||
+		flasherState === 'replug' ||
+		flasherState === 'booting' ||
+		flasherState === 'complete'
 	);
 </script>
 
@@ -226,6 +283,16 @@
 								{#if step.state === 'done'}
 									<div class="flex h-8 w-8 items-center justify-center rounded-full bg-accent-primary">
 										<Icon icon="mdi:check" class="h-4 w-4 text-background-primary" />
+									</div>
+								{:else if step.state === 'active' && i === 2}
+									<!-- Power-down countdown: show the number -->
+									<div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-accent-primary bg-background-primary">
+										<span class="font-display text-xs font-bold text-accent-primary">{replugCountdown}</span>
+									</div>
+								{:else if step.state === 'active' && i === 4}
+									<!-- Boot countdown: show the number -->
+									<div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-accent-primary bg-background-primary">
+										<span class="font-display text-xs font-bold text-accent-primary">{bootCountdown}</span>
 									</div>
 								{:else if step.state === 'active'}
 									<div class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-accent-primary bg-background-primary">
