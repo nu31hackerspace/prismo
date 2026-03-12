@@ -50,10 +50,8 @@ jobs:
           name: prismo-firmware.bin
           path: firmware/dist/firmware.bin
 
-      - name: Prepare Web Flasher
-        run: |
-          mkdir -p web-flasher/bin
-          cp firmware/dist/firmware.bin web-flasher/bin/firmware.bin
+      - name: Prepare Web App
+        run: cp firmware/dist/firmware.bin web/static/firmware/firmware.bin
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
@@ -66,7 +64,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: web-flasher
+          context: web
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -92,7 +90,7 @@ jobs:
         uses: cssnr/stack-deploy-action@v1
         with:
           name: prismo-web-flasher
-          file: web-flasher/docker-stack.yml
+          file: web/docker-stack.yml
           host: ${{ env.HOST}}
           port: 22
           user: ${{ env.DEPLOY_USER }}
