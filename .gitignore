@@ -2,3 +2,4 @@
 .mpy-workbench
 __pycache__
 
+.claude/settings.local.json
