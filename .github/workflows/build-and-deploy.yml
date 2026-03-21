@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build MicroPython Firmware
 
 on:
   push:
@@ -15,26 +15,14 @@ env:
   PASSWORD: ${{ secrets.PASSWORD }}
 
 jobs:
-  detect-changes:
+  build-and-push-image:
     runs-on: ubuntu-latest
-    outputs:
-      firmware: ${{ steps.filter.outputs.firmware }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
 
-      - name: Detect changed paths
-        uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            firmware:
-              - 'firmware/**'
-
-  build-firmware:
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    if: needs.detect-changes.outputs.firmware == 'true'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,28 +51,8 @@ jobs:
           name: prismo-firmware.bin
           path: firmware/dist/firmware.bin
 
-  build-and-push-image:
-    runs-on: ubuntu-latest
-    needs:
-      - detect-changes
-      - build-firmware
-    if: always() && !failure() && !cancelled()
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download firmware artifact
-        if: needs.detect-changes.outputs.firmware == 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: prismo-firmware.bin
-          path: web/static/firmware/
+      - name: Prepare Web App
+        run: cp firmware/dist/firmware.bin web/static/firmware/firmware.bin
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
