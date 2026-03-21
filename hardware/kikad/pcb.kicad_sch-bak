@@ -3921,6 +3921,80 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:Conn_01x04_Pin")
+		(at 43.18 87.63 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "8c38ccff-6972-4052-b4f9-98a44a2c3c51")
+		(property "Reference" "J3"
+			(at 43.815 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_01x04_Pin"
+			(at 43.815 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 43.18 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 43.18 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 43.18 87.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f72f209c-f40a-4337-a2c0-f5ea14e67ece")
+		)
+		(pin "2"
+			(uuid "a83c8230-3706-4744-a18b-8d317a41c944")
+		)
+		(pin "3"
+			(uuid "968bd34a-c9ce-4af4-9be2-204d2119de0b")
+		)
+		(pin "4"
+			(uuid "52501340-f85e-49a3-937f-37b9eafca19a")
+		)
+		(instances
+			(project ""
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "J3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 228.6 71.12 180)
 		(unit 1)
@@ -4826,80 +4900,6 @@
 			(project ""
 				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
 					(reference "D1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Conn_01x04_Pin")
-		(at 43.18 87.63 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f56ed645-dcac-49ae-a9cf-0ed8405d4f75")
-		(property "Reference" "J1"
-			(at 43.815 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Conn_01x04_Pin"
-			(at 43.815 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_Samtec_HPM_THT:Samtec_HPM-04-05-x-S_Straight_1x04_Pitch5.08mm"
-			(at 43.18 87.63 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 43.18 87.63 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x04, script generated"
-			(at 43.18 87.63 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "c3c6f450-4da9-4fd3-bd67-4bb384c255d2")
-		)
-		(pin "1"
-			(uuid "75fca6b5-70a9-4529-bb17-65abeef707c1")
-		)
-		(pin "3"
-			(uuid "c7af400a-56a9-4cda-856e-1e47ec839ecf")
-		)
-		(pin "4"
-			(uuid "3d449053-6a2f-4878-8a89-d0e9ff897f4d")
-		)
-		(instances
-			(project ""
-				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
-					(reference "J1")
 					(unit 1)
 				)
 			)

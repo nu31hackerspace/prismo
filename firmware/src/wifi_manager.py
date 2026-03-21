@@ -24,7 +24,7 @@ class WiFiManager:
         gc.collect()
         wlan_ap = network.WLAN(network.AP_IF)
         wlan_ap.active(True)
-        wlan_ap.config(txpower=8.5, essid=config.AP_SSID, password="")
+        wlan_ap.config(txpower=8.5, essid=config.get_ap_ssid(), password="")
         
         try:
             wlan_ap.config(hostname=hostname)

@@ -27,6 +27,7 @@ export interface FlasherLog {
 export interface FlasherInfo {
 	chipName: string;
 	chipId: string;
+	macAddress?: string;
 }
 
 export interface FlasherCallbacks {
@@ -84,7 +85,15 @@ export async function connectToDevice(callbacks: FlasherCallbacks): Promise<{
 	const chipId = await esploader.chip.getChipDescription(esploader);
 	callbacks.onLog(createLog('info', `Chip ID: ${chipId}`));
 
-	callbacks.onChipInfo({ chipName, chipId });
+	let macAddress: string | undefined;
+	try {
+		macAddress = await esploader.chip.readMac(esploader);
+		callbacks.onLog(createLog('info', `MAC: ${macAddress}`));
+	} catch {
+		// MAC reading not critical, proceed without it
+	}
+
+	callbacks.onChipInfo({ chipName, chipId, macAddress });
 	callbacks.onStateChange('connected');
 
 	return { esploader, transport };

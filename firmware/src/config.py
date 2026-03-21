@@ -2,9 +2,16 @@ DEBUG=False
 QUICK_START=False
 MUTE_BUZZER=False
 
-AP_SSID = "00_prismo"
-HOSTNAME = "prismo"
 RUN_TIME_CONFIG_FILE = "config.json"
+
+import machine
+import ubinascii
+
+def get_mac_suffix():
+    return ubinascii.hexlify(machine.unique_id()).decode().upper()[-6:]
+
+def get_ap_ssid():
+    return "prismo_" + get_mac_suffix()
 
 SUCCESS_SIGNAL_DURATION = 5000 
 ERROR_SIGNAL_DURATION = 1000 
@@ -74,9 +81,7 @@ def get_hostname():
     cfg = load_config()
     if cfg and cfg.get('hostname'):
         return cfg['hostname']
-    return HOSTNAME
-
-
+    return "prismo-" + get_mac_suffix().lower()
 
 if DEBUG:
     print('[CONFIG] Debug mode')

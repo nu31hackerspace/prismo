@@ -13,15 +13,24 @@
 	} from '$lib/flasher';
 	import type { ESPLoader, Transport } from 'esptool-js';
 
-	const PRISMO_SSID = '00_prismo';
-	const PRISMO_URL = 'http://prismo.local';
-	// WiFi QR format: no password, no encryption
-	const WIFI_QR = `WIFI:T:nopass;S:${PRISMO_SSID};;`;
-
 	let flasherState: FlasherState = $state('idle');
 	let logs: FlasherLog[] = $state([]);
 	let progress: number = $state(0);
 	let chipInfo: FlasherInfo | null = $state(null);
+
+	function macSuffix(mac: string): string {
+		return mac.replace(/:/g, '').slice(-6).toUpperCase();
+	}
+
+	const prismoSsid = $derived(
+		chipInfo?.macAddress ? `prismo_${macSuffix(chipInfo.macAddress)}` : 'prismo_XXXXXX'
+	);
+	const prismoUrl = $derived(
+		chipInfo?.macAddress
+			? `http://prismo-${macSuffix(chipInfo.macAddress).toLowerCase()}.local`
+			: 'http://prismo.local'
+	);
+	const wifiQr = $derived(`WIFI:T:nopass;S:${prismoSsid};;`);
 	let errorMessage: string = $state('');
 	let replugCountdown: number = $state(0);
 	let bootCountdown: number = $state(0);
@@ -344,11 +353,11 @@
 
 				<div class="mb-6 flex flex-col items-center gap-4">
 					<div class="rounded-2xl border border-separator-secondary bg-background-primary p-4">
-						<QrCode value={WIFI_QR} size={200} />
+						<QrCode value={wifiQr} size={200} />
 					</div>
 					<div class="text-center">
 						<p class="font-display text-sm font-bold text-label-primary">
-							Network: <span class="text-accent-primary">{PRISMO_SSID}</span>
+							Network: <span class="text-accent-primary">{prismoSsid}</span>
 						</p>
 						<p class="mt-1 text-xs text-label-secondary">No password required</p>
 					</div>
@@ -356,7 +365,7 @@
 
 				<p class="mb-6 text-center text-sm text-label-secondary">
 					Point your phone camera at the QR code to connect to the Prismo access point, or search
-					for <strong>{PRISMO_SSID}</strong> in your WiFi settings.
+					for <strong>{prismoSsid}</strong> in your WiFi settings.
 				</p>
 
 				<div class="flex justify-center">
@@ -385,14 +394,14 @@
 
 				<div class="mb-6 flex flex-col items-center gap-4">
 					<div class="rounded-2xl border border-separator-secondary bg-background-primary p-4">
-						<QrCode value={PRISMO_URL} size={200} />
+						<QrCode value={prismoUrl} size={200} />
 					</div>
 					<div class="text-center">
 						<p class="font-display text-sm font-bold text-label-primary">
-							<span class="text-accent-primary">{PRISMO_URL}</span>
+							<span class="text-accent-primary">{prismoUrl}</span>
 						</p>
 						<p class="mt-1 text-xs text-label-secondary">
-							Make sure your phone is still connected to <strong>{PRISMO_SSID}</strong>
+							Make sure your phone is still connected to <strong>{prismoSsid}</strong>
 						</p>
 					</div>
 				</div>
