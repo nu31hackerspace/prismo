@@ -13,8 +13,12 @@ services:
         max_attempts: 3
       rollback_config:
         order: start-first
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - ORIGIN=${ORIGIN}
     networks:
       - infra_reverse-proxy
+      - infra_postgres-net
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3000/']
       interval: 15s
@@ -24,4 +28,6 @@ services:
 
 networks:
   infra_reverse-proxy:
+    external: true
+  infra_postgres-net:
     external: true

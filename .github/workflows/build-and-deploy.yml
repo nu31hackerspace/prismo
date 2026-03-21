@@ -12,6 +12,7 @@ env:
   SSH_KEY: ${{ secrets.ROOT_SSH_PRIVATE_KEY }}
   COMMIT_SHA: ${{ github.sha }}
   USERNAME: ${{ vars.USERNAME }}
+  PASSWORD: ${{ secrets.PASSWORD }}
 
 jobs:
   build-and-push-image:
@@ -85,6 +86,8 @@ jobs:
         run: |
           echo "IMAGE_NAME='${{ env.IMAGE_NAME }}'" >> .env
           echo "COMMIT_SHA='${{ env.COMMIT_SHA }}'" >> .env
+          echo "DATABASE_URL='postgres://${{ env.USERNAME }}:${{ env.PASSWORD }}@postgres-1:5432/prismo'" >> .env
+          echo "ORIGIN='https://prismo.nu31.space'" >> .env
 
       - name: Setup docker remote context
         uses: cssnr/stack-deploy-action@v1

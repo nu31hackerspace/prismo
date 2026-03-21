@@ -1,8 +1,14 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { afterNavigate } from '$app/navigation';
+	import { trackEvent } from '$lib/client/tracking';
 
 	let { children } = $props();
+
+	afterNavigate(() => {
+		trackEvent('page_view', undefined, { url: window.location.pathname });
+	});
 </script>
 
 <svelte:head>
