@@ -13,6 +13,12 @@ services:
     networks:
       - infra_reverse-proxy
       - infra_postgres-net
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 15s
+      timeout: 30s
+      retries: 4
+      start_period: 60s
 
 networks:
   infra_reverse-proxy:
