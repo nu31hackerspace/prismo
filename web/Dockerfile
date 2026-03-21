@@ -5,20 +5,23 @@ RUN npm ci
 
 COPY . .
 RUN npm run build
+RUN npx drizzle-kit generate
 
 FROM node:22-alpine
 WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=3000
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/drizzle.config.ts ./
-COPY --from=builder /app/src/lib/server/db/schema.ts ./src/lib/server/db/schema.ts
 
-RUN npm ci --omit=dev && npm install drizzle-kit tsx dotenv && apk add --no-cache curl
+ENV NODE_ENV=production
+
+COPY --from=builder /app/package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/src/lib/server/db/migrate.ts ./src/lib/server/db/migrate.ts
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=${COMMIT_SHA}
 
 EXPOSE 3000
-CMD ./node_modules/.bin/drizzle-kit push && node build
+
+CMD npm run db:migrate && node build

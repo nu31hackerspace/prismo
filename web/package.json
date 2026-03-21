@@ -13,6 +13,7 @@
 		"lint": "prettier --check .",
 		"format": "prettier --write .",
 		"db:push": "drizzle-kit push",
+		"db:migrate": "tsx src/lib/server/db/migrate.ts",
 		"db:generate": "drizzle-kit generate",
 		"db:studio": "drizzle-kit studio"
 	},
@@ -22,7 +23,6 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/qrcode": "^1.5.6",
-		"dotenv": "^17.3.1",
 		"drizzle-kit": "^0.31.10",
 		"mdsvex": "^0.12.6",
 		"prettier": "^3.8.1",
@@ -31,15 +31,16 @@
 		"svelte": "^5.51.0",
 		"svelte-check": "^4.4.2",
 		"tailwindcss": "^4.1.18",
-		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
 		"@iconify/svelte": "^5.2.1",
+		"dotenv": "^17.3.1",
 		"drizzle-orm": "^0.45.1",
 		"esptool-js": "^0.5.7",
 		"postgres": "^3.4.8",
-		"qrcode": "^1.5.4"
+		"qrcode": "^1.5.4",
+		"tsx": "^4.21.0"
 	}
 }
