@@ -17,5 +17,8 @@ COPY --from=builder /app/src/lib/server/db/schema.ts ./src/lib/server/db/schema.
 
 RUN npm ci --omit=dev && npm install drizzle-kit tsx dotenv && apk add --no-cache curl
 
+ARG COMMIT_SHA
+ENV COMMIT_SHA=${COMMIT_SHA}
+
 EXPOSE 3000
 CMD ./node_modules/.bin/drizzle-kit push && node build

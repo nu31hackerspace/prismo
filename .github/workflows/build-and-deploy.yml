@@ -92,15 +92,14 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
           build-args: |
-            GIT_COMMIT_SHA=${{ github.sha }}
+            COMMIT_SHA=${{ env.COMMIT_SHA }}
 
   deploy:
     runs-on: ubuntu-latest
     needs:
       - build-and-push-image
-    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
