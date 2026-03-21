@@ -6,6 +6,7 @@ RUN_TIME_CONFIG_FILE = "config.json"
 
 import machine
 import ubinascii
+from src import health_log
 
 def get_mac_suffix():
     return ubinascii.hexlify(machine.unique_id()).decode().upper()[-6:]
@@ -84,6 +85,4 @@ def get_hostname():
     return "prismo-" + get_mac_suffix().lower()
 
 if DEBUG:
-    print('[CONFIG] Debug mode')
-    print('Print configuration')
-    print(load_config())
+    health_log.write_info("Config: debug mode", config=str(load_config()))

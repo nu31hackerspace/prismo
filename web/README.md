@@ -36,6 +36,42 @@ npm run format  # Prettier format
 
 > **Note:** The `/flasher` route uses the Web Serial API, which requires a [Secure Context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). `localhost` qualifies as a secure context. If running on a remote machine, add the full origin (e.g. `http://<ip>:5173`) to `chrome://flags/#unsafely-treat-insecure-origin-as-secure` and restart the browser.
 
+### Local Infrastructure (Database & pgAdmin)
+
+For backend features, you will need the local database running. We use a local Docker stack for this.
+
+1. **Initialize Docker Swarm** (Required for the `overlay` network):
+
+```sh
+docker swarm init
+```
+
+_(If already initialized, you can skip this step.)_
+
+2. **Deploy the Local Infrastructure**:
+
+```sh
+docker stack deploy -c docker-stack.local.yml prismo_local
+```
+
+3. **Database Configuration**:
+   Before starting your local dev server, provide the database connection string and push the initially created schema:
+
+```sh
+export DATABASE_URL="postgresql://postgres:password@localhost:5432/prismo"
+npm run db:push
+npm run dev
+```
+
+_(You can also use `npm run db:studio` to view and manage data from Drizzle Studio)._
+
+4. **Accessing pgAdmin**:
+
+- Open **http://localhost:5050**
+- Email: `admin@prismo.local`
+- Password: `admin`
+  _(When registering a new server in pgAdmin, use `db` as the Host name/address, `postgres` as username, and `password` as password)._
+
 ## Building
 
 To create a production version of your app:

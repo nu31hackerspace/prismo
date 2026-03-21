@@ -2,6 +2,7 @@ import network
 import time
 import gc
 from src import config
+from src import health_log
 from src.mdns_server import MDNSServer
 from src.dns_server import DNSServer
 from src.web_server import WebServer
@@ -15,7 +16,7 @@ class WiFiManager:
         self.on_ap_start_callback = on_ap_start_callback
 
     def start_ap_mode(self):
-        print("Starting AP Mode...")
+        health_log.write_info("Starting AP mode")
         if self.on_ap_start_callback:
             self.on_ap_start_callback()
 
@@ -33,7 +34,7 @@ class WiFiManager:
             pass
         
         ip = wlan_ap.ifconfig()[0]
-        print("AP Started. IP:", ip)
+        health_log.write_info("AP started", ip=ip)
         
         # Start DNS Server
         self.dns_server = DNSServer(ip)
@@ -56,7 +57,7 @@ class WiFiManager:
         hostname = config.get_hostname()
 
         if not wifi_config.has_wifi():
-            print("No WiFi configured. Starting AP.")
+            health_log.write_info("No WiFi configured, starting AP")
             self.start_ap_mode()
             return
 
@@ -72,7 +73,7 @@ class WiFiManager:
 
         ssid, password = wifi_config.get_wifi()
         
-        print(f"Connecting to {ssid}...")
+        health_log.write_info("Connecting to WiFi", ssid=ssid)
         wlan_sta.connect(ssid, password)
 
         # Wait for connection
@@ -85,10 +86,9 @@ class WiFiManager:
 
         if wlan_sta.isconnected():
             ip = wlan_sta.ifconfig()[0]
-            print("Connected! IP:", ip)
+            health_log.write_info("WiFi connected", ip=ip, ssid=ssid)
             self.start_mdns_server(ip, hostname)
             self.start_web_server()
         else:
-            print("Failed to connect. Starting AP.")
+            health_log.write_error("WiFi connect failed, starting AP", ssid=ssid)
             self.start_ap_mode()
-

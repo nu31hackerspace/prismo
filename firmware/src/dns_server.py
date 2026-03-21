@@ -1,5 +1,6 @@
 import socket
 import time
+from src import health_log
 
 class DNSServer:
     def __init__(self, ip):
@@ -61,7 +62,7 @@ class DNSServer:
         self.sock.sendto(response, addr)
 
     def run(self):
-        print("DNS Server started")
+        health_log.write_info("DNS server started", ip=self.ip)
         while self.running:
             try:
                 # Use select or non-blocking?
@@ -70,7 +71,7 @@ class DNSServer:
                 if data:
                     self.handle_request(data, addr)
             except Exception as e:
-                print("DNS Error:", e)
+                health_log.write_error("DNS error", error=str(e))
                 # Avoid tight loop on error
                 time.sleep(1)
 

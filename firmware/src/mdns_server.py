@@ -1,6 +1,7 @@
 import socket
 import struct
 import time
+from src import health_log
 
 class MDNSServer:
     def __init__(self, ip, hostname):
@@ -20,7 +21,7 @@ class MDNSServer:
             mreq = struct.pack("4sl", socket.inet_aton("224.0.0.251"), socket.INADDR_ANY)
             self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
             
-            print(f"[mDNS] Started for {self.hostname}.local -> {self.ip}")
+            health_log.write_info("mDNS started", hostname=self.hostname + ".local", ip=self.ip)
             
             while self.running:
                 try:
@@ -41,11 +42,11 @@ class MDNSServer:
                         self.send_response(data, addr)
                         
                 except Exception as e:
-                    print(f"[mDNS] Loop error: {e}")
+                    health_log.write_warn("mDNS loop error", error=str(e))
                     time.sleep(1)
                     
         except Exception as e:
-            print(f"[mDNS] Start error: {e}")
+            health_log.write_error("mDNS start error", error=str(e))
             if self.sock:
                 self.sock.close()
 
@@ -87,7 +88,7 @@ class MDNSServer:
             # Send to multicast group
             self.sock.sendto(response, ('224.0.0.251', 5353))
         except Exception as e:
-            print(f"[mDNS] Send error: {e}")
+            health_log.write_warn("mDNS send error", error=str(e))
 
     def stop(self):
         self.running = False

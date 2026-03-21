@@ -2,9 +2,11 @@ from libs.microdot import Microdot
 from src import config
 from src import auth
 from src import wifi_config
+from src import health_log
 import machine
 from machine import Timer
 import os
+
 
 class WebServer:
     def __init__(self, on_new_config_callback=None):
@@ -164,7 +166,7 @@ class WebServer:
                 return self.redirect_page(hostname), 200, {'Content-Type': 'text/html'}
 
             except Exception as e:
-                print("Error parsing config:", e)
+                health_log.write_error("Error parsing config", error=str(e))
 
             return '', 302, {'Location': '/settings'}
 
@@ -198,7 +200,7 @@ class WebServer:
                     config.add_user_to_white_list(username, uid)
                     config._last_key_id = None
                 except ValueError as e:
-                    print("Error adding user:", e)
+                    health_log.write_warn("Error adding user", error=str(e))
             
             return '', 302, {'Location': '/'}
 
@@ -285,5 +287,5 @@ class WebServer:
         return out.replace('+', ' ')
 
     def run(self, port=80):
-        print(f"Starting Web Server on port {port}...")
+        health_log.write_info("Starting web server", port=port)
         self.app.run(port=port)
