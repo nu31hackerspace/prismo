@@ -34,7 +34,7 @@ cd ..
 # ---------------------------------------------------------
 if [ ! -d "micropython" ]; then
     echo "Cloning MicroPython..."
-    git clone https://github.com/micropython/micropython.git
+    git clone -b v1.27.0 --recursive https://github.com/micropython/micropython.git
 else
     echo "MicroPython already exists, skipping clone."
 fi
