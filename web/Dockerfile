@@ -15,7 +15,7 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/drizzle.config.ts ./
 COPY --from=builder /app/src/lib/server/db/schema.ts ./src/lib/server/db/schema.ts
 
-RUN npm ci --omit=dev && npm install drizzle-kit tsx --no-save && apk add --no-cache curl
+RUN npm ci --omit=dev && npm install drizzle-kit tsx dotenv && apk add --no-cache curl
 
 EXPOSE 3000
-CMD npx drizzle-kit push && node build
+CMD ./node_modules/.bin/drizzle-kit push && node build
