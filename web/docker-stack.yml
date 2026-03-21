@@ -9,7 +9,7 @@ services:
         failure_action: rollback
       restart_policy:
         condition: on-failure
-        delay: 5s
+        delay: 15s
         max_attempts: 3
       rollback_config:
         order: start-first
