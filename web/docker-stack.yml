@@ -6,13 +6,6 @@ services:
     deploy:
       update_config:
         order: start-first
-        failure_action: rollback
-      restart_policy:
-        condition: on-failure
-        delay: 15s
-        max_attempts: 3
-      rollback_config:
-        order: start-first
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - ORIGIN=${ORIGIN}
@@ -20,12 +13,6 @@ services:
     networks:
       - infra_reverse-proxy
       - infra_postgres-net
-    healthcheck:
-      test: ['CMD', 'curl', '-f', '-H', 'Host: prismo.nu31.space', 'http://localhost:3000/health']
-      interval: 15s
-      timeout: 30s
-      retries: 4
-      start_period: 60s
 
 networks:
   infra_reverse-proxy:
