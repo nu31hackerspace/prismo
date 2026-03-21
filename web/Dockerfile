@@ -12,7 +12,10 @@ ENV NODE_ENV=production
 ENV PORT=3000
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/package*.json ./
-RUN npm ci --omit=dev && apk add --no-cache curl
+COPY --from=builder /app/drizzle.config.ts ./
+COPY --from=builder /app/src/lib/server/db/schema.ts ./src/lib/server/db/schema.ts
+
+RUN npm ci --omit=dev && npm install drizzle-kit tsx --no-save && apk add --no-cache curl
 
 EXPOSE 3000
-CMD ["node", "build"]
+CMD npx drizzle-kit push && node build

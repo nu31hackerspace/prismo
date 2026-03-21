@@ -16,11 +16,12 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - ORIGIN=${ORIGIN}
+      - COMMIT_SHA=${COMMIT_SHA}
     networks:
       - infra_reverse-proxy
       - infra_postgres-net
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000/']
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       interval: 15s
       timeout: 5s
       retries: 3
