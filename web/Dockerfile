@@ -10,6 +10,8 @@ RUN npx drizzle-kit generate
 FROM node:22-alpine
 WORKDIR /app
 
+RUN apk add --no-cache curl
+
 ENV NODE_ENV=production
 
 COPY --from=builder /app/package*.json ./
