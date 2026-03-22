@@ -1,4 +1,4 @@
-CREATE TABLE "session" (
+CREATE TABLE IF NOT EXISTS "session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" serial NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL
