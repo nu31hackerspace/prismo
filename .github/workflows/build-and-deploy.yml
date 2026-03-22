@@ -111,7 +111,7 @@ jobs:
           echo "DATABASE_URL='postgres://${{ env.USERNAME }}:${{ env.PASSWORD }}@postgres-1:5432/prismo'" >> .env
           echo "ORIGIN='https://prismo.nu31.space'" >> .env
           echo "SESSION_SECRET='${{ secrets.SESSION_SECRET }}'" >> .env
-          echo "GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}'" >> .env
+          echo "GOOGLE_CLIENT_ID='${{ vars.GOOGLE_CLIENT_ID }}'" >> .env
 
       - name: Setup docker remote context
         uses: cssnr/stack-deploy-action@v1
