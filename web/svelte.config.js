@@ -3,7 +3,12 @@ import adapter from '@sveltejs/adapter-node';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	kit: { adapter: adapter() },
+	kit: { 
+		adapter: adapter(),
+		csrf: {
+			checkOrigin: false 
+		}
+	},
 	preprocess: [mdsvex()],
 	extensions: ['.svelte', '.svx']
 	
