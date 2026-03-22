@@ -1,7 +1,17 @@
+import { db } from './db';
+import { users } from './db/schema';
+import { eq } from 'drizzle-orm';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
-import { createHmac } from 'crypto';
 
 const SESSION_COOKIE = 'session';
+const DAYS_365_MS = 365 * 24 * 60 * 60 * 1000;
+
+export interface UserSession {
+	id: string;
+	expiresAt: number;
+}
 
 function getSecret(): string {
 	const secret = env.SESSION_SECRET;
@@ -9,35 +19,67 @@ function getSecret(): string {
 	return secret;
 }
 
-function sign(payload: string): string {
-	const sig = createHmac('sha256', getSecret()).update(payload).digest('base64url');
-	return `${payload}.${sig}`;
+export async function createSession(userId: number): Promise<string> {
+	const sessionId = crypto.randomUUID();
+	const expiresAt = Date.now() + DAYS_365_MS;
+
+	const newSessionObj: UserSession = { id: sessionId, expiresAt };
+
+	const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+	if (!user) throw new Error('User not found');
+
+	const currentSessions: UserSession[] = Array.isArray(user.sessions) 
+		? (user.sessions as UserSession[]) 
+		: [];
+
+	// Filter out expired sessions and add new one
+	const validSessions = currentSessions.filter(s => s.expiresAt > Date.now());
+	validSessions.push(newSessionObj);
+
+	await db.update(users).set({ sessions: validSessions }).where(eq(users.id, userId));
+
+	// Create and sign JWT
+	const token = jwt.sign(
+		{ userId, sessionId },
+		getSecret(),
+		{ expiresIn: '365d' }
+	);
+
+	return token;
 }
 
-function unsign(value: string): string | null {
-	const lastDot = value.lastIndexOf('.');
-	if (lastDot === -1) return null;
-	const payload = value.slice(0, lastDot);
-	const expected = createHmac('sha256', getSecret()).update(payload).digest('base64url');
-	const actual = value.slice(lastDot + 1);
-	// Constant-time comparison
-	if (expected.length !== actual.length) return null;
-	let diff = 0;
-	for (let i = 0; i < expected.length; i++) {
-		diff |= expected.charCodeAt(i) ^ actual.charCodeAt(i);
+export async function validateSession(token: string) {
+	try {
+		const decoded = jwt.verify(token, getSecret()) as { userId: number; sessionId: string };
+		const { userId, sessionId } = decoded;
+
+		const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+		if (!user) return { user: null, session: null };
+
+		const currentSessions = Array.isArray(user.sessions) ? (user.sessions as UserSession[]) : [];
+		
+		const activeSession = currentSessions.find(s => s.id === sessionId && s.expiresAt > Date.now());
+
+		if (!activeSession) {
+			return { user: null, session: null };
+		}
+
+		return { user, session: activeSession };
+
+	} catch (e) {
+		// Token is invalid, expired, or malformed
+		return { user: null, session: null };
 	}
-	return diff === 0 ? payload : null;
 }
 
-export function createSessionValue(userId: number): string {
-	return sign(String(userId));
-}
+export async function invalidateSession(userId: number, sessionId: string): Promise<void> {
+	const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+	if (!user) return;
 
-export function verifySessionValue(value: string): number | null {
-	const payload = unsign(value);
-	if (!payload) return null;
-	const id = parseInt(payload, 10);
-	return isNaN(id) ? null : id;
+	const currentSessions = Array.isArray(user.sessions) ? (user.sessions as UserSession[]) : [];
+	const updatedSessions = currentSessions.filter(s => s.id !== sessionId);
+
+	await db.update(users).set({ sessions: updatedSessions }).where(eq(users.id, userId));
 }
 
 export { SESSION_COOKIE };

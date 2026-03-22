@@ -1,8 +1,5 @@
 import type { Handle } from '@sveltejs/kit';
-import { verifySessionValue, SESSION_COOKIE } from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { validateSession, SESSION_COOKIE } from '$lib/server/auth';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// --- Device UUID (existing tracking) ---
@@ -24,21 +21,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// --- Session / User ---
 	const sessionCookie = event.cookies.get(SESSION_COOKIE);
 	if (sessionCookie) {
-		const userId = verifySessionValue(sessionCookie);
-		if (userId !== null) {
-			const [user] = await db
-				.select({
-					id: users.id,
-					name: users.name,
-					email: users.email,
-					avatarUrl: users.avatarUrl
-				})
-				.from(users)
-				.where(eq(users.id, userId))
-				.limit(1);
-			if (user) {
-				event.locals.user = user;
-			}
+		const { user, session } = await validateSession(sessionCookie);
+		
+		if (user && session) {
+			event.locals.user = user;
+			event.locals.session = session;
+		} else {
+			// Invalid or expired session: clear the cookie
+			event.cookies.delete(SESSION_COOKIE, { path: '/' });
 		}
 	}
 

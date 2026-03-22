@@ -9,8 +9,8 @@ declare global {
 				id: number;
 				name: string;
 				email: string;
-				avatarUrl: string | null;
 			};
+			session?: import('$lib/server/auth').UserSession | null;
 		}
 		// interface PageData {}
 		// interface PageState {}
