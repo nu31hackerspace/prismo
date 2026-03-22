@@ -39,6 +39,7 @@
 		"dotenv": "^17.3.1",
 		"drizzle-orm": "^0.45.1",
 		"esptool-js": "^0.5.7",
+		"google-auth-library": "^10.6.2",
 		"postgres": "^3.4.8",
 		"qrcode": "^1.5.4",
 		"tsx": "^4.21.0"

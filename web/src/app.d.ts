@@ -5,6 +5,12 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			deviceUuid?: string;
+			user?: {
+				id: number;
+				name: string;
+				email: string;
+				avatarUrl: string | null;
+			};
 		}
 		// interface PageData {}
 		// interface PageState {}

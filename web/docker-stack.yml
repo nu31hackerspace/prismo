@@ -10,6 +10,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - ORIGIN=${ORIGIN}
       - COMMIT_SHA=${COMMIT_SHA}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
     networks:
       - infra_reverse-proxy
       - infra_postgres-net

@@ -1,9 +1,11 @@
-import { pgTable, serial, text, timestamp, json, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
+  googleId: text('google_id').unique(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
+  avatarUrl: text('avatar_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
