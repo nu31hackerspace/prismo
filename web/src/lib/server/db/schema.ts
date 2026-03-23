@@ -5,7 +5,6 @@ export const users = pgTable('users', {
   googleId: text('google_id').unique(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
-  avatarUrl: text('avatar_url'),
   sessions: jsonb('sessions').default('[]').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

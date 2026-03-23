@@ -1,4 +1,4 @@
-# CLAUDE.md
+# agents.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -97,3 +97,4 @@ The flasher page uses `esptool-js` to talk to the ESP32 over Web Serial. It fetc
 - `firmware/src/frozen_assets.py` is auto-generated — do not edit manually
 - The firmware is intentionally lean to fit the ~308 KB limit of the ESP32-C3 Super Mini
 - The `web/AGENTS.md` file documents MCP tools available for the Svelte ecosystem (Svelte MCP server with `list-sections`, `get-documentation`, `svelte-autofixer`)
+- **AI Rule:** Never add unnecessary or redundant comments to the code. Write clean, self-documenting code instead.

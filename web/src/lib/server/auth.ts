@@ -32,13 +32,11 @@ export async function createSession(userId: number): Promise<string> {
 		? (user.sessions as UserSession[]) 
 		: [];
 
-	// Filter out expired sessions and add new one
 	const validSessions = currentSessions.filter(s => s.expiresAt > Date.now());
 	validSessions.push(newSessionObj);
 
 	await db.update(users).set({ sessions: validSessions }).where(eq(users.id, userId));
 
-	// Create and sign JWT
 	const token = jwt.sign(
 		{ userId, sessionId },
 		getSecret(),

@@ -35,45 +35,28 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const googleId = payload.sub;
 	const email = payload.email;
 	const name = payload.name || email.split('@')[0];
-	const avatarUrl = payload.picture || null;
 
 	let user = undefined;
 
-	// 1. Try to find by googleId
 	const [existingByGoogleId] = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
 	if (existingByGoogleId) {
 		user = existingByGoogleId;
 	} else {
-		// 2. Try to find by email
-		const [existingByEmail] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-		if (existingByEmail) {
-			// Link the google account
-			const [updatedUser] = await db
-				.update(users)
-				.set({ googleId, avatarUrl: existingByEmail.avatarUrl || avatarUrl })
-				.where(eq(users.id, existingByEmail.id))
-				.returning();
-			user = updatedUser;
-		} else {
-			// 3. Create new user
-			const [newUser] = await db
-				.insert(users)
-				.values({
-					googleId,
-					email,
-					name,
-					avatarUrl
-				})
-				.returning();
-			user = newUser;
-		}
+		const [newUser] = await db
+			.insert(users)
+			.values({
+				googleId,
+				email,
+				name
+			})
+			.returning();
+		user = newUser;
 	}
 
 	if (!user) {
 		throw error(500, 'Failed to log in or create user');
 	}
 
-	// Create DB session instead of HMAC
 	const sessionId = await createSession(user.id);
 
 	cookies.set(SESSION_COOKIE, sessionId, {
