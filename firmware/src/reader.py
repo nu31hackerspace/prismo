@@ -1,6 +1,7 @@
 import time
+import utime
 import machine
-from machine import SPI, Pin
+from machine import SPI, Pin, WDT
 from src import config
 from src import health_log
 from libs.PN532 import PN532
@@ -54,8 +55,11 @@ def subscribe(callback):
             time.sleep(1)
 
     health_log.write_info("Waiting for RFID/NFC card")
+    wdt = WDT(timeout=8000)
+    _last_log_ms = utime.ticks_ms()
     while True:
         uid = nfc.read_passive_target(timeout=500)
+        wdt.feed()
         
         if uid is not None:
              health_log.write_info("Card found", uid=[hex(i) for i in uid])
@@ -63,7 +67,8 @@ def subscribe(callback):
                  uid_str = "".join("{:02x}".format(i) for i in uid)
                  callback(uid_str)
              time.sleep(1) 
-        else:
-             pass
         
-        time.sleep(0.1)
+        now = utime.ticks_ms()
+        if utime.ticks_diff(now, _last_log_ms) >= 60_000:
+            health_log.write_log()
+            _last_log_ms = now

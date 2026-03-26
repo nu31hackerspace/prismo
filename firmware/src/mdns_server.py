@@ -13,42 +13,54 @@ class MDNSServer:
 
     def run(self):
         self.running = True
+        time.sleep(3)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        bound = False
+        for attempt in range(8):
+            try:
+                self.sock.bind(('', 5353))
+                bound = True
+                break
+            except OSError as e:
+                if e.args[0] == 112:  # EADDRINUSE
+                    health_log.write_warn("mDNS EADDRINUSE, retrying...", attempt=attempt + 1)
+                    time.sleep(2)
+                else:
+                    health_log.write_error("mDNS bind error", error=str(e))
+                    self.sock.close()
+                    return
+
+        if not bound:
+            health_log.write_error("mDNS failed to bind after retries, skipping mDNS")
+            self.sock.close()
+            return
+
         try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.sock.bind(('', 5353))
-            
             mreq = struct.pack("4sl", socket.inet_aton("224.0.0.251"), socket.INADDR_ANY)
             self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-            
-            health_log.write_info("mDNS started", hostname=self.hostname + ".local", ip=self.ip)
-            
-            while self.running:
-                try:
-                    data, addr = self.sock.recvfrom(1024)
-                    if not data:
-                        continue
-                    
-                    # Basic check for hostname query
-                    # This is very simplified matching
-                    query_name = self.hostname.encode() + b'.local'
-                    
-                    # Find query in packet (simple substring search for now)
-                    # A proper parser would be better but requires more code/memory
-                    # Standard mDNS queries often include the name length-prefixed
-                    
-                    # Check if 'prismo' and 'local' are in the packet
-                    if self.hostname.encode() in data and b'local' in data:
-                        self.send_response(data, addr)
-                        
-                except Exception as e:
-                    health_log.write_warn("mDNS loop error", error=str(e))
-                    time.sleep(1)
-                    
         except Exception as e:
-            health_log.write_error("mDNS start error", error=str(e))
-            if self.sock:
-                self.sock.close()
+            health_log.write_warn("mDNS multicast join failed", error=str(e))
+
+        self.sock.settimeout(2.0)
+        health_log.write_info("mDNS started", hostname=self.hostname + ".local", ip=self.ip)
+
+        while self.running:
+            try:
+                data, addr = self.sock.recvfrom(1024)
+                if not data:
+                    continue
+                if self.hostname.encode() in data and b'local' in data:
+                    self.send_response(data, addr)
+            except OSError:
+                pass
+            except Exception as e:
+                health_log.write_warn("mDNS loop error", error=str(e))
+                time.sleep(1)
+
+        if self.sock:
+            self.sock.close()
 
     def send_response(self, data, addr):
         # Construct response

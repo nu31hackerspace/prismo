@@ -92,3 +92,39 @@ class WiFiManager:
         else:
             health_log.write_error("WiFi connect failed, starting AP", ssid=ssid)
             self.start_ap_mode()
+
+    def monitor(self):
+        from src import wifi_config
+        hostname = config.get_hostname()
+        wlan_sta = network.WLAN(network.STA_IF)
+        wlan_ap = network.WLAN(network.AP_IF)
+        while True:
+            time.sleep(30)
+            if not wifi_config.has_wifi():
+                continue
+
+            if wlan_sta.active() and wlan_sta.isconnected():
+                continue
+
+            ssid, password = wifi_config.get_wifi()
+            health_log.write_warn("WiFi not connected, reconnecting", ssid=ssid)
+            try:
+                wlan_sta.active(True)
+                wlan_sta.connect(ssid, password)
+                for _ in range(20):
+                    if wlan_sta.isconnected():
+                        break
+                    time.sleep(1)
+
+                if wlan_sta.isconnected():
+                    ip = wlan_sta.ifconfig()[0]
+                    health_log.write_info("WiFi reconnected", ip=ip, ssid=ssid)
+                    if wlan_ap.active():
+                        wlan_ap.active(False)
+                        health_log.write_info("AP mode deactivated after STA reconnect")
+                    self.start_mdns_server(ip, hostname)
+                else:
+                    health_log.write_error("WiFi reconnect failed", ssid=ssid)
+            except Exception as e:
+                health_log.write_error("WiFi reconnect error", error=str(e))
+
