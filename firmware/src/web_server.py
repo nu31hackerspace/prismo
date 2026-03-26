@@ -204,6 +204,29 @@ class WebServer:
             
             return '', 302, {'Location': '/'}
 
+        @self.app.route('/health.log', methods=['GET'])
+        def download_health_log(request):
+            if not self.check_auth(request):
+                return '', 302, {'Location': '/login'}
+
+            def stream_logs():
+                for fname in ('health.log', 'health.log.1'):
+                    try:
+                        with open(fname, 'r') as f:
+                            while True:
+                                chunk = f.read(512)
+                                if not chunk:
+                                    break
+                                yield chunk
+                    except OSError:
+                        pass
+
+            headers = {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Content-Disposition': 'attachment; filename="health.log"',
+            }
+            return stream_logs(), 200, headers
+
     def login_page(self, error=""):
         err = f'<p class="error">{error}</p>' if error else ''
         return self.render_template('login.html', error_html=err)
