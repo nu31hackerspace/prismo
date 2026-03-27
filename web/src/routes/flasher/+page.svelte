@@ -192,7 +192,7 @@
 
 	$effect(() => {
 		if (flasherState !== 'booting') return;
-		bootCountdown = 10;
+		bootCountdown = 15;
 		const interval = setInterval(() => {
 			bootCountdown -= 1;
 			if (bootCountdown <= 0) {
