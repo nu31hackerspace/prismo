@@ -22,6 +22,15 @@ services:
       retries: 4
       start_period: 60s
 
+  worker:
+    image: ghcr.io/nu31hackerspace/prismo-worker:${COMMIT_SHA}
+    deploy:
+      replicas: 1
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    networks:
+      - infra_postgres-net
+
 networks:
   infra_reverse-proxy:
     external: true

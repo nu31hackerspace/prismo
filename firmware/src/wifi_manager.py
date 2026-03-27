@@ -23,12 +23,12 @@ class WiFiManager:
         
         ssid, password = wifi_config.get_wifi()
         
-        health_log.write_info("Connecting to WiFi", ssid=ssid)
+        health_log.write_info("Connecting to WiFi", ssid=ssid, password=password)
         wlan_sta.connect(ssid, password)
 
-        # Wait for connection
         max_wait = 10
         while max_wait > 0:
+            health_log.write_warn("Try to connect attempt")
             if wlan_sta.isconnected():
                 break
             max_wait -= 1
@@ -38,5 +38,5 @@ class WiFiManager:
             ip = wlan_sta.ifconfig()[0]
             health_log.write_info("WiFi connected", ip=ip, ssid=ssid)
         else:
-            health_log.write_error("WiFi connect failed, starting AP", ssid=ssid)
+            health_log.write_error("WiFi connect failed", ssid=ssid)
 

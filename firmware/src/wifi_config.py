@@ -1,10 +1,14 @@
-import json
-
-WIFI_SSID = 'OpenVRT'
-WIFI_PASS = 'Xe62Mr869#[XMD'
+# Credentials are baked into the firmware at build time.
+# The worker replaces these placeholders before compiling.
+WIFI_SSID = "{{WIFI_SSID}}"
+WIFI_PASS = "{{WIFI_PASS}}"
 
 def get_wifi():
-    return WIFI_SSID, WIFI_PASS
+    """Returns (ssid, password) or (None, None) if credentials are not set."""
+    if WIFI_SSID and not WIFI_SSID.startswith("{{"):
+        return WIFI_SSID, WIFI_PASS
+    return None, None
 
 def has_wifi():
-    return True
+    ssid, _ = get_wifi()
+    return ssid is not None

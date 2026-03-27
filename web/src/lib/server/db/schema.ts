@@ -1,4 +1,10 @@
-import { pgTable, serial, text, timestamp, jsonb, integer } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, jsonb, integer, varchar, customType } from 'drizzle-orm/pg-core';
+
+const bytea = customType<{ data: Buffer }>({
+  dataType() {
+    return 'bytea';
+  },
+});
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -27,4 +33,24 @@ export const devices = pgTable('devices', {
     .references(() => users.id)
     .notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const files = pgTable('files', {
+  id: serial('id').primaryKey(),
+  content: bytea('content').notNull(),
+  contentType: varchar('content_type', { length: 255 }).notNull().default('application/octet-stream'),
+  ownerId: integer('owner_id').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const workerJobs = pgTable('worker_jobs', {
+  id: serial('id').primaryKey(),
+  status: varchar('status', { length: 20 }).notNull().default('pending'),
+  attemptCount: integer('attempt_count').notNull().default(0),
+  maxAttemptCount: integer('max_attempt_count').notNull().default(3),
+  ownerId: integer('owner_id').references(() => users.id).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  inputPayload: jsonb('input_payload').notNull(),
+  outputPayload: jsonb('output_payload'),
 });

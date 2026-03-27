@@ -10,7 +10,8 @@ RUN npx drizzle-kit generate
 FROM node:22-alpine
 WORKDIR /app
 
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl python3 py3-pip
+RUN pip install --break-system-packages --no-cache-dir esptool esp-idf-nvs-partition-gen
 
 ENV NODE_ENV=production
 

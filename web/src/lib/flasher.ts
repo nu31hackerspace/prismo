@@ -1,21 +1,20 @@
 import { ESPLoader, Transport } from 'esptool-js';
 import type { IEspLoaderTerminal } from 'esptool-js';
 
-const FIRMWARE_URL = '/firmware/firmware.bin';
 const BAUD_RATE = 115200;
 const ROM_BAUD_RATE = 115200;
 
 export type FlasherState =
 	| 'idle'
+	| 'building'
+	| 'ready'
 	| 'connecting'
 	| 'connected'
 	| 'flashing'
 	| 'unplug'
 	| 'replug'
-	| 'complete'
 	| 'booting'
-	| 'wifi_connect'
-	| 'open_settings'
+	| 'complete'
 	| 'error';
 
 export interface FlasherLog {
@@ -59,9 +58,7 @@ export async function connectToDevice(callbacks: FlasherCallbacks): Promise<{
 	const transport = new Transport(port);
 
 	const terminal: IEspLoaderTerminal = {
-		clean() {
-			// no-op
-		},
+		clean() {},
 		writeLine(data: string) {
 			callbacks.onLog(createLog('debug', data));
 		},
@@ -90,7 +87,7 @@ export async function connectToDevice(callbacks: FlasherCallbacks): Promise<{
 		macAddress = await esploader.chip.readMac(esploader);
 		callbacks.onLog(createLog('info', `MAC: ${macAddress}`));
 	} catch {
-		// MAC reading not critical, proceed without it
+		// not critical
 	}
 
 	callbacks.onChipInfo({ chipName, chipId, macAddress });
@@ -101,23 +98,25 @@ export async function connectToDevice(callbacks: FlasherCallbacks): Promise<{
 
 export async function flashFirmware(
 	esploader: ESPLoader,
-	callbacks: FlasherCallbacks
+	callbacks: FlasherCallbacks,
+	firmwareUrl: string
 ): Promise<void> {
 	callbacks.onStateChange('flashing');
 	callbacks.onLog(createLog('info', 'Fetching firmware binary...'));
 
-	const response = await fetch(FIRMWARE_URL);
+	const response = await fetch(firmwareUrl);
 	if (!response.ok) {
-		throw new Error(`Failed to fetch firmware: ${response.status} ${response.statusText}`);
+		const text = await response.text().catch(() => 'Unknown error');
+		throw new Error(`Failed to fetch firmware: ${response.status} ${text}`);
 	}
 
 	const firmwareBuffer = await response.arrayBuffer();
-	const firmwareData = Array.from(new Uint8Array(firmwareBuffer))
+	const firmwareBytes = new Uint8Array(firmwareBuffer);
+	const firmwareData = Array.from(firmwareBytes)
 		.map((b) => String.fromCharCode(b))
 		.join('');
 
-	const sizeKB = (firmwareBuffer.byteLength / 1024).toFixed(1);
-	callbacks.onLog(createLog('info', `Firmware loaded: ${sizeKB} KB`));
+	callbacks.onLog(createLog('info', `Firmware loaded: ${(firmwareBytes.length / 1024).toFixed(1)} KB`));
 	callbacks.onLog(createLog('info', 'Erasing flash and writing firmware...'));
 
 	await esploader.writeFlash({
@@ -128,8 +127,7 @@ export async function flashFirmware(
 		eraseAll: true,
 		compress: true,
 		reportProgress: (_fileIndex: number, written: number, total: number) => {
-			const percent = Math.round((written / total) * 100);
-			callbacks.onProgress(percent);
+			callbacks.onProgress(Math.round((written / total) * 100));
 		}
 	});
 

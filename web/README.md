@@ -1,6 +1,6 @@
 # Prismo Web
 
-This directory contains the SvelteKit landing page and firmware flasher UI for Prismo. The flasher uses the [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) to flash firmware directly from a browser.
+This directory contains the SvelteKit web app and needed workers. 
 
 ## Prerequisites
 
@@ -21,9 +21,6 @@ npm install
 
 ```sh
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
 3. **Other useful commands**
@@ -34,9 +31,7 @@ npm run lint    # Prettier check
 npm run format  # Prettier format
 ```
 
-> **Note:** The `/flasher` route uses the Web Serial API, which requires a [Secure Context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). `localhost` qualifies as a secure context. If running on a remote machine, add the full origin (e.g. `http://<ip>:5173`) to `chrome://flags/#unsafely-treat-insecure-origin-as-secure` and restart the browser.
-
-### Local Infrastructure (Database & pgAdmin)
+### Local Infrastructure (Database)
 
 For backend features, you will need the local database running. We use a local Docker stack for this.
 
@@ -64,44 +59,6 @@ npm run dev
 ```
 
 _(You can also use `npm run db:studio` to view and manage data from Drizzle Studio)._
-
-4. **Accessing pgAdmin**:
-
-- Open **http://localhost:5050**
-- Email: `admin@prismo.local`
-- Password: `admin`
-  _(When registering a new server in pgAdmin, use `db` as the Host name/address, `postgres` as username, and `password` as password)._
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with:
-
-```sh
-npm run preview
-```
-
-### Docker
-
-To build and run the production Docker image:
-
-```sh
-docker build -t prismo-web .
-docker run -d -p 3000:3000 --name prismo-web prismo-web
-```
-
-Then open **http://localhost:3000**.
-
-To stop the container:
-
-```sh
-docker rm -f prismo-web
-```
 
 ## Updating the Firmware Binary
 

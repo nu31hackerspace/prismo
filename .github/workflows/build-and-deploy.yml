@@ -1,4 +1,4 @@
-name: Build MicroPython Firmware
+name: Build and Deploy
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: nu31hackerspace/prismo-web-flasher
+  WORKER_IMAGE_NAME: nu31hackerspace/prismo-worker
   HOST: ${{ vars.HOST }}
   SSH_KEY: ${{ secrets.ROOT_SSH_PRIVATE_KEY }}
   COMMIT_SHA: ${{ github.sha }}
@@ -15,13 +16,10 @@ env:
   PASSWORD: ${{ secrets.PASSWORD }}
 
 jobs:
-  build-firmware:
-    runs-on: ubuntu-24.04
-
+  check-dev-flags:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Check dev flags are off
         run: |
           FAIL=0
@@ -33,59 +31,24 @@ jobs:
           done
           exit $FAIL
 
-      - name: Install System Dependencies
-        run: sudo apt-get update && sudo apt-get install -y git wget flex bison gperf python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
-
-      - name: Cache ESP-IDF and MicroPython toolchains
-        uses: actions/cache@v4
-        with:
-          path: |
-            firmware/build/esp-idf
-            firmware/build/micropython
-            ~/.espressif
-          key: ${{ runner.os }}-firmware-${{ hashFiles('firmware/build.sh') }}
-
-      - name: Build Firmware
-        working-directory: firmware
-        run: bash build.sh
-
-      - name: Upload Firmware Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: prismo-firmware.bin
-          path: firmware/dist/firmware.bin
-
-  build-and-push-image:
+  build-web-image:
     runs-on: ubuntu-latest
-    needs: build-firmware
+    needs: check-dev-flags
     permissions:
       contents: read
       packages: write
-      attestations: write
-      id-token: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Download Firmware Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: prismo-firmware.bin
-          path: firmware/dist
-
-      - name: Prepare Web App
-        run: cp firmware/dist/firmware.bin web/static/firmware/firmware.bin
-
-      - name: Log in to the Container registry
+      - name: Log in to registry
         uses: docker/login-action@v2
-        if: github.event_name != 'pull_request'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push web image
         uses: docker/build-push-action@v6
         with:
           context: web
@@ -95,30 +58,64 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
           build-args: |
             COMMIT_SHA=${{ env.COMMIT_SHA }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-to: type=inline
+
+  build-worker-image:
+    runs-on: ubuntu-latest
+    needs: check-dev-flags
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: web/worker/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }}:${{ env.COMMIT_SHA }}
+          # Registry cache: layers like ESP-IDF install are reused across runs
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }}:latest
+          cache-to: type=inline
 
   deploy:
     runs-on: ubuntu-latest
     needs:
-      - build-and-push-image
+      - build-web-image
+      - build-worker-image
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Create .env file for Docker Stack
         run: |
           echo "IMAGE_NAME='${{ env.IMAGE_NAME }}'" >> .env
+          echo "WORKER_IMAGE_NAME='${{ env.WORKER_IMAGE_NAME }}'" >> .env
           echo "COMMIT_SHA='${{ env.COMMIT_SHA }}'" >> .env
           echo "DATABASE_URL='postgres://${{ env.USERNAME }}:${{ env.PASSWORD }}@postgres-1:5432/prismo'" >> .env
           echo "ORIGIN='https://prismo.nu31.space'" >> .env
           echo "SESSION_SECRET='${{ secrets.SESSION_SECRET }}'" >> .env
           echo "GOOGLE_CLIENT_ID='${{ vars.GOOGLE_CLIENT_ID }}'" >> .env
 
-      - name: Setup docker remote context
+      - name: Deploy Docker Stack
         uses: cssnr/stack-deploy-action@v1
         with:
           name: prismo-web-flasher
           file: web/docker-stack.yml
-          host: ${{ env.HOST}}
+          host: ${{ env.HOST }}
           port: 22
           user: ${{ env.USERNAME }}
           ssh_key: ${{ env.SSH_KEY }}
