@@ -1,13 +1,11 @@
 # Prismo Firmware
 
-ESP32-C3 firmware for the Prismo NFC reader project. Built on MicroPython with all application code **frozen into the binary** — no files need to be uploaded separately after flashing.
+ESP32-C3 firmware for the Prismo NFC reader project. 
 
 ## Usage
 
-1. **First Boot** — The device starts a WiFi Access Point named **00_prismo**
-2. **Provisioning** — Connect to the network **00_prismo**. Open the web page with address `http://prismo.local`.
-3. **Enter your WiFi credentials and configuration** and save
-4. **Done** — The device reboots, connects to your WiFi, and is accessible at `http://prismo.local`
+1. **Flash the device ** Flash device the web flasher 
+2. **Done** — The device reboots, connects to your WiFi, and ready to user
 
 ## Project Structure
 
@@ -24,13 +22,10 @@ firmware/
 │   ├── prismo_main.py # Main loop (NFC reader, web server)
 │   ├── config.py      # Device configuration
 │   ├── wifi_manager.py
-│   ├── web_server.py
 │   ├── reader.py
 │   ├── reader_ui.py
 │   ├── color.py
 │   ├── buzzer.py
-│   ├── dns_server.py
-│   └── mdns_server.py
 └── libs/              # Third-party libraries (frozen as libs.* package)
     ├── PN532.py       # NFC reader driver (SPI)
     └── microdot.py    # Lightweight HTTP server
@@ -84,20 +79,15 @@ Create needed directory and upload the libraries
 ```bash
 mpremote mkdir :libs
 mpremote mkdir :src
-mpremote cp boot.py :boot.py
-mpremote cp libs/* :libs/
+mpremote cp libs/*.py :libs/
 mpremote cp src/*.py :src/
+mpremote cp main.py :main.py
+mpremote cp boot.py :boot.py
 ```
 
 Copy src and run the soft restart of
 ```bash
 mpremote cp src/*.py :src/ + reset
-```
-
-In case you update the UI files (HTML/CSS) in `web/`, you need to generate the frozen assets python file first, then copy it to the device and soft restart:
-```bash
-python3 scripts/generate_frozen_assets.py
-mpremote cp src/frozen_assets.py :src/frozen_assets.py + reset
 ```
 
 Connect to device
@@ -118,9 +108,6 @@ mpremote devs
 ```
 
 ### Side notes
-
-The HTML and css files moved to the separated files to make it easier to edit them. 
-Also it the critical optization for not store them into python code. (We have ~308Kb of memory on the supper mini the python code with template for web part just doesn't fit the memory)
 
 ## Build & Flash (binary version)
 

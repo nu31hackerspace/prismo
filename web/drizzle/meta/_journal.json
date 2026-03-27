@@ -36,6 +36,13 @@
       "when": 1774214368556,
       "tag": "0004_perfect_cable",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1774636881940,
+      "tag": "0005_heavy_psynapse",
+      "breakpoints": true
     }
   ]
 }

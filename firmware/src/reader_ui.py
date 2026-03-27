@@ -14,10 +14,6 @@ class ReaderUI:
         self.success_pin.off()
         self.error_pin.off()
 
-    def ap_mode(self):
-        buzzer.play_success_sound()
-        color.set_sub_light_color(0x0000FF)
-
     def show_configuration_save(self):
         color.set_sub_light_color(0x00FF00)
         buzzer.play_success_sound()

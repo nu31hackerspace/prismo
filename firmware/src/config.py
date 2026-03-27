@@ -9,10 +9,7 @@ import ubinascii
 from src import health_log
 
 def get_mac_suffix():
-    return ubinascii.hexlify(machine.unique_id()).decode().upper()[-6:]
-
-def get_ap_ssid():
-    return "prismo_" + get_mac_suffix()
+    return ubinascii.hexlify(machine.unique_id()).decode().upper()
 
 SUCCESS_SIGNAL_DURATION = 5000 
 ERROR_SIGNAL_DURATION = 1000 
@@ -77,12 +74,6 @@ def load_config():
             return json.load(f)
     except (OSError, ValueError):
         return None
-
-def get_hostname():
-    cfg = load_config()
-    if cfg and cfg.get('hostname'):
-        return cfg['hostname']
-    return "prismo-" + get_mac_suffix().lower()
 
 if DEBUG:
     health_log.write_info("Config: debug mode", config=str(load_config()))

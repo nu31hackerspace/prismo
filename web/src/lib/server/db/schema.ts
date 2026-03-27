@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, jsonb, integer } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -15,6 +15,16 @@ export const tracking = pgTable('tracking', {
   event: text('event').notNull(),
   context: text('context'),
   country: text('country'),
-  payload: jsonb('payload'), 
+  payload: jsonb('payload'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const devices = pgTable('devices', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  tokenKey: text('token_key').notNull(),
+  ownerId: integer('owner_id')
+    .references(() => users.id)
+    .notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
