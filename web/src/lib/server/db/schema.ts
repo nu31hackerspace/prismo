@@ -28,6 +28,7 @@ export const tracking = pgTable('tracking', {
 export const devices = pgTable('devices', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
+  deviceSlug: text('device_slug').notNull().unique(),
   tokenKey: text('token_key').notNull(),
   ownerId: integer('owner_id')
     .references(() => users.id)

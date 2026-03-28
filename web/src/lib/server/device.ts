@@ -11,10 +11,18 @@ function getSecret(): string {
 	return secret;
 }
 
+function generateDeviceSlug(name: string): string {
+	const base = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+	const suffix = crypto.randomBytes(3).toString('hex');
+	return `${base}-${suffix}`;
+}
+
 export async function createDevice(userId: number, name: string) {
 	const tokenKey = crypto.randomBytes(32).toString('hex');
+	const deviceSlug = generateDeviceSlug(name);
 	const [newDevice] = await db.insert(devices).values({
 		name,
+		deviceSlug,
 		ownerId: userId,
 		tokenKey,
 	}).returning();
