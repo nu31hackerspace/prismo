@@ -10,9 +10,7 @@ class WiFiManager:
         health_log.write_info("init wifi manager")
 
     def connect(self):
-        from src import wifi_config
-        
-        if not wifi_config.has_wifi():
+        if not config.has_wifi():
             health_log.write_error("No WiFi configured")
             return
 
@@ -21,7 +19,7 @@ class WiFiManager:
         wlan_sta.active(True)
         wlan_sta.config(txpower=8.5)
         
-        ssid, password = wifi_config.get_wifi()
+        ssid, password = config.get_wifi()
         
         health_log.write_info("Connecting to WiFi", ssid=ssid, password=password)
         wlan_sta.connect(ssid, password)

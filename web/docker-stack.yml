@@ -28,6 +28,7 @@ services:
       replicas: 1
     environment:
       - DATABASE_URL=${DATABASE_URL}
+      - WS_URL=${WS_URL}
     networks:
       - infra_postgres-net
 

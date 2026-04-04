@@ -6,14 +6,14 @@ import { workerJobs } from '$lib/server/db/schema';
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) throw error(401, 'Unauthorized');
 
-	const { ssid, password } = await request.json();
-	if (!ssid || !password) throw error(400, 'ssid and password are required');
+	const { ssid, password, mqttUser, mqttPass } = await request.json();
+	if (!ssid || !password || !mqttUser || !mqttPass) throw error(400, 'ssid, password, mqttUser, and mqttPass are required');
 
 	const [job] = await db
 		.insert(workerJobs)
 		.values({
 			ownerId: locals.user.id,
-			inputPayload: { ssid, password }
+			inputPayload: { ssid, password, mqttUser, mqttPass }
 		})
 		.returning({ id: workerJobs.id });
 

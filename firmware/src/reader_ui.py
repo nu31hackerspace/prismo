@@ -6,7 +6,6 @@ from machine import Pin
 
 class ReaderUI:
     def __init__(self):
-        run_config = config.load_config()
         self.success_pin = Pin(config.PIN_OUTPUT_SUCESS, Pin.OUT)
         self.error_pin = Pin(config.PIN_OUTPUT_ERROR, Pin.OUT)
         self.machine_active = False

@@ -25,6 +25,8 @@
 	// WiFi form
 	let wifiSsid = $state('');
 	let wifiPassword = $state('');
+	let mqttUser = $state('');
+	let mqttPass = $state('');
 
 	$effect(() => {
 		const stored = localStorage.getItem('prismo_wifi_ssid');
@@ -70,8 +72,8 @@
 	};
 
 	async function handleBuild() {
-		if (!wifiSsid || !wifiPassword) {
-			errorMessage = 'Please enter your WiFi SSID and password.';
+		if (!wifiSsid || !wifiPassword || !mqttUser || !mqttPass) {
+			errorMessage = 'Please enter your WiFi credentials and MQTT credentials.';
 			return;
 		}
 		localStorage.setItem('prismo_wifi_ssid', wifiSsid);
@@ -82,7 +84,7 @@
 			const res = await fetch('/api/jobs', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ ssid: wifiSsid, password: wifiPassword })
+				body: JSON.stringify({ ssid: wifiSsid, password: wifiPassword, mqttUser, mqttPass })
 			});
 			if (!res.ok) throw new Error(await res.text());
 			const { jobId: id } = await res.json();
@@ -212,6 +214,8 @@
 		logs = [];
 		errorMessage = '';
 		wifiPassword = '';
+		mqttUser = '';
+		mqttPass = '';
 	}
 
 	const stateConfig: Record<FlasherState, { icon: string; label: string; color: string }> = {
@@ -387,6 +391,32 @@
 									/>
 								</div>
 							</div>
+							<h3 class="mb-4 mt-4 font-display text-[10px] font-bold tracking-widest text-label-tertiary uppercase">
+								MQTT Credentials
+							</h3>
+							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+								<div class="space-y-1.5">
+									<label for="mqttUser" class="text-xs font-medium text-label-tertiary">Username</label>
+									<input
+										id="mqttUser"
+										type="text"
+										bind:value={mqttUser}
+										placeholder="e.g. my-device-a1b2c3"
+										class="w-full rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-2 text-sm text-label-primary transition-colors focus:border-accent-primary focus:outline-none"
+									/>
+								</div>
+								<div class="space-y-1.5">
+									<label for="mqttPass" class="text-xs font-medium text-label-tertiary">Password</label>
+									<input
+										id="mqttPass"
+										type="password"
+										bind:value={mqttPass}
+										placeholder="••••••••"
+										class="w-full rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-2 text-sm text-label-primary transition-colors focus:border-accent-primary focus:outline-none"
+									/>
+								</div>
+							</div>
+							<p class="mt-1.5 text-xs text-label-tertiary">Generate MQTT credentials from your device on the home page.</p>
 						</div>
 						<div class="flex justify-center">
 							<MainButton buttonStyle="primary" size="L" icon="mdi:cog" label="Build Firmware" onclick={handleBuild} />

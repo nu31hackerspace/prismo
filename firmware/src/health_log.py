@@ -139,6 +139,21 @@ def _get_firmware_label():
 
 
 # ------------------------------------------------------------------ #
+# Optional MQTT log forwarder                                          #
+# Set via set_mqtt_publisher() after MQTT connects to avoid circular  #
+# import (mqtt_client already imports health_log).                    #
+# ------------------------------------------------------------------ #
+
+_mqtt_publisher = None
+
+
+def set_mqtt_publisher(fn):
+    """Register a callable(entry_dict) that forwards log entries to MQTT."""
+    global _mqtt_publisher
+    _mqtt_publisher = fn
+
+
+# ------------------------------------------------------------------ #
 # Public API                                                           #
 # ------------------------------------------------------------------ #
 
@@ -236,6 +251,12 @@ def write_event(level, msg, **kwargs):
             f.write(json.dumps(entry) + "\n")
     except Exception as e:
         print("[health_log] write_event error:", e)
+
+    if _mqtt_publisher is not None:
+        try:
+            _mqtt_publisher(entry)
+        except Exception:
+            pass
 
 
 # Convenience shorthands

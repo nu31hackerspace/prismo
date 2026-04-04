@@ -21,10 +21,12 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/src/lib/server/db/migrate.ts ./src/lib/server/db/migrate.ts
+COPY --from=builder /app/server.ts ./server.ts
+COPY --from=builder /app/ws-server.ts ./ws-server.ts
 
 ARG COMMIT_SHA
 ENV COMMIT_SHA=${COMMIT_SHA}
 
 EXPOSE 3000
 
-CMD npm run db:migrate && node build
+CMD npm run db:migrate && npx tsx server.ts

@@ -9,7 +9,10 @@ import psycopg2
 import psycopg2.extras
 
 DATABASE_URL = os.environ['DATABASE_URL']
-WIFI_CONFIG_PATH = '/firmware/src/wifi_config.py'
+MQTT_HOST = os.environ.get('MQTT_HOST', 'localhost')
+MQTT_PORT = os.environ.get('MQTT_PORT', '1883')
+MQTT_SSL  = os.environ.get('MQTT_SSL', 'false')
+CONFIG_PATH = '/firmware/src/config.py'
 FIRMWARE_OUTPUT = '/opt/micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin'
 POLL_INTERVAL = 5   # seconds between polls when queue is empty
 HEARTBEAT_INTERVAL = 10  # seconds between updated_at bumps
@@ -19,8 +22,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 log = logging.getLogger(__name__)
 
 # Read template once at startup so we can restore it after each build
-with open(WIFI_CONFIG_PATH) as f:
-    WIFI_CONFIG_TEMPLATE = f.read()
+with open(CONFIG_PATH) as f:
+    CONFIG_TEMPLATE = f.read()
 
 
 def get_conn():
@@ -66,12 +69,17 @@ def heartbeat_loop(job_id: int, stop: threading.Event):
     conn.close()
 
 
-def build_firmware(ssid: str, password: str) -> bytes:
-    config = WIFI_CONFIG_TEMPLATE \
+def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str) -> bytes:
+    config = CONFIG_TEMPLATE \
         .replace('{{WIFI_SSID}}', ssid) \
-        .replace('{{WIFI_PASS}}', password)
+        .replace('{{WIFI_PASS}}', password) \
+        .replace('{{MQTT_HOST}}', MQTT_HOST) \
+        .replace('{{MQTT_PORT}}', MQTT_PORT) \
+        .replace('{{MQTT_USER}}', mqtt_user) \
+        .replace('{{MQTT_PASS}}', mqtt_pass) \
+        .replace('{{MQTT_SSL}}', MQTT_SSL)
 
-    with open(WIFI_CONFIG_PATH, 'w') as f:
+    with open(CONFIG_PATH, 'w') as f:
         f.write(config)
 
     try:
@@ -88,8 +96,8 @@ def build_firmware(ssid: str, password: str) -> bytes:
             return f.read()
     finally:
         # Always restore the template so the next job starts clean
-        with open(WIFI_CONFIG_PATH, 'w') as f:
-            f.write(WIFI_CONFIG_TEMPLATE)
+        with open(CONFIG_PATH, 'w') as f:
+            f.write(CONFIG_TEMPLATE)
 
 
 def store_file(conn, content: bytes, owner_id: int) -> int:
@@ -135,8 +143,10 @@ def process_job(job: dict):
         payload = job['input_payload']
         ssid = payload['ssid']
         password = payload['password']
+        mqtt_user = payload['mqttUser']
+        mqtt_pass = payload['mqttPass']
 
-        firmware = build_firmware(ssid, password)
+        firmware = build_firmware(ssid, password, mqtt_user, mqtt_pass)
 
         file_id = store_file(conn, firmware, job['owner_id'])
         complete_job(conn, job['id'], {'fileId': file_id})

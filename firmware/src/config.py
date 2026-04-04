@@ -1,3 +1,27 @@
+# Baked-in credentials — replaced by worker before build
+WIFI_SSID = "OpenVRT"#"{{WIFI_SSID}}"
+WIFI_PASS = "Xe62Mr869#[XMD"#"{{WIFI_PASS}}"
+MQTT_HOST = "mqtt.nu31.space"#"{{MQTT_HOST}}"
+MQTT_PORT = "8883"#"{{MQTT_PORT}}"
+MQTT_USER = "prismo_123"#"{{MQTT_USER}}"
+MQTT_PASS = "prismo_123"#"{{MQTT_PASS}}"
+MQTT_SSL  = "true"#"{{MQTT_SSL}}"
+
+def get_wifi():
+    if WIFI_SSID and not WIFI_SSID.startswith("{{"):
+        return WIFI_SSID, WIFI_PASS
+    return None, None
+
+def has_wifi():
+    ssid, _ = get_wifi()
+    return ssid is not None
+
+def get_mqtt_config():
+    """Returns (host, port, user, password, ssl) or None if not configured."""
+    if MQTT_HOST and not MQTT_HOST.startswith("{{"):
+        return MQTT_HOST, int(MQTT_PORT), MQTT_USER, MQTT_PASS, MQTT_SSL == "true"
+    return None
+
 DEBUG=False
 QUICK_START=False
 MUTE_BUZZER=False
