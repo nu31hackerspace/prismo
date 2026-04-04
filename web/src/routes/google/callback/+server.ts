@@ -67,5 +67,5 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		maxAge: 365 * 24 * 60 * 60 // 365 days in seconds
 	});
 
-	throw redirect(303, '/');
+	throw redirect(303, '/devices');
 };

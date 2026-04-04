@@ -9,7 +9,7 @@
 		type FlasherState,
 		type FlasherLog,
 		type FlasherInfo
-	} from '$lib/flasher';
+	} from '$lib/devices';
 	import type { ESPLoader, Transport } from 'esptool-js';
 
 	let { data } = $props();
@@ -267,7 +267,7 @@
 	<header class="border-b border-separator-secondary bg-background-primary/80 backdrop-blur-lg">
 		<nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
 			<a href="/" class="font-display text-xl font-bold tracking-tight text-label-primary">prismo</a>
-			<a href="/" class="text-sm text-label-tertiary transition-colors hover:text-label-primary">← Back to home</a>
+			<a href="/devices" class="text-sm text-label-tertiary transition-colors hover:text-label-primary">← Back to devices</a>
 		</nav>
 	</header>
 
@@ -416,7 +416,7 @@
 									/>
 								</div>
 							</div>
-							<p class="mt-1.5 text-xs text-label-tertiary">Generate MQTT credentials from your device on the home page.</p>
+							<p class="mt-1.5 text-xs text-label-tertiary">Generate MQTT credentials from your device on the <a href="/devices" class="underline">devices page</a>.</p>
 						</div>
 						<div class="flex justify-center">
 							<MainButton buttonStyle="primary" size="L" icon="mdi:cog" label="Build Firmware" onclick={handleBuild} />

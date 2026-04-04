@@ -43,6 +43,13 @@
       "when": 1774636881940,
       "tag": "0005_heavy_psynapse",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775309363241,
+      "tag": "0006_parched_kingpin",
+      "breakpoints": true
     }
   ]
 }

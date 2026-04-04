@@ -12,6 +12,11 @@ services:
       - COMMIT_SHA=${COMMIT_SHA}
       - SESSION_SECRET=${SESSION_SECRET}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+      - MQTT_HOST=${MQTT_HOST}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_SSL=${MQTT_SSL}
     networks:
       - infra_reverse-proxy
       - infra_postgres-net
@@ -29,6 +34,9 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - WS_URL=${WS_URL}
+      - MQTT_HOST=${MQTT_HOST}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_SSL=${MQTT_SSL}
     networks:
       - infra_postgres-net
 
