@@ -5,7 +5,6 @@
 	import FeatureCard from '$lib/components/FeatureCard.svelte';
 	import StepCard from '$lib/components/StepCard.svelte';
 	import Icon from '@iconify/svelte';
-	import GoogleSignIn from '$lib/components/GoogleSignIn.svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -99,7 +98,7 @@
 			{#if data.user}
 				<UserAvatar user={data.user} />
 			{:else}
-				<GoogleSignIn clientId="205184359163-931un9es5p0hoavonjg7r1lbksri933n.apps.googleusercontent.com" />
+				<MainButton buttonStyle="primary" size="M" icon="mdi:google" label="Sign In" link="/auth/google" />
 			{/if}
 		</div>
 	</nav>
