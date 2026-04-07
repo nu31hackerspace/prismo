@@ -3,3 +3,4 @@
 __pycache__
 
 .claude/settings.local.json
+firmware/src/config_dev.py

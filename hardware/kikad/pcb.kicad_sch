@@ -1834,6 +1834,16 @@
 	)
 	(wire
 		(pts
+			(xy 96.52 44.45) (xy 96.52 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "097e5643-1b52-4b29-9d47-63eb66793826")
+	)
+	(wire
+		(pts
 			(xy 212.09 74.93) (xy 212.09 80.01)
 		)
 		(stroke
@@ -1911,6 +1921,16 @@
 			(type default)
 		)
 		(uuid "32a3f781-2971-4bd2-89ac-74084aa2cf67")
+	)
+	(wire
+		(pts
+			(xy 101.6 41.91) (xy 101.6 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "34e9f8f8-76c7-49f0-831d-13e9777c1d11")
 	)
 	(wire
 		(pts
@@ -2031,16 +2051,6 @@
 			(type default)
 		)
 		(uuid "56a356ff-426d-48fa-a911-b3c642e404ae")
-	)
-	(wire
-		(pts
-			(xy 101.6 54.61) (xy 101.6 60.96)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5a9b7fa1-9a31-4bc9-a8cc-fed9f0311de6")
 	)
 	(wire
 		(pts
@@ -2431,16 +2441,6 @@
 			(type default)
 		)
 		(uuid "d0396a1b-a73e-4bac-9f6f-61cd05c8962c")
-	)
-	(wire
-		(pts
-			(xy 101.6 41.91) (xy 101.6 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d1a30c6f-dc12-4f4f-b14f-e8e85bba6072")
 	)
 	(wire
 		(pts
@@ -3265,76 +3265,6 @@
 			(project "led_pcb"
 				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
 					(reference "D2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 101.6 50.8 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "6bc22449-789d-4688-a762-453f60cc6b64")
-		(property "Reference" "R14"
-			(at 104.14 49.5299 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "0"
-			(at 104.14 52.0699 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_THT:CNC_Ready_R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal"
-			(at 99.822 50.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 101.6 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 101.6 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "bd1792f0-9da3-48cf-95a1-b19888bf75ac")
-		)
-		(pin "1"
-			(uuid "b0b006db-520b-4833-a304-c3c28b4d92db")
-		)
-		(instances
-			(project ""
-				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
-					(reference "R14")
 					(unit 1)
 				)
 			)
@@ -4716,76 +4646,6 @@
 			(project ""
 				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
 					(reference "#PWR07")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 96.52 48.26 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "e9ed37a4-5088-4f8e-b0f3-98cd7f0786a7")
-		(property "Reference" "R15"
-			(at 99.06 46.9899 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "0"
-			(at 99.06 49.5299 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_THT:CNC_Ready_R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal"
-			(at 94.742 48.26 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 96.52 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 96.52 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "8e8e6b8a-b3ab-4410-bc26-c783f796baa1")
-		)
-		(pin "1"
-			(uuid "e0290ac3-f09e-44e9-adaa-49e36f88ef26")
-		)
-		(instances
-			(project "pcb"
-				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
-					(reference "R15")
 					(unit 1)
 				)
 			)
