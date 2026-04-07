@@ -1953,7 +1953,7 @@
 			(uuid "64e78c56-3166-4092-9faf-21a6bbb77de8")
 		)
 		(embedded_fonts no)
-		(model "${KIPRJMOD}/esp32 c3 supermini v19 with pins.step"
+		(model "${KIPRJMOD}/models/esp32 c3 supermini v19 with pins.step"
 			(offset
 				(xyz -9 11.7 2.5)
 			)
@@ -2149,7 +2149,7 @@
 			)
 		)
 		(embedded_fonts no)
-		(model "/Users/volodymyrs/Desktop/Github/nu31/prismo/hardware/PN532_NFC_Assembly_flip.step"
+		(model "${KIPRJMOD}/models/PN532_NFC_with_pins.step"
 			(offset
 				(xyz 4.9 0.2 10.8)
 			)
