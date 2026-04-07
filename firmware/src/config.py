@@ -1,11 +1,17 @@
 # Baked-in credentials — replaced by worker before build
-WIFI_SSID = "OpenVRT"#"{{WIFI_SSID}}"
-WIFI_PASS = "Xe62Mr869#[XMD"#"{{WIFI_PASS}}"
-MQTT_HOST = "mqtt.nu31.space"#"{{MQTT_HOST}}"
-MQTT_PORT = "8883"#"{{MQTT_PORT}}"
-MQTT_USER = "prismo_123"#"{{MQTT_USER}}"
-MQTT_PASS = "prismo_123"#"{{MQTT_PASS}}"
-MQTT_SSL  = "true"#"{{MQTT_SSL}}"
+WIFI_SSID = "{{WIFI_SSID}}"
+WIFI_PASS = "{{WIFI_PASS}}"
+MQTT_HOST = "{{MQTT_HOST}}"
+MQTT_PORT = "{{MQTT_PORT}}"
+MQTT_USER = "{{MQTT_USER}}"
+MQTT_PASS = "{{MQTT_PASS}}"
+MQTT_SSL  = "{{MQTT_SSL}}"
+
+# Local dev overrides (gitignored)
+try:
+    from src.config_dev import *
+except ImportError:
+    pass
 
 def get_wifi():
     if WIFI_SSID and not WIFI_SSID.startswith("{{"):

@@ -4,6 +4,7 @@ from src import reader_ui
 from src import config
 from src import health_log
 from src import mqtt_client
+from src import color
 
 ui = reader_ui.ReaderUI()
 
@@ -41,7 +42,10 @@ def on_trigger(action):
         health_log.write_warn("Unknown trigger action", action=action)
 
 wifi_manager = wifi_manager.WiFiManager()
-wifi_manager.connect()
+wifi_manager.connect(
+    on_attempt=color.wifi_connecting_pulse,
+    on_complete=color.turn_off_all,
+)
 
 mqtt_cfg = config.get_mqtt_config()
 if mqtt_cfg:
@@ -50,10 +54,12 @@ if mqtt_cfg:
     # initial attempt and are in place when maintain() reconnects later.
     health_log.set_mqtt_publisher(mqtt_client.publish_log)
     mqtt_client.subscribe_commands(on_add_key, on_trigger)
+    color.mqtt_connecting_pulse()
     try:
         mqtt_client.connect(host, port, user, passwd, use_ssl)
     except Exception as e:
         health_log.write_warn("Initial MQTT connect failed, will retry", error=str(e))
+    color.turn_off_all()
 
 health_log.write_info("Start reader")
 ui.ready_to_read()

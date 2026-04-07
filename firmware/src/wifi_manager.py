@@ -1,5 +1,4 @@
 import network
-import time
 import gc
 from src import config
 from src import health_log
@@ -9,7 +8,7 @@ class WiFiManager:
     def __init__(self):
         health_log.write_info("init wifi manager")
 
-    def connect(self):
+    def connect(self, on_attempt=None, on_complete=None):
         if not config.has_wifi():
             health_log.write_error("No WiFi configured")
             return
@@ -30,7 +29,11 @@ class WiFiManager:
             if wlan_sta.isconnected():
                 break
             max_wait -= 1
-            time.sleep(1)
+            if on_attempt:
+                on_attempt()
+
+        if on_complete:
+            on_complete()
 
         if wlan_sta.isconnected():
             ip = wlan_sta.ifconfig()[0]

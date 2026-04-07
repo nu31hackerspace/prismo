@@ -59,3 +59,28 @@ def play_start_animation():
             utime.sleep_ms(step_delay_ms)
     
     set_sub_light_color(0x000000)
+
+def _breathing_pulse(hex_color, steps=20, step_delay_ms=25):
+    r = (hex_color >> 16) & 0xFF
+    g = (hex_color >> 8) & 0xFF
+    b = hex_color & 0xFF
+
+    for i in range(steps + 1):
+        cr = int(r * i / steps)
+        cg = int(g * i / steps)
+        cb = int(b * i / steps)
+        set_sub_light_color((cr << 16) | (cg << 8) | cb)
+        utime.sleep_ms(step_delay_ms)
+
+    for i in range(steps, -1, -1):
+        cr = int(r * i / steps)
+        cg = int(g * i / steps)
+        cb = int(b * i / steps)
+        set_sub_light_color((cr << 16) | (cg << 8) | cb)
+        utime.sleep_ms(step_delay_ms)
+
+def wifi_connecting_pulse():
+    _breathing_pulse(0x0040FF)
+
+def mqtt_connecting_pulse():
+    _breathing_pulse(0x00C8C8)
