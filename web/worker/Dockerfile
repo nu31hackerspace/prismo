@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     libusb-1.0-0 curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install psycopg2-binary --break-system-packages
+RUN pip3 install pymongo --break-system-packages
 
 # ── ESP-IDF ──────────────────────────────────────────────────────────────────
 # Shallow clone to save time; --shallow-submodules limits submodule history too

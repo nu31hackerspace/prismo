@@ -15,22 +15,33 @@ def on_new_config_callback():
 def on_key_read(uid):
     allowed = config.is_user_allowed(uid)
     health_log.write_info("Key scanned", uid=uid, allowed=allowed)
-    config.save_last_key(uid)
     if allowed:
         ui.success()
     else:
         ui.error()
     mqtt_client.publish_scan(uid, allowed)
 
-def on_add_key(name, uid):
+def on_add_key(uid):
+    health_log.write_info('add_key command received', uid=uid)
     if not uid:
         health_log.write_warn("add_key command missing uid")
         return
     try:
-        config.add_user_to_white_list(name, uid)
-        health_log.write_info("Key added via MQTT", name=name, uid=uid)
+        config.add_uid(uid)
+        health_log.write_info("Key added via MQTT", uid=uid)
     except ValueError as e:
         health_log.write_warn("add_key failed", error=str(e))
+
+def on_remove_key(uid):
+    health_log.write_info('remove_key command received', uid=uid)
+    if not uid:
+        health_log.write_warn("remove_key command missing uid")
+        return
+    try:
+        config.delete_uid(uid)
+        health_log.write_info("Key removed via MQTT", uid=uid)
+    except ValueError as e:
+        health_log.write_warn("remove_key failed", error=str(e))
 
 def on_trigger(action):
     health_log.write_info("Trigger command received", action=action)
@@ -53,7 +64,7 @@ if mqtt_cfg:
     # Register publisher and handlers before connect so they survive a failed
     # initial attempt and are in place when maintain() reconnects later.
     health_log.set_mqtt_publisher(mqtt_client.publish_log)
-    mqtt_client.subscribe_commands(on_add_key, on_trigger)
+    mqtt_client.subscribe_commands(on_add_key, on_remove_key, on_trigger)
     color.mqtt_connecting_pulse()
     try:
         mqtt_client.connect(host, port, user, passwd, use_ssl)

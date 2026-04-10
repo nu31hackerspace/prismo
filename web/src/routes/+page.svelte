@@ -21,7 +21,7 @@
 		newToken = null;
 	}
 
-	const githubUrl = 'https://github.com/VovaStelmashchuk/prismo';
+	const githubUrl = 'https://github.com/nu31hackerspace/prismo';
 	const flasherUrl = '/devices/flash';
 
 	const features = [

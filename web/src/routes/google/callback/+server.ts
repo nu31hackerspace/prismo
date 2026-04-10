@@ -1,15 +1,13 @@
 import { error, redirect, type RequestHandler } from '@sveltejs/kit';
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '$env/dynamic/private';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { usersCol } from '$lib/server/db';
 import { SESSION_COOKIE, createSession } from '$lib/server/auth';
 
 async function loginWithPayload(
 	payload: { sub?: string; email?: string; name?: string },
 	cookies: import('@sveltejs/kit').Cookies
-) {
+): Promise<never> {
 	if (!payload.sub || !payload.email) {
 		throw error(400, 'Incomplete Google profile data');
 	}
@@ -18,19 +16,24 @@ async function loginWithPayload(
 	const email = payload.email;
 	const name = payload.name || email.split('@')[0];
 
-	const [existingUser] = await db.select().from(users).where(eq(users.googleId, googleId)).limit(1);
+	let user = await usersCol.findOne({ googleId });
 
-	const user = existingUser ?? (await db
-		.insert(users)
-		.values({ googleId, email, name })
-		.returning()
-		.then(([u]) => u));
+	if (!user) {
+		const result = await usersCol.insertOne({
+			googleId,
+			email,
+			name,
+			sessions: [],
+			createdAt: new Date()
+		});
+		user = await usersCol.findOne({ _id: result.insertedId });
+	}
 
 	if (!user) throw error(500, 'Failed to log in or create user');
 
-	const sessionId = await createSession(user.id);
+	const sessionToken = await createSession(user._id!.toHexString());
 
-	cookies.set(SESSION_COOKIE, sessionId, {
+	cookies.set(SESSION_COOKIE, sessionToken, {
 		path: '/',
 		httpOnly: true,
 		secure: process.env.NODE_ENV === 'production',
@@ -62,16 +65,16 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		throw error(401, 'Failed to exchange authorization code');
 	}
 
-	let payload;
+	let googlePayload;
 	try {
 		const ticket = await client.verifyIdToken({ idToken, audience: env.GOOGLE_CLIENT_ID });
-		payload = ticket.getPayload();
+		googlePayload = ticket.getPayload();
 	} catch (e) {
 		console.error('Error verifying Google ID token:', e);
 		throw error(401, 'Invalid Google ID token');
 	}
 
-	await loginWithPayload(payload ?? {}, cookies);
+	return await loginWithPayload(googlePayload ?? {}, cookies);
 };
 
 // Sign In With Google button (GIS credential POST)
@@ -84,14 +87,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	}
 
 	const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
-	let payload;
+	let googlePayload;
 	try {
 		const ticket = await client.verifyIdToken({ idToken: credential, audience: env.GOOGLE_CLIENT_ID });
-		payload = ticket.getPayload();
+		googlePayload = ticket.getPayload();
 	} catch (e) {
 		console.error('Error verifying Google ID token:', e);
 		throw error(401, 'Invalid Google ID token');
 	}
 
-	await loginWithPayload(payload ?? {}, cookies);
+	return await loginWithPayload(googlePayload ?? {}, cookies);
 };

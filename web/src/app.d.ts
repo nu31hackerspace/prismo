@@ -6,7 +6,7 @@ declare global {
 		interface Locals {
 			deviceUuid?: string;
 			user?: {
-				id: number;
+				id: string;
 				name: string;
 				email: string;
 			};

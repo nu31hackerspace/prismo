@@ -1,7 +1,15 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
 import { env } from '$env/dynamic/private';
-import * as schema from './schema';
+import type { UserDocument, TrackingDocument, DeviceDocument, WorkerJobDocument } from './schema';
 
-const client = postgres(env.DATABASE_URL!);
-export const db = drizzle(client, { schema });
+const client = new MongoClient(env.MONGODB_URL!);
+await client.connect();
+
+const database = client.db('prismo');
+
+export const usersCol = database.collection<UserDocument>('users');
+export const trackingCol = database.collection<TrackingDocument>('tracking');
+export const devicesCol = database.collection<DeviceDocument>('devices');
+export const workerJobsCol = database.collection<WorkerJobDocument>('worker_jobs');
+export const firmwareBucket = new GridFSBucket(database, { bucketName: 'firmware' });
+export { ObjectId };

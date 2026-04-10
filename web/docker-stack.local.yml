@@ -1,19 +1,83 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:16-alpine
+  mongo-rs-1:
+    image: mongo:8.2.3
+    ports:
+      - '27017:27017'
+    command:
+      - bash
+      - -c
+      - |
+        printf 'febc56df943bb5ffa20032407742e21667fa927fc91a317ea0b9fafd904db50b6eede8a91d759f6239ed543e832572b6b383e0eb8f3d35c47c69762dcab813ad526ef46b569ae6f6056ee674ef00b1244d92534b0e8ea2b0f5bd1cf37be0d4e56ae9e2863c1c58eb411e8193403cb7f12a2f205f593a1306c09a0132ef94582e\n' > /data/keyfile
+        chmod 400 /data/keyfile
+        chown 999:999 /data/keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --keyFile /data/keyfile --bind_ip_all
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - mongodb-rs-1-data:/data/db
+    networks:
+      - mongo-rs-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  mongo-rs-init:
+    image: mongo:8.2.3
+    links:
+      - mongo-rs-1
+    command:
+      - bash
+      - -c
+      - |
+        echo "Waiting for mongo-rs-1 to be ready..."
+        until mongosh --host mongo-rs-1 -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval "print(\"waited for connection\")"; do sleep 2; done
+        echo "Initializing Replica Set..."
+        mongosh --host mongo-rs-1 -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval 'try { rs.status() } catch (err) { rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:27017"}]}) }'
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    networks:
+      - mongo-rs-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 5
+
+  mongo-compass:
+    image: haohanyang/compass-web:0.3.1
+    restart: always
+    ports:
+      - '5000:8080'
+    environment:
+      - CW_MONGO_URI=mongodb://admin:admin@mongo-rs-1:27017/?directConnection=true&authSource=admin
+      - CW_BASIC_AUTH_USERNAME=admin
+      - CW_BASIC_AUTH_PASSWORD=admin
+    networks:
+      - mongo-rs-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  mqtt:
+    build: ./mosquitto
+    image: prismo-mqtt:local
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=prismo
+      - MQTT_ADMIN_USER=admin
+      - MQTT_ADMIN_PASSWORD=admin
     ports:
-      - '5432:5432'
+      - '1883:1883'
+      - '8883:8883'
     volumes:
-      - prismo-db-data:/var/lib/postgresql/data
+      - prismo-mqtt-data:/mosquitto/data
     networks:
       - prismo-net
+    deploy:
+      restart_policy:
+        condition: on-failure
 
 networks:
   prismo-net:
@@ -21,6 +85,12 @@ networks:
     attachable: true
     driver_opts:
       encrypted: 'true'
+  mongo-rs-net:
+    driver: overlay
+    attachable: true
+    driver_opts:
+      encrypted: 'true'
 
 volumes:
-  prismo-db-data:
+  mongodb-rs-1-data:
+  prismo-mqtt-data:

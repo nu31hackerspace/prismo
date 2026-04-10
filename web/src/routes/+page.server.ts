@@ -1,18 +1,26 @@
-import { db } from '$lib/server/db';
-import { devices as devicesTable } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { devicesCol, ObjectId } from '$lib/server/db';
 import { createDevice, generateMqttCredentials } from '$lib/devices/server/device-service';
 import { fail, type Actions } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 
-export const load = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
 		return { devices: [] };
 	}
 
-	const userDevices = await db.select().from(devicesTable).where(eq(devicesTable.ownerId, locals.user.id));
+	const userDevices = await devicesCol
+		.find({ ownerId: new ObjectId(locals.user.id) })
+		.toArray();
 
 	return {
-		devices: userDevices
+		devices: userDevices.map(({ _id, ownerId, name, deviceSlug, tokenKey, createdAt }) => ({
+			id: _id!.toHexString(),
+			ownerId: ownerId.toHexString(),
+			name,
+			deviceSlug,
+			tokenKey,
+			createdAt
+		}))
 	};
 };
 
@@ -35,9 +43,9 @@ export const actions: Actions = {
 		if (!locals.user) return fail(401, { message: 'Unauthorized' });
 
 		const data = await request.formData();
-		const deviceId = parseInt(data.get('deviceId') as string);
+		const deviceId = data.get('deviceId') as string;
 
-		if (isNaN(deviceId)) {
+		if (!deviceId) {
 			return fail(400, { message: 'Invalid Device ID' });
 		}
 

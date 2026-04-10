@@ -19,7 +19,7 @@ cp .env.example .env
 Minimum required variables:
 
 ```env
-DATABASE_URL=postgres://postgres:password@localhost:5432/prismo
+MONGODB_URL=mongodb://admin:admin@localhost:27017/prismo?authSource=admin
 SESSION_SECRET=any-random-secret-string
 GOOGLE_CLIENT_ID=your-google-client-id
 ```
@@ -49,7 +49,7 @@ App is available at `http://localhost:5173` with hot module replacement.
 
 The worker image is heavy (~several GB — it contains the full ESP-IDF and MicroPython toolchain). Pull the pre-built image from the registry and mount your local worker scripts over it so code changes are picked up instantly without rebuilding:
 
-The worker reads `DATABASE_URL` from the environment. The easiest way to supply it is via the same `.env` file you already have:
+The worker reads `MONGODB_URL` from the environment. The easiest way to supply it is via the same `.env` file you already have:
 
 ```bash
 docker run \
@@ -61,7 +61,7 @@ docker run \
   ghcr.io/nu31hackerspace/prismo-worker:latest
 ```
 
-> **Note:** Make sure `DATABASE_URL` in `.env` uses `host.docker.internal` instead of `localhost` so the container can reach your host PostgreSQL. On Linux add `--add-host=host.docker.internal:host-gateway` if the hostname doesn't resolve automatically.
+> **Note:** Make sure `MONGODB_URL` in `.env` uses `host.docker.internal` instead of `localhost` so the container can reach your host MongoDB. On Linux add `--add-host=host.docker.internal:host-gateway` if the hostname doesn't resolve automatically.
 
 The mounts override only the Python script and build wrapper — the toolchain, pre-compiled firmware objects, and firmware source stay in the container as built.
 
@@ -102,3 +102,23 @@ docker build -f web/worker/Dockerfile -t prismo-worker:local .
 ```
 
 Then swap `ghcr.io/nu31hackerspace/prismo-worker:latest` with `prismo-worker:local` in the run command above.
+
+
+## Run MQTT
+
+Build docker image
+
+```sh
+docker build -f mosquitto/Dockerfile -t prismo-mqtt:local .
+```
+
+Run docker stack
+```sh
+docker stack deploy --resolve-image never -c docker-stack.local.yml prismo_local
+```
+
+In case you run docker in some VM envirment, like colima, use socar for port redirect
+
+```
+socat TCP-LISTEN:11883,fork,reuseaddr TCP:192.168.64.2:1883
+```

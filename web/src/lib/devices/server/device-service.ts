@@ -1,6 +1,4 @@
-import { db } from '$lib/server/db';
-import { devices } from '$lib/server/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { devicesCol, ObjectId } from '$lib/server/db';
 import crypto from 'crypto';
 import { createDeviceMqttUser, updateDeviceMqttPassword } from './mqtt-admin';
 
@@ -10,29 +8,28 @@ function generateDeviceSlug(name: string): string {
 	return `${base}-${suffix}`;
 }
 
-export async function createDevice(userId: number, name: string) {
+export async function createDevice(userId: string, name: string) {
 	const tokenKey = crypto.randomBytes(32).toString('hex');
 	const deviceSlug = generateDeviceSlug(name);
 
 	await createDeviceMqttUser(deviceSlug, tokenKey);
 
-	const [newDevice] = await db
-		.insert(devices)
-		.values({
-			name,
-			deviceSlug,
-			ownerId: userId,
-			tokenKey
-		})
-		.returning();
-	return newDevice;
+	const result = await devicesCol.insertOne({
+		name,
+		deviceSlug,
+		ownerId: new ObjectId(userId),
+		tokenKey,
+		createdAt: new Date()
+	});
+
+	return { id: result.insertedId.toHexString(), name, deviceSlug, tokenKey };
 }
 
-export async function generateMqttCredentials(deviceId: number, userId: number) {
-	const [device] = await db
-		.select()
-		.from(devices)
-		.where(and(eq(devices.id, deviceId), eq(devices.ownerId, userId)));
+export async function generateMqttCredentials(deviceId: string, userId: string) {
+	const device = await devicesCol.findOne({
+		_id: new ObjectId(deviceId),
+		ownerId: new ObjectId(userId)
+	});
 
 	if (!device) throw new Error('Device not found or not owned by user');
 
@@ -40,14 +37,13 @@ export async function generateMqttCredentials(deviceId: number, userId: number) 
 
 	await updateDeviceMqttPassword(device.deviceSlug, tokenKey);
 
-	const [updatedDevice] = await db
-		.update(devices)
-		.set({ tokenKey })
-		.where(and(eq(devices.id, deviceId), eq(devices.ownerId, userId)))
-		.returning();
+	await devicesCol.updateOne(
+		{ _id: new ObjectId(deviceId) },
+		{ $set: { tokenKey } }
+	);
 
 	return {
-		mqttUser: updatedDevice.deviceSlug,
+		mqttUser: device.deviceSlug,
 		mqttPass: tokenKey
 	};
 }

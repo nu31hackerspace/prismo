@@ -7,6 +7,7 @@ from src import health_log
 _client = None
 _user = None
 _on_add_key = None
+_on_remove_key = None
 _on_trigger = None
 
 _host = None
@@ -100,25 +101,29 @@ def _on_message(topic, msg):
 
     if topic_str == "prismo/{}/cmd/add_key".format(_user):
         if _on_add_key:
-            _on_add_key(data.get("name", ""), data.get("uid", ""))
+            _on_add_key(data.get("uid", ""))
+    elif topic_str == "prismo/{}/cmd/remove_key".format(_user):
+        if _on_remove_key:
+            _on_remove_key(data.get("uid", ""))
     elif topic_str == "prismo/{}/cmd/trigger".format(_user):
         if _on_trigger:
             _on_trigger(data.get("action", ""))
 
-
-def subscribe_commands(on_add_key, on_trigger):
-    global _on_add_key, _on_trigger
+def subscribe_commands(on_add_key, on_remove_key, on_trigger):
+    global _on_add_key, _on_remove_key, _on_trigger
     _on_add_key = on_add_key
+    _on_remove_key = on_remove_key
     _on_trigger = on_trigger
     if _client and _user:
         _client.subscribe("prismo/{}/cmd/add_key".format(_user))
+        _client.subscribe("prismo/{}/cmd/remove_key".format(_user))
         _client.subscribe("prismo/{}/cmd/trigger".format(_user))
         health_log.write_info("MQTT subscribed to command topics", user=_user)
 
-
 def _subscribe_commands_internal():
-    if _client and _user and (_on_add_key is not None or _on_trigger is not None):
+    if _client and _user and (_on_add_key is not None or _on_remove_key is not None or _on_trigger is not None):
         _client.subscribe("prismo/{}/cmd/add_key".format(_user))
+        _client.subscribe("prismo/{}/cmd/remove_key".format(_user))
         _client.subscribe("prismo/{}/cmd/trigger".format(_user))
 
 

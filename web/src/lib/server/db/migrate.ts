@@ -1,77 +1,37 @@
-import postgres from 'postgres';
+import { MongoClient } from 'mongodb';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is not set');
+if (!process.env.MONGODB_URL) {
+  throw new Error('MONGODB_URL is not set');
 }
 
-const sql = postgres(process.env.DATABASE_URL, { max: 1 });
+const client = new MongoClient(process.env.MONGODB_URL);
 
 async function main() {
   console.log('Running database setup...');
+  await client.connect();
+  const db = client.db('prismo');
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS "users" (
-      "id" serial PRIMARY KEY NOT NULL,
-      "google_id" text UNIQUE,
-      "name" text NOT NULL,
-      "email" text NOT NULL UNIQUE,
-      "sessions" jsonb NOT NULL DEFAULT '[]',
-      "created_at" timestamp NOT NULL DEFAULT now()
-    )
-  `;
+  const users = db.collection('users');
+  await users.createIndex({ googleId: 1 }, { unique: true, sparse: true });
+  await users.createIndex({ email: 1 }, { unique: true });
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS "tracking" (
-      "id" serial PRIMARY KEY NOT NULL,
-      "device_uuid" text NOT NULL,
-      "event" text NOT NULL,
-      "context" text,
-      "country" text,
-      "payload" jsonb,
-      "created_at" timestamp NOT NULL DEFAULT now()
-    )
-  `;
+  const devices = db.collection('devices');
+  await devices.createIndex({ deviceSlug: 1 }, { unique: true });
+  await devices.createIndex({ ownerId: 1 });
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS "devices" (
-      "id" serial PRIMARY KEY NOT NULL,
-      "name" text NOT NULL,
-      "device_slug" text NOT NULL UNIQUE,
-      "token_key" text NOT NULL,
-      "owner_id" integer NOT NULL REFERENCES "users"("id"),
-      "created_at" timestamp NOT NULL DEFAULT now()
-    )
-  `;
+  const workerJobs = db.collection('worker_jobs');
+  await workerJobs.createIndex({ status: 1, createdAt: 1 });
+  await workerJobs.createIndex({ ownerId: 1 });
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS "files" (
-      "id" serial PRIMARY KEY NOT NULL,
-      "content" bytea NOT NULL,
-      "content_type" varchar(255) NOT NULL DEFAULT 'application/octet-stream',
-      "owner_id" integer NOT NULL REFERENCES "users"("id"),
-      "created_at" timestamp NOT NULL DEFAULT now()
-    )
-  `;
-
-  await sql`
-    CREATE TABLE IF NOT EXISTS "worker_jobs" (
-      "id" serial PRIMARY KEY NOT NULL,
-      "status" varchar(20) NOT NULL DEFAULT 'pending',
-      "attempt_count" integer NOT NULL DEFAULT 0,
-      "max_attempt_count" integer NOT NULL DEFAULT 3,
-      "owner_id" integer NOT NULL REFERENCES "users"("id"),
-      "created_at" timestamp NOT NULL DEFAULT now(),
-      "updated_at" timestamp NOT NULL DEFAULT now(),
-      "input_payload" jsonb NOT NULL,
-      "output_payload" jsonb
-    )
-  `;
+  const tracking = db.collection('tracking');
+  await tracking.createIndex({ deviceUuid: 1 });
+  await tracking.createIndex({ createdAt: 1 });
 
   console.log('Database setup complete!');
-  await sql.end();
+  await client.close();
   process.exit(0);
 }
 

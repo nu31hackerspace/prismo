@@ -1,6 +1,4 @@
-import { db } from './db';
-import { users } from './db/schema';
-import { eq } from 'drizzle-orm';
+import { usersCol, ObjectId } from './db';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
@@ -19,23 +17,22 @@ function getSecret(): string {
 	return secret;
 }
 
-export async function createSession(userId: number): Promise<string> {
+export async function createSession(userId: string): Promise<string> {
 	const sessionId = crypto.randomUUID();
 	const expiresAt = Date.now() + DAYS_365_MS;
 
-	const newSessionObj: UserSession = { id: sessionId, expiresAt };
+	const newSession: UserSession = { id: sessionId, expiresAt };
 
-	const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+	const user = await usersCol.findOne({ _id: new ObjectId(userId) });
 	if (!user) throw new Error('User not found');
 
-	const currentSessions: UserSession[] = Array.isArray(user.sessions) 
-		? (user.sessions as UserSession[]) 
-		: [];
+	const validSessions = (user.sessions ?? []).filter(s => s.expiresAt > Date.now());
+	validSessions.push(newSession);
 
-	const validSessions = currentSessions.filter(s => s.expiresAt > Date.now());
-	validSessions.push(newSessionObj);
-
-	await db.update(users).set({ sessions: validSessions }).where(eq(users.id, userId));
+	await usersCol.updateOne(
+		{ _id: new ObjectId(userId) },
+		{ $set: { sessions: validSessions } }
+	);
 
 	const token = jwt.sign(
 		{ userId, sessionId },
@@ -48,36 +45,32 @@ export async function createSession(userId: number): Promise<string> {
 
 export async function validateSession(token: string) {
 	try {
-		const decoded = jwt.verify(token, getSecret()) as { userId: number; sessionId: string };
+		const decoded = jwt.verify(token, getSecret()) as { userId: string; sessionId: string };
 		const { userId, sessionId } = decoded;
 
-		const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+		const user = await usersCol.findOne({ _id: new ObjectId(userId) });
 		if (!user) return { user: null, session: null };
 
-		const currentSessions = Array.isArray(user.sessions) ? (user.sessions as UserSession[]) : [];
-		
-		const activeSession = currentSessions.find(s => s.id === sessionId && s.expiresAt > Date.now());
+		const activeSession = (user.sessions ?? []).find(
+			s => s.id === sessionId && s.expiresAt > Date.now()
+		);
 
-		if (!activeSession) {
-			return { user: null, session: null };
-		}
+		if (!activeSession) return { user: null, session: null };
 
-		return { user, session: activeSession };
-
-	} catch (e) {
-		// Token is invalid, expired, or malformed
+		return {
+			user: { id: user._id!.toHexString(), name: user.name, email: user.email },
+			session: activeSession
+		};
+	} catch {
 		return { user: null, session: null };
 	}
 }
 
-export async function invalidateSession(userId: number, sessionId: string): Promise<void> {
-	const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-	if (!user) return;
-
-	const currentSessions = Array.isArray(user.sessions) ? (user.sessions as UserSession[]) : [];
-	const updatedSessions = currentSessions.filter(s => s.id !== sessionId);
-
-	await db.update(users).set({ sessions: updatedSessions }).where(eq(users.id, userId));
+export async function invalidateSession(userId: string, sessionId: string): Promise<void> {
+	await usersCol.updateOne(
+		{ _id: new ObjectId(userId) },
+		{ $pull: { sessions: { id: sessionId } as any } }
+	);
 }
 
 export { SESSION_COOKIE };

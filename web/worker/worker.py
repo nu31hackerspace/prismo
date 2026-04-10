@@ -1,14 +1,14 @@
 import os
 import time
 import threading
-import json
 import logging
 import subprocess
+from datetime import datetime, timezone
 
-import psycopg2
-import psycopg2.extras
+import pymongo
+import gridfs
 
-DATABASE_URL = os.environ['DATABASE_URL']
+MONGODB_URL = os.environ['MONGODB_URL']
 MQTT_HOST = os.environ.get('MQTT_HOST', 'localhost')
 MQTT_PORT = os.environ.get('MQTT_PORT', '1883')
 MQTT_SSL  = os.environ.get('MQTT_SSL', 'false')
@@ -26,47 +26,38 @@ with open(CONFIG_PATH) as f:
     CONFIG_TEMPLATE = f.read()
 
 
-def get_conn():
-    return psycopg2.connect(DATABASE_URL)
+def get_db():
+    client = pymongo.MongoClient(MONGODB_URL)
+    return client['prismo']
 
 
-def pick_job(conn):
+def pick_job(db):
     """Atomically claim one pending job. Returns dict or None."""
-    with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-        cur.execute("""
-            UPDATE worker_jobs
-               SET status        = 'processing',
-                   attempt_count = attempt_count + 1,
-                   updated_at    = NOW()
-             WHERE id = (
-                   SELECT id FROM worker_jobs
-                    WHERE status        = 'pending'
-                      AND attempt_count < max_attempt_count
-                    ORDER BY created_at ASC
-                    LIMIT 1
-                    FOR UPDATE SKIP LOCKED
-             )
-         RETURNING *
-        """)
-        conn.commit()
-        row = cur.fetchone()
-        return dict(row) if row else None
+    return db['worker_jobs'].find_one_and_update(
+        {
+            'status': 'pending',
+            '$expr': {'$lt': ['$attemptCount', '$maxAttemptCount']}
+        },
+        {
+            '$set': {'status': 'processing', 'updatedAt': datetime.now(timezone.utc)},
+            '$inc': {'attemptCount': 1}
+        },
+        sort=[('createdAt', pymongo.ASCENDING)],
+        return_document=pymongo.ReturnDocument.AFTER
+    )
 
 
-def heartbeat_loop(job_id: int, stop: threading.Event):
-    """Background thread: keeps updated_at fresh while a job is in progress."""
-    conn = get_conn()
+def heartbeat_loop(job_id, stop: threading.Event):
+    """Background thread: keeps updatedAt fresh while a job is in progress."""
+    db = get_db()
     while not stop.wait(HEARTBEAT_INTERVAL):
         try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "UPDATE worker_jobs SET updated_at = NOW() WHERE id = %s",
-                    (job_id,)
-                )
-                conn.commit()
+            db['worker_jobs'].update_one(
+                {'_id': job_id},
+                {'$set': {'updatedAt': datetime.now(timezone.utc)}}
+            )
         except Exception as e:
             log.warning("Heartbeat failed for job %s: %s", job_id, e)
-    conn.close()
 
 
 def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str) -> bytes:
@@ -100,64 +91,66 @@ def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str) -> 
             f.write(CONFIG_TEMPLATE)
 
 
-def store_file(conn, content: bytes, owner_id: int) -> int:
-    with conn.cursor() as cur:
-        cur.execute(
-            "INSERT INTO files (content, content_type, owner_id) VALUES (%s, %s, %s) RETURNING id",
-            (psycopg2.Binary(content), 'application/octet-stream', owner_id),
-        )
-        file_id = cur.fetchone()[0]
-        conn.commit()
-        return file_id
+def store_file(db, content: bytes, owner_id: str) -> str:
+    fs = gridfs.GridFS(db, collection='firmware')
+    file_id = fs.put(
+        content,
+        contentType='application/octet-stream',
+        metadata={'ownerId': owner_id, 'contentType': 'application/octet-stream'}
+    )
+    return str(file_id)
 
 
-def complete_job(conn, job_id: int, output: dict):
-    with conn.cursor() as cur:
-        cur.execute(
-            "UPDATE worker_jobs SET status = 'completed', output_payload = %s, updated_at = NOW() WHERE id = %s",
-            (json.dumps(output), job_id),
-        )
-        conn.commit()
+def complete_job(db, job_id, file_id: str):
+    db['worker_jobs'].update_one(
+        {'_id': job_id},
+        {'$set': {
+            'status': 'completed',
+            'outputPayload': {'fileId': file_id},
+            'updatedAt': datetime.now(timezone.utc)
+        }}
+    )
 
 
-def fail_job(conn, job_id: int, attempt_count: int, max_attempt_count: int, error_msg: str):
-    # Reset to pending if retries remain, otherwise mark failed
+def fail_job(db, job_id, attempt_count: int, max_attempt_count: int, error_msg: str):
     new_status = 'failed' if attempt_count >= max_attempt_count else 'pending'
-    with conn.cursor() as cur:
-        cur.execute(
-            "UPDATE worker_jobs SET status = %s, output_payload = %s, updated_at = NOW() WHERE id = %s",
-            (new_status, json.dumps({'error': error_msg}), job_id),
-        )
-        conn.commit()
+    db['worker_jobs'].update_one(
+        {'_id': job_id},
+        {'$set': {
+            'status': new_status,
+            'outputPayload': {'error': error_msg},
+            'updatedAt': datetime.now(timezone.utc)
+        }}
+    )
 
 
 def process_job(job: dict):
-    log.info("Processing job %s (attempt %s/%s)", job['id'], job['attempt_count'], job['max_attempt_count'])
+    log.info("Processing job %s (attempt %s/%s)", job['_id'], job['attemptCount'], job['maxAttemptCount'])
 
     stop = threading.Event()
-    hb = threading.Thread(target=heartbeat_loop, args=(job['id'], stop), daemon=True)
+    hb = threading.Thread(target=heartbeat_loop, args=(job['_id'], stop), daemon=True)
     hb.start()
 
-    conn = get_conn()
+    db = get_db()
     try:
-        payload = job['input_payload']
+        payload = job['inputPayload']
         ssid = payload['ssid']
         password = payload['password']
         mqtt_user = payload['mqttUser']
         mqtt_pass = payload['mqttPass']
+        owner_id = str(job['ownerId'])
 
         firmware = build_firmware(ssid, password, mqtt_user, mqtt_pass)
 
-        file_id = store_file(conn, firmware, job['owner_id'])
-        complete_job(conn, job['id'], {'fileId': file_id})
-        log.info("Job %s completed → file %s", job['id'], file_id)
+        file_id = store_file(db, firmware, owner_id)
+        complete_job(db, job['_id'], file_id)
+        log.info("Job %s completed → file %s", job['_id'], file_id)
     except Exception as e:
-        log.error("Job %s failed: %s", job['id'], e)
-        fail_job(conn, job['id'], job['attempt_count'], job['max_attempt_count'], str(e))
+        log.error("Job %s failed: %s", job['_id'], e)
+        fail_job(db, job['_id'], job['attemptCount'], job['maxAttemptCount'], str(e))
     finally:
         stop.set()
         hb.join(timeout=HEARTBEAT_INTERVAL + 2)
-        conn.close()
 
 
 def main():
@@ -165,9 +158,8 @@ def main():
     while True:
         try:
             log.info("Try to find new job")
-            conn = get_conn()
-            job = pick_job(conn)
-            conn.close()
+            db = get_db()
+            job = pick_job(db)
 
             if job:
                 process_job(job)

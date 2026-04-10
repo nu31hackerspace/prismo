@@ -5,7 +5,7 @@
 		user,
 		size = 'M'
 	} = $props<{
-		user: { id: number; name: string; email: string };
+		user: { id: string; name: string; email: string };
 		size?: 'S' | 'M' | 'L' | 'XL';
 	}>();
 

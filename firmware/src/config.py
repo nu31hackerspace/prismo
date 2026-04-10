@@ -63,15 +63,6 @@ PIN_BUZZER = 0
 
 import json
 
-_last_key_id = None
-
-def save_last_key(key):
-    global _last_key_id
-    _last_key_id = key
-
-def get_last_key():
-    return _last_key_id
-
 def is_user_allowed(uid):
     cfg = load_config() or {}
     users = cfg.get('allowed_users', [])
@@ -80,20 +71,26 @@ def is_user_allowed(uid):
             return True
     return False
 
-def add_user_to_white_list(username, uid):
+def add_uid(uid):
+    health_log.write_info('add_uid ', uid=uid)
     cfg = load_config() or {}
     users = cfg.get('allowed_users', [])
     for user in users:
         if user.get('uid') == uid:
             raise ValueError(f"User with UID {uid} already exists")
-    users.append({'name': username, 'uid': uid})
+    users.append({'uid': uid})
     cfg['allowed_users'] = users
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
-
-def save_config(hostname):
+        
+def delete_uid(uid):
+    health_log.write_info('delete_uid ', uid=uid)
     cfg = load_config() or {}
-    cfg['hostname'] = hostname
+    users = cfg.get('allowed_users', [])
+    new_users = [u for u in users if u.get('uid') != uid]
+    if len(new_users) == len(users):
+        raise ValueError(f"User with UID {uid} not found")
+    cfg['allowed_users'] = new_users
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
 
