@@ -3,10 +3,11 @@ from src import reader
 from src import reader_ui
 from src import config
 from src import health_log
-from src import mqtt_client
+from src.mqtt_client import PrismoMQTT
 from src import color
 
 ui = reader_ui.ReaderUI()
+mqtt = PrismoMQTT()
 
 def on_new_config_callback():
     health_log.write_info("New config saved")
@@ -19,7 +20,7 @@ def on_key_read(uid):
         ui.success()
     else:
         ui.error()
-    mqtt_client.publish_scan(uid, allowed)
+    mqtt.publish_scan(uid, allowed)
 
 def on_add_key(uid):
     health_log.write_info('add_key command received', uid=uid)
@@ -63,15 +64,15 @@ if mqtt_cfg:
     host, port, user, passwd, use_ssl = mqtt_cfg
     # Register publisher and handlers before connect so they survive a failed
     # initial attempt and are in place when maintain() reconnects later.
-    health_log.set_mqtt_publisher(mqtt_client.publish_log)
-    mqtt_client.subscribe_commands(on_add_key, on_remove_key, on_trigger)
+    health_log.set_mqtt_publisher(mqtt.publish_log)
     color.mqtt_connecting_pulse()
     try:
-        mqtt_client.connect(host, port, user, passwd, use_ssl)
+        mqtt.connect(host, port, user, passwd, use_ssl)
+        mqtt.subscribe_commands(on_add_key, on_remove_key, on_trigger)
     except Exception as e:
         health_log.write_warn("Initial MQTT connect failed, will retry", error=str(e))
     color.turn_off_all()
 
 health_log.write_info("Start reader")
 ui.ready_to_read()
-reader.subscribe(on_key_read)
+reader.subscribe(on_key_read, mqtt)

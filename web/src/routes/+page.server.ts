@@ -13,12 +13,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.toArray();
 
 	return {
-		devices: userDevices.map(({ _id, ownerId, name, deviceSlug, tokenKey, createdAt }) => ({
+		devices: userDevices.map(({ _id, ownerId, name, deviceSlug, createdAt }) => ({
 			id: _id!.toHexString(),
 			ownerId: ownerId.toHexString(),
 			name,
 			deviceSlug,
-			tokenKey,
 			createdAt
 		}))
 	};

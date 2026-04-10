@@ -69,6 +69,18 @@ if [ ! -f "${DYNSEC_FILE}" ]; then
     mosquitto_ctrl dynsec init "${DYNSEC_FILE}" "${MQTT_ADMIN_USER}" "${MQTT_ADMIN_PASSWORD}"
     chown mosquitto:mosquitto "${DYNSEC_FILE}"
     chmod 0640 "${DYNSEC_FILE}"
+
+    # mosquitto_ctrl dynsec init only grants the admin role publish access to
+    # $CONTROL/dynamic-security/# (dynsec management). Add publishClientSend for
+    # all topics so the admin user can publish to regular MQTT topics.
+    echo "[entrypoint] Starting broker briefly to apply admin ACL..."
+    /usr/sbin/mosquitto -c "${CONF_FILE}" &
+    MOSQ_PID=$!
+    until mosquitto_ctrl -u "${MQTT_ADMIN_USER}" -P "${MQTT_ADMIN_PASSWORD}" \
+        dynsec getDefaultACLAccess >/dev/null 2>&1; do sleep 1; done
+    mosquitto_ctrl -u "${MQTT_ADMIN_USER}" -P "${MQTT_ADMIN_PASSWORD}" \
+        dynsec addRoleACL "${MQTT_ADMIN_USER}" publishClientSend '#' 0 allow
+    kill "${MOSQ_PID}" && wait "${MOSQ_PID}" 2>/dev/null || true
     echo "[entrypoint] Dynamic security initialised with admin user '${MQTT_ADMIN_USER}'."
 else
     echo "[entrypoint] Dynamic security file already exists, skipping init."

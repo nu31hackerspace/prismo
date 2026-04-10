@@ -4,7 +4,6 @@ import machine
 from machine import SPI, Pin, WDT
 from src import config
 from src import health_log
-from src import mqtt_client
 from libs.PN532 import PN532
 
 # Health flag – read by src.health_log to report NFC hardware status.
@@ -13,7 +12,7 @@ from libs.PN532 import PN532
 # False = PN532 init failed
 reader_ok = None
 
-def subscribe(callback):
+def subscribe(callback, mqtt_manager=None):
     global reader_ok
     health_log.write_info("Starting Prismo Reader (SPI)")
     
@@ -61,7 +60,8 @@ def subscribe(callback):
     while True:
         uid = nfc.read_passive_target(timeout=500)
         wdt.feed()
-        mqtt_client.maintain()
+        if mqtt_manager:
+            mqtt_manager.maintain()
 
         if uid is not None:
              health_log.write_info("Card found", uid=[hex(i) for i in uid])

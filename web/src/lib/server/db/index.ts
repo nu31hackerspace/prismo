@@ -13,3 +13,14 @@ export const devicesCol = database.collection<DeviceDocument>('devices');
 export const workerJobsCol = database.collection<WorkerJobDocument>('worker_jobs');
 export const firmwareBucket = new GridFSBucket(database, { bucketName: 'firmware' });
 export { ObjectId };
+
+async function ensureIndexes() {
+	try {
+		await devicesCol.createIndex({ tokenKey: 1 }, { unique: true });
+		await devicesCol.createIndex({ deviceSlug: 1 }, { unique: true });
+	} catch (error) {
+		console.error('Failed to create MongoDB indexes:', error);
+	}
+}
+
+await ensureIndexes();

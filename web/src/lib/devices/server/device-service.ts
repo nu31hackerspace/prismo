@@ -1,5 +1,7 @@
 import { devicesCol, ObjectId } from '$lib/server/db';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import { env } from '$env/dynamic/private';
 import { createDeviceMqttUser, updateDeviceMqttPassword } from './mqtt-admin';
 
 function generateDeviceSlug(name: string): string {
@@ -8,11 +10,23 @@ function generateDeviceSlug(name: string): string {
 	return `${base}-${suffix}`;
 }
 
-export async function createDevice(userId: string, name: string) {
-	const tokenKey = crypto.randomBytes(32).toString('hex');
-	const deviceSlug = generateDeviceSlug(name);
+/**
+ * Derives the MQTT password from the signing key stored in the DB.
+ * The key alone is not the password — SESSION_SECRET is also required,
+ * so a DB leak does not expose working MQTT credentials.
+ */
+function deriveMqttPassword(tokenKey: string): string {
+	const secret = env.SESSION_SECRET;
+	if (!secret) throw new Error('SESSION_SECRET env var is not set');
+	return jwt.sign({ tokenKey: tokenKey }, secret, { noTimestamp: true });
+}
 
-	await createDeviceMqttUser(deviceSlug, tokenKey);
+export async function createDevice(userId: string, name: string) {
+	const tokenKey = crypto.randomBytes(4).toString('hex');
+	const deviceSlug = generateDeviceSlug(name);
+	const mqttPassword = deriveMqttPassword(tokenKey);
+
+	await createDeviceMqttUser(deviceSlug, mqttPassword);
 
 	const result = await devicesCol.insertOne({
 		name,
@@ -22,7 +36,7 @@ export async function createDevice(userId: string, name: string) {
 		createdAt: new Date()
 	});
 
-	return { id: result.insertedId.toHexString(), name, deviceSlug, tokenKey };
+	return { id: result.insertedId.toHexString(), name, deviceSlug };
 }
 
 export async function generateMqttCredentials(deviceId: string, userId: string) {
@@ -33,9 +47,10 @@ export async function generateMqttCredentials(deviceId: string, userId: string) 
 
 	if (!device) throw new Error('Device not found or not owned by user');
 
-	const tokenKey = crypto.randomBytes(32).toString('hex');
+	const tokenKey = crypto.randomBytes(4).toString('hex');
+	const mqttPassword = deriveMqttPassword(tokenKey);
 
-	await updateDeviceMqttPassword(device.deviceSlug, tokenKey);
+	await updateDeviceMqttPassword(device.deviceSlug, mqttPassword);
 
 	await devicesCol.updateOne(
 		{ _id: new ObjectId(deviceId) },
@@ -44,6 +59,6 @@ export async function generateMqttCredentials(deviceId: string, userId: string) 
 
 	return {
 		mqttUser: device.deviceSlug,
-		mqttPass: tokenKey
+		mqttPass: mqttPassword
 	};
 }

@@ -28,6 +28,7 @@ export interface DeviceDocument {
 	_id?: ObjectId;
 	name: string;
 	deviceSlug: string;
+	/** Signing key used to derive the MQTT password — never returned to the client. */
 	tokenKey: string;
 	ownerId: ObjectId;
 	createdAt: Date;
