@@ -1,5 +1,8 @@
 import { error, type Handle } from '@sveltejs/kit';
 import { validateSession, SESSION_COOKIE } from '$lib/server/auth';
+import { initializeScanListener } from '$lib/devices/server/scan-listener';
+
+initializeScanListener();
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// --- CSRF Protection ---

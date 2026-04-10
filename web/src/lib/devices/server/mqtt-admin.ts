@@ -25,16 +25,22 @@ function connectAdmin(): Promise<mqtt.MqttClient> {
 		const adminUser = env.USERNAME;
 		const adminPass = env.PASSWORD;
 		const protocol = mqttSsl ? 'mqtts' : 'mqtt';
-		const client = mqtt.connect(`${protocol}://${mqttHost}:${mqttPort}`, {
-			username: adminUser,
-			password: adminPass
+		const url = `${protocol}://${mqttHost}:${mqttPort}`;
+		console.log(`[mqtt-admin] connecting to ${url} as ${adminUser}`);
+		const client = mqtt.connect(url, { username: adminUser, password: adminPass });
+		client.once('connect', () => {
+			console.log('[mqtt-admin] connected');
+			resolve(client);
 		});
-		client.once('connect', () => resolve(client));
-		client.once('error', reject);
+		client.once('error', (err) => {
+			console.error('[mqtt-admin] connection error:', err);
+			reject(err);
+		});
 	});
 }
 
 async function sendDynSecCommands(commands: DynSecCommand[]): Promise<void> {
+	console.log('[mqtt-admin] sendDynSecCommands:', commands.map((c) => c.command));
 	const client = await connectAdmin();
 
 	try {
@@ -69,10 +75,12 @@ async function sendDynSecCommands(commands: DynSecCommand[]): Promise<void> {
 					for (const resp of body.responses ?? []) {
 						if (resp.correlationData && pending.has(resp.correlationData)) {
 							if (resp.error) {
+								console.error(`[mqtt-admin] DynSec ${resp.command} error:`, resp.error);
 								clearTimeout(timer);
 								reject(new Error(`DynSec ${resp.command} failed: ${resp.error}`));
 								return;
 							}
+							console.log(`[mqtt-admin] DynSec ${resp.command} ok`);
 							pending.delete(resp.correlationData);
 							if (pending.size === 0) {
 								clearTimeout(timer);
@@ -91,6 +99,7 @@ async function sendDynSecCommands(commands: DynSecCommand[]): Promise<void> {
 }
 
 export async function createDeviceMqttUser(slug: string, password: string): Promise<void> {
+	console.log(`[mqtt-admin] createDeviceMqttUser: ${slug}`);
 	const roleName = `${slug}-role`;
 	await sendDynSecCommands([
 		{ command: 'createClient', username: slug, password },
@@ -111,8 +120,32 @@ export async function createDeviceMqttUser(slug: string, password: string): Prom
 		},
 		{ command: 'addClientRole', username: slug, rolename: roleName }
 	]);
+	console.log(`[mqtt-admin] createDeviceMqttUser done: ${slug}`);
 }
 
 export async function updateDeviceMqttPassword(slug: string, password: string): Promise<void> {
+	console.log(`[mqtt-admin] updateDeviceMqttPassword: ${slug}`);
 	await sendDynSecCommands([{ command: 'modifyClient', username: slug, password }]);
+	console.log(`[mqtt-admin] updateDeviceMqttPassword done: ${slug}`);
+}
+
+export async function publishToDevice(
+	slug: string,
+	subtopic: string,
+	payload: Record<string, unknown>,
+	options: { retain?: boolean } = {}
+): Promise<void> {
+	const topic = `prismo/${slug}/${subtopic}`;
+	console.log(`[mqtt-admin] publishToDevice: ${topic}`, payload, options.retain ? '(retained)' : '');
+	const client = await connectAdmin();
+	try {
+		await new Promise<void>((resolve, reject) => {
+			client.publish(topic, JSON.stringify(payload), { qos: 1, retain: options.retain ?? false }, (err) =>
+				err ? reject(err) : resolve()
+			);
+		});
+		console.log(`[mqtt-admin] publishToDevice done: ${topic}`);
+	} finally {
+		client.end();
+	}
 }

@@ -32,6 +32,8 @@ export interface DeviceDocument {
 	tokenKey: string;
 	ownerId: ObjectId;
 	createdAt: Date;
+	/** Set by the scan-listener on each heartbeat from the device. */
+	lastSeenAt?: Date;
 }
 
 export interface WorkerJobDocument {
@@ -44,4 +46,27 @@ export interface WorkerJobDocument {
 	outputPayload?: { fileId?: string; error?: string };
 	createdAt: Date;
 	updatedAt: Date;
+}
+
+export type DeviceHistoryAction = 'scan' | 'trigger' | 'key_added' | 'key_removed' | 'sync';
+
+export interface DeviceKeyDocument {
+	_id?: ObjectId;
+	deviceId: ObjectId;
+	keyId: string;
+	username: string;
+	addedAt: Date;
+}
+
+export interface DeviceHistoryDocument {
+	_id?: ObjectId;
+	deviceId: ObjectId;
+	deviceSlug: string;
+	action: DeviceHistoryAction;
+	keyId?: string;
+	username?: string;
+	allowed?: boolean;
+	triggerAction?: 'success' | 'error';
+	actorUserId?: ObjectId;
+	createdAt: Date;
 }

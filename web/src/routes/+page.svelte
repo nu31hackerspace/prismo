@@ -2,24 +2,20 @@
 	import { enhance } from '$app/forms';
 	import type { ActionData, PageData } from './$types';
 	import MainButton from '$lib/components/MainButton.svelte';
+	import Badge from '$lib/components/Badge.svelte';
 	import FeatureCard from '$lib/components/FeatureCard.svelte';
 	import StepCard from '$lib/components/StepCard.svelte';
 	import Icon from '@iconify/svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
+	const ONLINE_THRESHOLD_MS = 15_000;
 
-	let newToken = $state<{ mqttUser: string; mqttPass: string } | null>(null);
-
-	$effect(() => {
-		if (form?.token) {
-			newToken = form.token;
-		}
-	});
-
-	function closeTokenAlert() {
-		newToken = null;
+	function isOnline(lastSeenAt: Date | null): boolean {
+		if (!lastSeenAt) return false;
+		return Date.now() - new Date(lastSeenAt).getTime() < ONLINE_THRESHOLD_MS;
 	}
+
+	let { data }: { data: PageData; form: ActionData } = $props();
 
 	const githubUrl = 'https://github.com/nu31hackerspace/prismo';
 	const flasherUrl = '/devices/flash';
@@ -140,34 +136,6 @@
 				</form>
 			</div>
 
-			{#if newToken}
-				<div class="mb-8 rounded-2xl border border-accent-primary/20 bg-accent-primary/[0.03] p-6 backdrop-blur-sm">
-					<div class="flex items-start justify-between">
-						<div class="flex items-start gap-4">
-							<div class="mt-1 rounded-full bg-accent-primary/10 p-2 text-accent-primary">
-								<Icon icon="mdi:key-variant" class="h-6 w-6" />
-							</div>
-							<div>
-								<h3 class="font-display text-lg font-bold text-label-primary">New MQTT Credentials Generated</h3>
-								<p class="mt-1 text-sm text-label-secondary">
-									Copy these credentials now. The password will not be shown again.
-								</p>
-								<div class="mt-4 space-y-2 rounded-lg border border-separator-secondary bg-background-primary p-4 font-mono text-xs text-label-primary shadow-inner">
-									<div><span class="text-label-tertiary">Username: </span>{newToken?.mqttUser}</div>
-									<div><span class="text-label-tertiary">Password: </span>{newToken?.mqttPass}</div>
-								</div>
-							</div>
-						</div>
-						<button
-							onclick={closeTokenAlert}
-							class="text-label-tertiary hover:text-label-primary"
-						>
-							<Icon icon="mdi:close" class="h-6 w-6" />
-						</button>
-					</div>
-				</div>
-			{/if}
-
 			{#if data.devices && data.devices.length > 0}
 				<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{#each data.devices as device}
@@ -176,25 +144,27 @@
 								<div class="rounded-xl bg-background-primary p-3 text-label-secondary group-hover:text-accent-primary transition-colors">
 									<Icon icon="mdi:chip" class="h-6 w-6" />
 								</div>
-								<div class="text-xs text-label-tertiary">
-									Created {new Date(device.createdAt).toLocaleDateString()}
+								<div class="flex items-center gap-2">
+									<Badge
+										label={isOnline(device.lastSeenAt) ? 'Online' : 'Offline'}
+										variant={isOnline(device.lastSeenAt) ? 'success' : 'error'}
+									/>
+									<span class="text-xs text-label-tertiary">
+										{new Date(device.createdAt).toLocaleDateString()}
+									</span>
 								</div>
 							</div>
 
-							<h3 class="mb-2 font-display text-xl font-bold text-label-primary">{device.name}</h3>
-							<p class="mb-6 flex-grow text-sm text-label-secondary">
-								Status: Ready to connect
-							</p>
+							<h3 class="mb-1 font-display text-xl font-bold text-label-primary">{device.name}</h3>
+							<p class="mb-6 flex-grow font-mono text-xs text-label-tertiary">{device.deviceSlug}</p>
 
-							<form method="POST" action="?/createToken" use:enhance>
-								<input type="hidden" name="deviceId" value={device.id} />
-								<MainButton
-									label="Generate Token"
-									icon="mdi:refresh"
-									buttonStyle="secondary"
-									size="M"
-								/>
-							</form>
+							<MainButton
+								label="Manage"
+								icon="mdi:cog"
+								buttonStyle="secondary"
+								size="M"
+								link="/devices/{device.deviceSlug}"
+							/>
 						</div>
 					{/each}
 				</div>

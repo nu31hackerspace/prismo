@@ -52,9 +52,13 @@ class PrismoMQTT:
         self._on_add_key = None
         self._on_remove_key = None
         self._on_trigger = None
+        self._on_sync_keys = None
 
         self._pending_logs = []
         self._MAX_PENDING = 50
+
+        self._HEARTBEAT_INTERVAL_MS = 5_000
+        self._last_heartbeat_ms = None
 
         self._RECONNECT_BACKOFF_MIN_MS = 5_000
         self._RECONNECT_BACKOFF_MAX_MS = 120_000
@@ -103,18 +107,23 @@ class PrismoMQTT:
         elif topic_str == "prismo/{}/cmd/trigger".format(self._user):
             if self._on_trigger:
                 self._on_trigger(data.get("action", ""))
+        elif topic_str == "prismo/{}/cmd/sync".format(self._user):
+            if self._on_sync_keys:
+                self._on_sync_keys(data.get("keys", []))
 
-    def subscribe_commands(self, on_add_key, on_remove_key, on_trigger):
+    def subscribe_commands(self, on_add_key, on_remove_key, on_trigger, on_sync_keys=None):
         health_log.write_info("subscribe_commands")
         self._on_add_key = on_add_key
         self._on_remove_key = on_remove_key
         self._on_trigger = on_trigger
-        
+        self._on_sync_keys = on_sync_keys
+
         if self._client and self._user:
             health_log.write_info("Subscribing to command topics", user=self._user)
             self._client.subscribe("prismo/{}/cmd/add_key".format(self._user))
             self._client.subscribe("prismo/{}/cmd/remove_key".format(self._user))
             self._client.subscribe("prismo/{}/cmd/trigger".format(self._user))
+            self._client.subscribe("prismo/{}/cmd/sync".format(self._user))
             health_log.write_info("MQTT subscribed to command topics", user=self._user)
         else:
             health_log.write_error("MQTT client or user not initialized", client=str(self._client), user=self._user)
@@ -124,6 +133,20 @@ class PrismoMQTT:
             self._client.subscribe("prismo/{}/cmd/add_key".format(self._user))
             self._client.subscribe("prismo/{}/cmd/remove_key".format(self._user))
             self._client.subscribe("prismo/{}/cmd/trigger".format(self._user))
+            self._client.subscribe("prismo/{}/cmd/sync".format(self._user))
+
+    def publish_heartbeat(self):
+        if self._client is None or self._user is None:
+            return
+        topic = "prismo/{}/status".format(self._user)
+        try:
+            self._client.publish(topic, ujson.dumps({"online": True}))
+            self._last_heartbeat_ms = utime.ticks_ms()
+            self._consecutive_failures = 0
+        except Exception as e:
+            health_log.write_warn("MQTT publish_heartbeat failed", error=str(e))
+            self._consecutive_failures += 1
+            self._mark_disconnected()
 
     def publish_scan(self, uid, allowed):
         if self._client is None or self._user is None:
@@ -216,6 +239,11 @@ class PrismoMQTT:
                 if self._last_ping_ms is None or utime.ticks_diff(now, self._last_ping_ms) >= self._PING_INTERVAL_MS:
                     self._do_ping()
 
+            if self._client is not None:
+                now = utime.ticks_ms()
+                if self._last_heartbeat_ms is None or utime.ticks_diff(now, self._last_heartbeat_ms) >= self._HEARTBEAT_INTERVAL_MS:
+                    self.publish_heartbeat()
+
             if self._client is not None and self._consecutive_failures >= self._MAX_CONSECUTIVE_FAILURES:
                 health_log.write_warn("MQTT too many consecutive failures, forcing reconnect", failures=self._consecutive_failures)
                 self._mark_disconnected()
@@ -242,6 +270,7 @@ class PrismoMQTT:
             self._client = c
             self._consecutive_failures = 0
             self._last_ping_ms = utime.ticks_ms()
+            self._last_heartbeat_ms = None  # send heartbeat immediately on next maintain()
             self._subscribe_commands_internal()
             health_log.write_info("MQTT reconnected", host=self._host, pending_logs=len(self._pending_logs))
             self._reconnect_backoff_ms = self._RECONNECT_BACKOFF_MIN_MS

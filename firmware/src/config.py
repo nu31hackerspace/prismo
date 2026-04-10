@@ -95,6 +95,16 @@ def delete_uid(uid):
         json.dump(cfg, f)
 
 
+def set_uids(keys):
+    """Replace the entire allowed_users list.
+    keys — list of dicts with at least a 'uid' field, e.g. [{'uid': 'abc', 'username': 'Alice'}]
+    """
+    health_log.write_info('set_uids', count=len(keys))
+    cfg = load_config() or {}
+    cfg['allowed_users'] = [{'uid': k['uid'], 'username': k.get('username', '')} for k in keys if k.get('uid')]
+    with open(RUN_TIME_CONFIG_FILE, 'w') as f:
+        json.dump(cfg, f)
+
 def load_config():
     try:
         with open(RUN_TIME_CONFIG_FILE, 'r') as f:

@@ -1,5 +1,5 @@
 import { devicesCol, ObjectId } from '$lib/server/db';
-import { createDevice, generateMqttCredentials } from '$lib/devices/server/device-service';
+import { createDevice } from '$lib/devices/server/device-service';
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -13,12 +13,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.toArray();
 
 	return {
-		devices: userDevices.map(({ _id, ownerId, name, deviceSlug, createdAt }) => ({
+		devices: userDevices.map(({ _id, ownerId, name, deviceSlug, createdAt, lastSeenAt }) => ({
 			id: _id!.toHexString(),
 			ownerId: ownerId.toHexString(),
 			name,
 			deviceSlug,
-			createdAt
+			createdAt,
+			lastSeenAt: lastSeenAt ?? null
 		}))
 	};
 };
@@ -38,21 +39,4 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	createToken: async ({ request, locals }) => {
-		if (!locals.user) return fail(401, { message: 'Unauthorized' });
-
-		const data = await request.formData();
-		const deviceId = data.get('deviceId') as string;
-
-		if (!deviceId) {
-			return fail(400, { message: 'Invalid Device ID' });
-		}
-
-		try {
-			const token = await generateMqttCredentials(deviceId, locals.user.id);
-			return { token };
-		} catch (e: any) {
-			return fail(400, { message: e.message });
-		}
-	}
 };

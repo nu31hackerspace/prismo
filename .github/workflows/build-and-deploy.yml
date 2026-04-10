@@ -105,7 +105,7 @@ jobs:
           echo "IMAGE_NAME='${{ env.IMAGE_NAME }}'" >> .env
           echo "WORKER_IMAGE_NAME='${{ env.WORKER_IMAGE_NAME }}'" >> .env
           echo "COMMIT_SHA='${{ env.COMMIT_SHA }}'" >> .env
-          echo "DATABASE_URL='postgres://${{ env.USERNAME }}:${{ env.PASSWORD }}@postgres-1:5432/prismo'" >> .env
+          echo "MONGODB_URL='mongodb://${{ env.USERNAME }}:${{ env.PASSWORD }}@mongo-rs-1:27017/prismo?replicaSet=rs0&authSource=admin&directConnection=true'" >> .env
           echo "ORIGIN='https://prismo.nu31.space'" >> .env
           echo "SESSION_SECRET='${{ secrets.SESSION_SECRET }}'" >> .env
           echo "GOOGLE_CLIENT_ID='${{ vars.GOOGLE_CLIENT_ID }}'" >> .env

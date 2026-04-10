@@ -53,6 +53,15 @@ def on_trigger(action):
     else:
         health_log.write_warn("Unknown trigger action", action=action)
 
+def on_sync_keys(keys):
+    """Replace the local allowlist with the server-authoritative key list."""
+    health_log.write_info("sync_keys command received", count=len(keys))
+    try:
+        config.set_uids(keys)
+        health_log.write_info("Keys synced from server", count=len(keys))
+    except Exception as e:
+        health_log.write_warn("sync_keys failed", error=str(e))
+
 wifi_manager = wifi_manager.WiFiManager()
 wifi_manager.connect(
     on_attempt=color.wifi_connecting_pulse,
@@ -68,7 +77,7 @@ if mqtt_cfg:
     color.mqtt_connecting_pulse()
     try:
         mqtt.connect(host, port, user, passwd, use_ssl)
-        mqtt.subscribe_commands(on_add_key, on_remove_key, on_trigger)
+        mqtt.subscribe_commands(on_add_key, on_remove_key, on_trigger, on_sync_keys)
     except Exception as e:
         health_log.write_warn("Initial MQTT connect failed, will retry", error=str(e))
     color.turn_off_all()

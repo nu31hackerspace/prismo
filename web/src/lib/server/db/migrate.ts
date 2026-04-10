@@ -30,6 +30,18 @@ async function main() {
   await tracking.createIndex({ deviceUuid: 1 });
   await tracking.createIndex({ createdAt: 1 });
 
+  const deviceKeys = db.collection('device_keys');
+  await deviceKeys.createIndex({ deviceId: 1 });
+  await deviceKeys.createIndex({ deviceId: 1, keyId: 1 }, { unique: true });
+
+  const deviceHistory = db.collection('device_history');
+  await deviceHistory.createIndex({ deviceId: 1, createdAt: -1 });
+  await deviceHistory.createIndex({ deviceSlug: 1, createdAt: -1 });
+  await deviceHistory.createIndex(
+    { deviceId: 1, createdAt: -1 },
+    { partialFilterExpression: { action: 'scan', allowed: false }, name: 'device_id_unauth_scans' }
+  );
+
   console.log('Database setup complete!');
   await client.close();
   process.exit(0);
