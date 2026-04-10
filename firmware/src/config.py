@@ -30,7 +30,7 @@ def get_mqtt_config():
 
 DEBUG=False
 QUICK_START=False
-MUTE_BUZZER=True
+MUTE_BUZZER=False
 
 RUN_TIME_CONFIG_FILE = "config.json"
 
