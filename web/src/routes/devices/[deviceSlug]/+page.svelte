@@ -5,24 +5,14 @@
 	import MainButton from '$lib/components/MainButton.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import Icon from '@iconify/svelte';
+	import DeviceHistory from './DeviceHistory.svelte';
+	import DeviceDangerZone from './DeviceDangerZone.svelte';
 
 	const ONLINE_THRESHOLD_MS = 15_000;
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	let newToken = $state<{ mqttUser: string; mqttPass: string } | null>(null);
-
-	$effect(() => {
-		if (form?.token) {
-			newToken = form.token;
-		}
-	});
-
-	function closeTokenAlert() {
-		newToken = null;
-	}
-
-	// Online status — seeded from server data, kept current via SSE status events.
+	// ── Online status ─────────────────────────────────────────────────────
 	let isOnline = $state(
 		data.device.lastSeenAt
 			? Date.now() - new Date(data.device.lastSeenAt).getTime() < ONLINE_THRESHOLD_MS
@@ -30,9 +20,7 @@
 	);
 	let offlineTimer: ReturnType<typeof setTimeout> | null = null;
 
-	// Reactive history and lastUnauth — seeded from server data, updated live via SSE.
-	// The $effect resets both whenever the load function re-runs (e.g. after a form action),
-	// at which point the server data already includes any previously SSE-delivered events.
+	// ── Live history + lastUnauth via SSE ─────────────────────────────────
 	let historyItems = $state([...data.history]);
 	let lastUnauth = $state(data.lastUnauth);
 
@@ -57,9 +45,7 @@
 		source.addEventListener('status', () => {
 			isOnline = true;
 			if (offlineTimer) clearTimeout(offlineTimer);
-			offlineTimer = setTimeout(() => {
-				isOnline = false;
-			}, ONLINE_THRESHOLD_MS);
+			offlineTimer = setTimeout(() => { isOnline = false; }, ONLINE_THRESHOLD_MS);
 		});
 
 		source.onerror = () => console.error('[sse] connection error');
@@ -69,22 +55,6 @@
 			if (offlineTimer) clearTimeout(offlineTimer);
 		};
 	});
-
-	const actionLabels: Record<string, string> = {
-		scan: 'Scan',
-		trigger: 'Trigger',
-		key_added: 'Key Added',
-		key_removed: 'Key Removed',
-		sync: 'Keys Synced'
-	};
-
-	const actionIcons: Record<string, string> = {
-		scan: 'mdi:nfc-variant',
-		trigger: 'mdi:lightning-bolt',
-		key_added: 'mdi:key-plus',
-		key_removed: 'mdi:key-remove',
-		sync: 'mdi:sync'
-	};
 
 	function formatDate(date: Date) {
 		return new Date(date).toLocaleString();
@@ -208,101 +178,9 @@
 
 		<!-- Right column -->
 		<div class="flex flex-col gap-6">
-			<!-- History -->
-			<div class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-6">
-				<div class="mb-4 flex items-center gap-3">
-					<div class="rounded-xl bg-background-primary p-2 text-label-secondary">
-						<Icon icon="mdi:history" class="h-5 w-5" />
-					</div>
-					<h2 class="font-display text-lg font-bold text-label-primary">History</h2>
-				</div>
-
-				{#if historyItems.length === 0}
-					<p class="text-sm text-label-tertiary">No events recorded yet.</p>
-				{:else}
-					<ul class="space-y-3">
-						{#each historyItems as event}
-							<li class="flex items-start gap-3 rounded-xl border border-separator-secondary bg-background-primary px-4 py-3">
-								<div class="mt-0.5 shrink-0 text-label-secondary">
-									<Icon icon={actionIcons[event.action] ?? 'mdi:circle'} class="h-4 w-4" />
-								</div>
-								<div class="min-w-0 flex-1">
-									<div class="flex items-center gap-2">
-										<span class="text-sm font-semibold text-label-primary">
-											{actionLabels[event.action] ?? event.action}
-										</span>
-										{#if event.action === 'scan'}
-											<span
-												class="rounded-full px-2 py-0.5 text-xs font-semibold {event.allowed
-													? 'bg-green-500/10 text-green-500'
-													: 'bg-red-500/10 text-red-500'}"
-											>
-												{event.allowed ? 'Allowed' : 'Denied'}
-											</span>
-										{/if}
-										{#if event.action === 'trigger'}
-											<span
-												class="rounded-full px-2 py-0.5 text-xs font-semibold {event.triggerAction === 'success'
-													? 'bg-green-500/10 text-green-500'
-													: 'bg-red-500/10 text-red-500'}"
-											>
-												{event.triggerAction}
-											</span>
-										{/if}
-									</div>
-									{#if event.keyId}
-										<div class="font-mono text-xs text-label-secondary">{event.keyId}{event.username ? ` · ${event.username}` : ''}</div>
-									{/if}
-									<div class="mt-0.5 text-xs text-label-tertiary">{formatDate(event.createdAt)}</div>
-								</div>
-							</li>
-						{/each}
-					</ul>
-				{/if}
-			</div>
+			<DeviceHistory items={historyItems} />
 		</div>
 	</div>
 
-	<!-- Token alert -->
-	{#if newToken}
-		<div class="my-8 rounded-2xl border border-accent-primary/20 bg-accent-primary/[0.03] p-6 backdrop-blur-sm">
-			<div class="flex items-start justify-between">
-				<div class="flex items-start gap-4">
-					<div class="mt-1 rounded-full bg-accent-primary/10 p-2 text-accent-primary">
-						<Icon icon="mdi:key-variant" class="h-6 w-6" />
-					</div>
-					<div>
-						<h3 class="font-display text-lg font-bold text-label-primary">New MQTT Credentials Generated</h3>
-						<p class="mt-1 text-sm text-label-secondary">
-							Copy these credentials now. The password will not be shown again.
-						</p>
-						<div class="mt-4 space-y-2 rounded-lg border border-separator-secondary bg-background-primary p-4 font-mono text-xs text-label-primary shadow-inner">
-							<div><span class="text-label-tertiary">Username: </span>{newToken.mqttUser}</div>
-							<div><span class="text-label-tertiary">Password: </span>{newToken.mqttPass}</div>
-						</div>
-					</div>
-				</div>
-				<button onclick={closeTokenAlert} class="text-label-tertiary hover:text-label-primary">
-					<Icon icon="mdi:close" class="h-6 w-6" />
-				</button>
-			</div>
-		</div>
-	{/if}
-
-	<!-- Danger Zone -->
-	<div class="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.03] p-6">
-		<div class="mb-4 flex items-center gap-3">
-			<div class="rounded-xl bg-background-primary p-2 text-label-secondary">
-				<Icon icon="mdi:key-variant" class="h-5 w-5" />
-			</div>
-			<h2 class="font-display text-lg font-bold text-label-primary">MQTT Credentials</h2>
-			<Badge label="Danger Zone" variant="error" />
-		</div>
-		<p class="mb-4 text-sm text-label-secondary">
-			Regenerate credentials for this device. The previous password will stop working immediately and the device will disconnect until reflashed.
-		</p>
-		<form method="POST" action="?/createToken" use:enhance>
-			<MainButton label="Generate Token" icon="mdi:refresh" buttonStyle="secondary" size="M" />
-		</form>
-	</div>
+	<DeviceDangerZone {form} />
 </main>

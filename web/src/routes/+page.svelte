@@ -18,7 +18,6 @@
 	let { data }: { data: PageData; form: ActionData } = $props();
 
 	const githubUrl = 'https://github.com/nu31hackerspace/prismo';
-	const flasherUrl = '/devices/flash';
 
 	const features = [
 		{
@@ -174,30 +173,6 @@
 					<p class="text-label-secondary">No devices found. Add your first device to get started.</p>
 				</div>
 			{/if}
-
-			<!-- Flash block -->
-			<div class="mt-12 rounded-2xl border border-separator-secondary bg-fill-tertiary p-8">
-				<div class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-					<div>
-						<div class="mb-2 flex items-center gap-3">
-							<div class="rounded-xl bg-background-primary p-2 text-label-secondary">
-								<Icon icon="mdi:flash" class="h-5 w-5" />
-							</div>
-							<h2 class="font-display text-xl font-bold text-label-primary">Flash Firmware</h2>
-						</div>
-						<p class="text-sm text-label-secondary">
-							Build and flash Prismo firmware with your WiFi credentials baked in — directly from the browser.
-						</p>
-					</div>
-					<MainButton
-						buttonStyle="primary"
-						size="L"
-						icon="mdi:flash"
-						label="Open Flasher"
-						link={flasherUrl}
-					/>
-				</div>
-			</div>
 		</div>
 	</section>
 {:else}
@@ -338,13 +313,6 @@
 					class="text-sm text-label-tertiary transition-colors hover:text-label-primary"
 				>
 					Docs
-				</a>
-				<a
-					href={flasherUrl}
-					rel="noopener noreferrer"
-					class="text-sm text-label-tertiary transition-colors hover:text-label-primary"
-				>
-					Flasher
 				</a>
 			</div>
 			<span class="text-xs text-label-tertiary"> open source · MIT license </span>
