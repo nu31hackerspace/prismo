@@ -62,8 +62,7 @@ mpremote cp src/config.py :src/config.py + reset
 # src/config_dev.py
 WIFI_SSID = "MyNetwork"
 WIFI_PASS = "MyPassword"
-MQTT_HOST = "mqtt.example.com"
-MQTT_PORT = "8883"
+MQTT_HOST = "mqtt.example.com:8883"
 MQTT_USER = "device_id"
 MQTT_PASS = "device_secret"
 MQTT_SSL  = "true"

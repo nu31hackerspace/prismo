@@ -1,11 +1,13 @@
 # Baked-in credentials — replaced by worker before build
 WIFI_SSID = "{{WIFI_SSID}}"
 WIFI_PASS = "{{WIFI_PASS}}"
-MQTT_HOST = "{{MQTT_HOST}}"
-MQTT_PORT = "{{MQTT_PORT}}"
+MQTT_URL  = "{{MQTT_URL}}"
 MQTT_USER = "{{MQTT_USER}}"
 MQTT_PASS = "{{MQTT_PASS}}"
-MQTT_SSL  = "{{MQTT_SSL}}"
+
+DEBUG=False
+QUICK_START=False
+MUTE_BUZZER=False
 
 # Local dev overrides (gitignored)
 try:
@@ -24,13 +26,15 @@ def has_wifi():
 
 def get_mqtt_config():
     """Returns (host, port, user, password, ssl) or None if not configured."""
-    if MQTT_HOST and not MQTT_HOST.startswith("{{"):
-        return MQTT_HOST, int(MQTT_PORT), MQTT_USER, MQTT_PASS, MQTT_SSL == "true"
-    return None
+    if not MQTT_URL or MQTT_URL.startswith("{{"):
+        return None
+    scheme, rest = MQTT_URL.split('://', 1)
+    ssl = scheme in ('mqtts', 'ssl')
+    host_port = rest.split(':', 1)
+    host = host_port[0]
+    port = int(host_port[1]) if len(host_port) > 1 else (8883 if ssl else 1883)
+    return host, port, MQTT_USER, MQTT_PASS, ssl
 
-DEBUG=False
-QUICK_START=False
-MUTE_BUZZER=False
 
 RUN_TIME_CONFIG_FILE = "config.json"
 

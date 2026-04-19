@@ -19,13 +19,9 @@ interface DynSecResponse {
 
 function connectAdmin(): Promise<mqtt.MqttClient> {
 	return new Promise((resolve, reject) => {
-		const mqttHost = env.MQTT_HOST ?? 'localhost';
-		const mqttPort = parseInt(env.MQTT_PORT ?? '1883');
-		const mqttSsl = env.MQTT_SSL === 'true';
 		const adminUser = env.USERNAME;
 		const adminPass = env.PASSWORD;
-		const protocol = mqttSsl ? 'mqtts' : 'mqtt';
-		const url = `${protocol}://${mqttHost}:${mqttPort}`;
+		const url = env.MQTT_URL ?? 'mqtt://localhost:1883';
 		console.log(`[mqtt-admin] connecting to ${url} as ${adminUser}`);
 		const client = mqtt.connect(url, { username: adminUser, password: adminPass });
 		client.once('connect', () => {

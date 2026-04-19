@@ -110,6 +110,7 @@ jobs:
           echo "SESSION_SECRET='${{ secrets.SESSION_SECRET }}'" >> .env
           echo "GOOGLE_CLIENT_ID='${{ vars.GOOGLE_CLIENT_ID }}'" >> .env
           echo "GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}'" >> .env
+          echo "MQTT_URL='${{ vars.MQTT_URL }}'" >> .env
 
       - name: Deploy Docker Stack
         uses: cssnr/stack-deploy-action@v1

@@ -8,12 +8,7 @@ export function initializeScanListener(): void {
 	if (initialized) return;
 	initialized = true;
 
-	const mqttHost = env.MQTT_HOST ?? 'localhost';
-	const mqttPort = parseInt(env.MQTT_PORT ?? '1883');
-	const mqttSsl = env.MQTT_SSL === 'true';
-	const protocol = mqttSsl ? 'mqtts' : 'mqtt';
-
-	const url = `${protocol}://${mqttHost}:${mqttPort}`;
+	const url = env.MQTT_URL
 	const clientId = `prismo-scan-listener-${process.pid}`;
 	console.log(`[scan-listener] connecting to ${url} (clientId: ${clientId})`);
 

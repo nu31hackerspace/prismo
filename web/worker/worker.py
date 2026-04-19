@@ -9,9 +9,8 @@ import pymongo
 import gridfs
 
 MONGODB_URL = os.environ['MONGODB_URL']
-MQTT_HOST = os.environ.get('MQTT_HOST', 'localhost')
-MQTT_PORT = os.environ.get('MQTT_PORT', '1883')
-MQTT_SSL  = os.environ.get('MQTT_SSL', 'false')
+
+_mqtt_url = os.environ.get('MQTT_URL', 'mqtt://localhost:1883')
 CONFIG_PATH = '/firmware/src/config.py'
 FIRMWARE_OUTPUT = '/opt/micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin'
 POLL_INTERVAL = 5   # seconds between polls when queue is empty
@@ -64,11 +63,9 @@ def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str) -> 
     config = CONFIG_TEMPLATE \
         .replace('{{WIFI_SSID}}', ssid) \
         .replace('{{WIFI_PASS}}', password) \
-        .replace('{{MQTT_HOST}}', MQTT_HOST) \
-        .replace('{{MQTT_PORT}}', MQTT_PORT) \
+        .replace('{{MQTT_URL}}', _mqtt_url) \
         .replace('{{MQTT_USER}}', mqtt_user) \
-        .replace('{{MQTT_PASS}}', mqtt_pass) \
-        .replace('{{MQTT_SSL}}', MQTT_SSL)
+        .replace('{{MQTT_PASS}}', mqtt_pass)
 
     with open(CONFIG_PATH, 'w') as f:
         f.write(config)
