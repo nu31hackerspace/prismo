@@ -117,32 +117,6 @@
 </header>
 
 <main class="mx-auto max-w-6xl px-6 pt-32 pb-20">
-	<!-- Token alert -->
-	{#if newToken}
-		<div class="mb-8 rounded-2xl border border-accent-primary/20 bg-accent-primary/[0.03] p-6 backdrop-blur-sm">
-			<div class="flex items-start justify-between">
-				<div class="flex items-start gap-4">
-					<div class="mt-1 rounded-full bg-accent-primary/10 p-2 text-accent-primary">
-						<Icon icon="mdi:key-variant" class="h-6 w-6" />
-					</div>
-					<div>
-						<h3 class="font-display text-lg font-bold text-label-primary">New MQTT Credentials Generated</h3>
-						<p class="mt-1 text-sm text-label-secondary">
-							Copy these credentials now. The password will not be shown again.
-						</p>
-						<div class="mt-4 space-y-2 rounded-lg border border-separator-secondary bg-background-primary p-4 font-mono text-xs text-label-primary shadow-inner">
-							<div><span class="text-label-tertiary">Username: </span>{newToken.mqttUser}</div>
-							<div><span class="text-label-tertiary">Password: </span>{newToken.mqttPass}</div>
-						</div>
-					</div>
-				</div>
-				<button onclick={closeTokenAlert} class="text-label-tertiary hover:text-label-primary">
-					<Icon icon="mdi:close" class="h-6 w-6" />
-				</button>
-			</div>
-		</div>
-	{/if}
-
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 		<!-- Left column -->
 		<div class="flex flex-col gap-6">
@@ -288,6 +262,32 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Token alert -->
+	{#if newToken}
+		<div class="my-8 rounded-2xl border border-accent-primary/20 bg-accent-primary/[0.03] p-6 backdrop-blur-sm">
+			<div class="flex items-start justify-between">
+				<div class="flex items-start gap-4">
+					<div class="mt-1 rounded-full bg-accent-primary/10 p-2 text-accent-primary">
+						<Icon icon="mdi:key-variant" class="h-6 w-6" />
+					</div>
+					<div>
+						<h3 class="font-display text-lg font-bold text-label-primary">New MQTT Credentials Generated</h3>
+						<p class="mt-1 text-sm text-label-secondary">
+							Copy these credentials now. The password will not be shown again.
+						</p>
+						<div class="mt-4 space-y-2 rounded-lg border border-separator-secondary bg-background-primary p-4 font-mono text-xs text-label-primary shadow-inner">
+							<div><span class="text-label-tertiary">Username: </span>{newToken.mqttUser}</div>
+							<div><span class="text-label-tertiary">Password: </span>{newToken.mqttPass}</div>
+						</div>
+					</div>
+				</div>
+				<button onclick={closeTokenAlert} class="text-label-tertiary hover:text-label-primary">
+					<Icon icon="mdi:close" class="h-6 w-6" />
+				</button>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Danger Zone -->
 	<div class="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[0.03] p-6">
