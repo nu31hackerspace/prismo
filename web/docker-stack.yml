@@ -17,7 +17,8 @@ services:
       - MQTT_URL=${MQTT_URL}
     networks:
       - infra_reverse-proxy
-      - infra_postgres-net
+      - infra_mongo-rs-net
+      - infra_mqtt-net
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
       interval: 15s
@@ -34,7 +35,8 @@ services:
       - WS_URL=${WS_URL}
       - MQTT_URL=${MQTT_URL}
     networks:
-      - infra_postgres-net
+      - infra_mongo-rs-net
+      - infra_mqtt-net
 
 networks:
   infra_reverse-proxy:
