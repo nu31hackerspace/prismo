@@ -95,6 +95,7 @@ jobs:
     needs:
       - build-web-image
       - build-worker-image
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4

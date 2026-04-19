@@ -41,5 +41,7 @@ services:
 networks:
   infra_reverse-proxy:
     external: true
-  infra_postgres-net:
+  infra_mongo-rs-net:
+    external: true
+  infra_mqtt-net:
     external: true
