@@ -35,5 +35,8 @@ async function ensureIndexes() {
 }
 
 if (env.MONGODB_URL) {
+	console.info("init the mongo db")
 	ensureIndexes().catch(console.error);
+} else {
+	console.error("cannot connect to mongo, MONGODB_URL not exist")
 }
