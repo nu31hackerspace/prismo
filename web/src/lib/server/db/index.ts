@@ -2,9 +2,7 @@ import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
 import { env } from '$env/dynamic/private';
 import type { UserDocument, TrackingDocument, DeviceDocument, WorkerJobDocument, DeviceKeyDocument, DeviceHistoryDocument } from './schema';
 
-const client = new MongoClient(env.MONGODB_URL!);
-await client.connect();
-
+const client = new MongoClient(env.MONGODB_URL ?? 'mongodb://localhost:27017');
 const database = client.db('prismo');
 
 export const usersCol = database.collection<UserDocument>('users');
@@ -36,4 +34,6 @@ async function ensureIndexes() {
 	}
 }
 
-await ensureIndexes();
+if (env.MONGODB_URL) {
+	ensureIndexes().catch(console.error);
+}

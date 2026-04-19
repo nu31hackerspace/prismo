@@ -87,7 +87,6 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }}:${{ env.COMMIT_SHA }}
-          # Registry cache: layers like ESP-IDF install are reused across runs
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }}:latest
           cache-to: type=inline
 
