@@ -12,15 +12,16 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
 		"format": "prettier --write .",
-		"db:migrate": "tsx src/lib/server/db/migrate.ts"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.59.1",
 		"@sveltejs/adapter-node": "^5.5.2",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/qrcode": "^1.5.6",
+		"devalue": "^5.7.1",
 		"mdsvex": "^0.12.6",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
@@ -30,16 +31,17 @@
 		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1",
-		"vite-plugin-devtools-json": "^1.0.0"
+		"vite-plugin-devtools-json": "^1.0.0",
+		"vitest": "^4.1.5"
 	},
 	"dependencies": {
 		"@iconify/svelte": "^5.2.1",
-		"mqtt": "^5.10.4",
 		"dotenv": "^17.3.1",
 		"esptool-js": "^0.5.7",
 		"google-auth-library": "^10.6.2",
 		"jsonwebtoken": "^9.0.3",
 		"mongodb": "^6.17.0",
+		"mqtt": "^5.10.4",
 		"qrcode": "^1.5.4",
 		"tsx": "^4.21.0"
 	}

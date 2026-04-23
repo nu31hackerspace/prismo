@@ -1,5 +1,5 @@
 import { redirect, type RequestHandler } from '@sveltejs/kit';
-import { OAuth2Client } from 'google-auth-library';
+import { OAuth2Client } from '$lib/server/google-auth';
 import { env } from '$env/dynamic/private';
 
 export const GET: RequestHandler = async () => {

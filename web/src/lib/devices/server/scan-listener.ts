@@ -101,7 +101,7 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 	console.log(`[scan-listener] history record saved for "${deviceSlug}"`);
 }
 
-async function handleHeartbeat(topic: string): Promise<void> {
+export async function handleHeartbeat(topic: string): Promise<void> {
 	// topic format: prismo/{deviceSlug}/status
 	const parts = topic.split('/');
 	if (parts.length !== 3) return;
