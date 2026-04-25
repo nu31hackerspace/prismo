@@ -27,6 +27,7 @@ export default defineConfig({
 		reuseExistingServer: !process.env.CI,
 		env: {
 			TEST_MODE: '1',
+			MONGODB_DATABASE: 'prismo_e2e',
 		},
 	},
 });

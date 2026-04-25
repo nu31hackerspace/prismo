@@ -13,6 +13,9 @@ from libs.PN532 import PN532
 reader_ok = None
 
 def subscribe(callback, mqtt_manager=None):
+    if mqtt_manager:
+        mqtt_manager.maintain()
+    
     global reader_ok
     health_log.write_info("Starting Prismo Reader (SPI)")
     

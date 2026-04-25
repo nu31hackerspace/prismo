@@ -3,7 +3,7 @@ import { env } from '$env/dynamic/private';
 import type { UserDocument, TrackingDocument, DeviceDocument, WorkerJobDocument, DeviceKeyDocument, DeviceHistoryDocument } from './schema';
 
 const client = new MongoClient(env.MONGODB_URL ?? 'mongodb://localhost:27017');
-const database = client.db('prismo');
+const database = client.db(env.MONGODB_DATABASE ?? 'prismo');
 
 export const usersCol = database.collection<UserDocument>('users');
 export const trackingCol = database.collection<TrackingDocument>('tracking');

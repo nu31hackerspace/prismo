@@ -15,9 +15,9 @@ from machine import Pin
 import src.config as config
 
 config.DEBUG = True
-config.QUICK_START = True   
-config.MUTE_BUZZER = True   
-config.SUCCESS_SIGNAL_DURATION = 100  # Keep fake test cycles fast
+config.QUICK_START = True
+config.MUTE_BUZZER = True
+config.SUCCESS_SIGNAL_DURATION = 100
 
 class MockReader:
     callback = None
