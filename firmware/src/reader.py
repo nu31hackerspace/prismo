@@ -1,4 +1,6 @@
 import time
+import uhashlib
+import ubinascii
 import utime
 import machine
 from machine import SPI, Pin, WDT
@@ -67,10 +69,11 @@ def subscribe(callback, mqtt_manager=None):
             mqtt_manager.maintain()
 
         if uid is not None:
-             health_log.write_info("Card found", uid=[hex(i) for i in uid])
+             uid_str = "".join("{:02x}".format(i) for i in uid)
+             uid_hash = ubinascii.hexlify(uhashlib.sha256(uid_str).digest()).decode()
+             health_log.write_info("Card found", uid_hash=uid_hash)
              if callback:
-                 uid_str = "".join("{:02x}".format(i) for i in uid)
-                 callback(uid_str)
+                 callback(uid_hash)
              time.sleep(1)
 
         now = utime.ticks_ms()

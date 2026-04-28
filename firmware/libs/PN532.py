@@ -106,7 +106,7 @@ class PN532:
         time.sleep(1)
         self.CSB.off()
         time.sleep_ms(2)
-        self._spi.write(bytearray([0x00]))
+        self._spi.write(bytearray([0x55] * 16 + [0x00, 0x00, 0x00]))
         time.sleep_ms(2)
         self.CSB.on()  # pylint: disable=no-member
         time.sleep(1)
@@ -116,6 +116,7 @@ class PN532:
         status_query = bytearray([reverse_bit(_SPI_STATREAD), 0])
         status = bytearray([0, 0])
         timestamp = time.ticks_ms()
+        last_status = None
         while time.ticks_diff(time.ticks_ms(), timestamp) < timeout:
             time.sleep(0.02)   # required
             self.CSB.off()
@@ -125,6 +126,9 @@ class PN532:
             self.CSB.on()
             if reverse_bit(status[1]) == 0x01:  # LSB data is read in MSB
                 return True      # Not busy anymore!
+            if self.debug and status[1] != last_status:
+                print('DEBUG: _wait_ready raw status:', hex(status[0]), hex(status[1]), '-> reversed:', hex(reverse_bit(status[1])))
+                last_status = status[1]
             else:
                 time.sleep(0.01)  # pause a bit till we ask again
         # Timed out!
