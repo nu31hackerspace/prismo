@@ -33,7 +33,7 @@ services:
       replicas: 1
     environment:
       - MONGODB_URL=${MONGODB_URL}
-      - MQTT_URL=${MQTT_URL}
+      - MQTT_URL=${PUBLIC_MQTT_URL}
     networks:
       - infra_mongo-rs-net
       - infra_mqtt-net
