@@ -23,11 +23,17 @@ jobs:
         run: |
           docker build -t prismo-mqtt web/mosquitto
           docker run -d --name mqtt \
-            -p 1883:1883 \
+            --network host \
             -e MQTT_ADMIN_USER=admin \
             -e MQTT_ADMIN_PASSWORD=admin \
             prismo-mqtt
-          sleep 3
+          for i in $(seq 1 30); do
+            if docker exec mqtt mosquitto_sub -h localhost -p 1883 -u admin -P admin -t '#' -C 1 -W 1 2>/dev/null; then break; fi
+            if ! docker ps --filter name=mqtt --filter status=running -q | grep -q .; then
+              echo "Mosquitto container died, logs:"; docker logs mqtt; exit 1
+            fi
+            sleep 1
+          done
           docker logs mqtt
 
       - uses: actions/setup-node@v4
@@ -49,7 +55,9 @@ jobs:
         env:
           CI: true
           MONGODB_URL: mongodb://localhost:27017/prismo?directConnection=true&replicaSet=rs0
-          MQTT_URL: mqtt://admin:admin@localhost:1883
+          MQTT_URL: mqtt://localhost:1883
+          USERNAME: admin
+          PASSWORD: admin
           SESSION_SECRET: ci-test-secret
           GOOGLE_CLIENT_ID: fake-client-id
           GOOGLE_CLIENT_SECRET: fake-client-secret
