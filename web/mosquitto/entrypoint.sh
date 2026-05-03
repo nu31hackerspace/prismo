@@ -78,7 +78,7 @@ if [ ! -f "${DYNSEC_FILE}" ]; then
     until mosquitto_ctrl -u "${MQTT_ADMIN_USER}" -P "${MQTT_ADMIN_PASSWORD}" \
         dynsec getDefaultACLAccess >/dev/null 2>&1; do sleep 1; done
     mosquitto_ctrl -u "${MQTT_ADMIN_USER}" -P "${MQTT_ADMIN_PASSWORD}" \
-        dynsec addRoleACL "${MQTT_ADMIN_USER}" publishClientSend '#' 0 allow
+        dynsec addRoleACL "${MQTT_ADMIN_USER}" publishClientSend '#' 0
     kill "${MOSQ_PID}" && wait "${MOSQ_PID}" 2>/dev/null || true
     echo "[entrypoint] Dynamic security initialised with admin user '${MQTT_ADMIN_USER}'."
 else
