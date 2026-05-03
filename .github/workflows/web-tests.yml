@@ -8,23 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    services:
-      mongo:
-        image: mongo:8
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ping:1})' --quiet"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          --name mongo
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Initialize MongoDB replica set
+      - name: Start MongoDB with replica set
         run: |
+          docker run -d --name mongo -p 27017:27017 mongo:8 --replSet rs0
+          until docker exec mongo mongosh --eval "db.runCommand({ping:1})" --quiet; do sleep 1; done
           docker exec mongo mongosh --eval "rs.initiate({_id:'rs0', members:[{_id:0, host:'localhost:27017'}]})"
           sleep 3
           docker exec mongo mongosh --eval "rs.status().ok"
