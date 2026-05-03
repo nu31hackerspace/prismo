@@ -33,9 +33,7 @@
 		return new Date(date).toLocaleString();
 	}
 
-	function truncateHash(hash: string) {
-		return hash.length > 16 ? `${hash.slice(0, 8)}…${hash.slice(-4)}` : hash;
-	}
+
 </script>
 
 <div class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-6">
@@ -80,8 +78,8 @@
 							{/if}
 						</div>
 						{#if event.keyId}
-							<div class="font-mono text-xs text-label-secondary" title={event.keyId}>
-								{truncateHash(event.keyId)}{event.username ? ` · ${event.username}` : ''}
+							<div class="break-all font-mono text-xs text-label-secondary">
+								{event.keyId}{event.username ? ` · ${event.username}` : ''}
 							</div>
 						{/if}
 						<div class="mt-0.5 text-xs text-label-tertiary">{formatDate(event.createdAt)}</div>
