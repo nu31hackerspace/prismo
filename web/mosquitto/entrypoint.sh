@@ -65,21 +65,57 @@ fi
 # Initialise dynamic security only on first boot (preserve existing device registrations)
 if [ ! -f "${DYNSEC_FILE}" ]; then
     echo "[entrypoint] Initialising dynamic security plugin..."
-    mosquitto_ctrl dynsec init "${DYNSEC_FILE}" "${MQTT_ADMIN_USER}" "${MQTT_ADMIN_PASSWORD}"
+
+    # Use mosquitto_ctrl only to compute the PBKDF2-SHA512 password hash, then
+    # write the complete dynsec.json directly. This avoids running addRoleACL
+    # via a temporary broker, whose argument syntax changes across mosquitto
+    # 2.0.x patch releases.
+    TEMP_INIT="/tmp/dynsec_init.json"
+    mosquitto_ctrl dynsec init "${TEMP_INIT}" "${MQTT_ADMIN_USER}" "${MQTT_ADMIN_PASSWORD}"
+
+    PASS=$(grep '"password"'   "${TEMP_INIT}" | sed 's/.*"password"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+    SALT=$(grep '"salt"'       "${TEMP_INIT}" | sed 's/.*"salt"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+    ITERS=$(grep '"iterations"' "${TEMP_INIT}" | sed 's/.*"iterations"[[:space:]]*:[[:space:]]*\([0-9]*\).*/\1/')
+    rm -f "${TEMP_INIT}"
+
+    # Write a complete dynsec.json that grants the admin full publish/subscribe
+    # access in addition to the dynsec management privilege created by init.
+    cat > "${DYNSEC_FILE}" <<EOF
+{
+	"defaultACLAccess":{
+		"publishClientSend":false,
+		"publishClientReceive":true,
+		"subscribe":false,
+		"unsubscribe":true
+	},
+	"clients":[{
+		"username":"${MQTT_ADMIN_USER}",
+		"textname":"Dynsec admin user",
+		"roles":[{"rolename":"${MQTT_ADMIN_USER}"}],
+		"password":"${PASS}",
+		"salt":"${SALT}",
+		"iterations":${ITERS}
+	}],
+	"groups":[],
+	"roles":[{
+		"rolename":"${MQTT_ADMIN_USER}",
+		"acls":[
+			{"acltype":"publishClientSend","topic":"\$CONTROL/dynamic-security/#","priority":0,"allow":true},
+			{"acltype":"publishClientSend","topic":"#","priority":0,"allow":true},
+			{"acltype":"publishClientReceive","topic":"\$CONTROL/dynamic-security/#","priority":0,"allow":true},
+			{"acltype":"publishClientReceive","topic":"\$SYS/#","priority":0,"allow":true},
+			{"acltype":"publishClientReceive","topic":"#","priority":0,"allow":true},
+			{"acltype":"subscribePattern","topic":"\$CONTROL/dynamic-security/#","priority":0,"allow":true},
+			{"acltype":"subscribePattern","topic":"\$SYS/#","priority":0,"allow":true},
+			{"acltype":"subscribePattern","topic":"#","priority":0,"allow":true},
+			{"acltype":"unsubscribePattern","topic":"#","priority":0,"allow":true}
+		]
+	}]
+}
+EOF
+
     chown mosquitto:mosquitto "${DYNSEC_FILE}"
     chmod 0640 "${DYNSEC_FILE}"
-
-    # mosquitto_ctrl dynsec init only grants the admin role publish access to
-    # $CONTROL/dynamic-security/# (dynsec management). Add publishClientSend for
-    # all topics so the admin user can publish to regular MQTT topics.
-    echo "[entrypoint] Starting broker briefly to apply admin ACL..."
-    /usr/sbin/mosquitto -c "${CONF_FILE}" &
-    MOSQ_PID=$!
-    until mosquitto_ctrl -u "${MQTT_ADMIN_USER}" -P "${MQTT_ADMIN_PASSWORD}" \
-        dynsec getDefaultACLAccess >/dev/null 2>&1; do sleep 1; done
-    mosquitto_ctrl -u "${MQTT_ADMIN_USER}" -P "${MQTT_ADMIN_PASSWORD}" \
-        dynsec addRoleACL "${MQTT_ADMIN_USER}" publishClientSend '#' 0
-    kill "${MOSQ_PID}" && wait "${MOSQ_PID}" 2>/dev/null || true
     echo "[entrypoint] Dynamic security initialised with admin user '${MQTT_ADMIN_USER}'."
 else
     echo "[entrypoint] Dynamic security file already exists, skipping init."
