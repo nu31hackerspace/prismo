@@ -1,0 +1,75 @@
+name: Web Tests
+
+on:
+  pull_request:
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mongo:
+        image: mongo:8
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping:1})' --quiet"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          --name mongo
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize MongoDB replica set
+        run: |
+          docker exec mongo mongosh --eval "rs.initiate({_id:'rs0', members:[{_id:0, host:'localhost:27017'}]})"
+          sleep 3
+          docker exec mongo mongosh --eval "rs.status().ok"
+
+      - name: Build and start Mosquitto
+        run: |
+          docker build -t prismo-mqtt web/mosquitto
+          docker run -d --name mqtt \
+            -p 1883:1883 \
+            -e MQTT_ADMIN_USER=admin \
+            -e MQTT_ADMIN_PASSWORD=admin \
+            prismo-mqtt
+          sleep 3
+          docker logs mqtt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: web
+        env:
+          CI: true
+          MONGODB_URL: mongodb://localhost:27017/prismo?directConnection=true&replicaSet=rs0
+          MQTT_URL: mqtt://admin:admin@localhost:1883
+          SESSION_SECRET: ci-test-secret
+          GOOGLE_CLIENT_ID: fake-client-id
+          GOOGLE_CLIENT_SECRET: fake-client-secret
+          ORIGIN: http://localhost:4173
+        run: npx playwright test
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 14
