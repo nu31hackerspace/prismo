@@ -17,8 +17,7 @@ allow_anonymous false
 plugin /usr/lib/mosquitto_dynamic_security.so
 plugin_opt_config_file ${DYNSEC_FILE}
 
-persistence true
-persistence_location /mosquitto/data/
+persistence false
 log_dest stdout
 log_type all
 EOF
