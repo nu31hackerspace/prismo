@@ -11,30 +11,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Start MongoDB with replica set
+      - name: Start test infrastructure
+        working-directory: web
         run: |
-          docker run -d --name mongo -p 27017:27017 mongo:8 --replSet rs0
-          until docker exec mongo mongosh --eval "db.runCommand({ping:1})" --quiet; do sleep 1; done
-          docker exec mongo mongosh --eval "rs.initiate({_id:'rs0', members:[{_id:0, host:'localhost:27017'}]})"
-          sleep 3
-          docker exec mongo mongosh --eval "rs.status().ok"
-
-      - name: Build and start Mosquitto
-        run: |
-          docker build -t prismo-mqtt web/mosquitto
-          docker run -d --name mqtt \
-            --network host \
-            -e MQTT_ADMIN_USER=admin \
-            -e MQTT_ADMIN_PASSWORD=admin \
-            prismo-mqtt
-          for i in $(seq 1 30); do
-            if docker exec mqtt mosquitto_sub -h localhost -p 1883 -u admin -P admin -t '#' -C 1 -W 1 2>/dev/null; then break; fi
-            if ! docker ps --filter name=mqtt --filter status=running -q | grep -q .; then
-              echo "Mosquitto container died, logs:"; docker logs mqtt; exit 1
-            fi
-            sleep 1
-          done
-          docker logs mqtt
+          docker compose -f docker-compose.ci.yml up -d --build --wait
+          docker compose -f docker-compose.ci.yml ps
 
       - uses: actions/setup-node@v4
         with:
@@ -63,6 +44,11 @@ jobs:
           GOOGLE_CLIENT_SECRET: fake-client-secret
           ORIGIN: http://localhost:4173
         run: npx playwright test
+
+      - name: Show infra logs on failure
+        if: failure()
+        working-directory: web
+        run: docker compose -f docker-compose.ci.yml logs
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
