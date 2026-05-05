@@ -1,0 +1,67 @@
+name: Web Tests
+
+on:
+  pull_request:
+
+jobs:
+  web-e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start test infrastructure
+        working-directory: web
+        run: |
+          docker compose -f docker-compose.ci.yml up -d --build
+          # --wait exits 1 in some Compose versions when a restart:no service
+          # finishes (even with exit code 0). Poll healthchecks manually instead.
+          timeout 60 bash -c '
+            until docker inspect --format "{{.State.Health.Status}}" web-mongo-1 2>/dev/null | grep -q healthy \
+               && docker inspect --format "{{.State.Health.Status}}" web-mqtt-1  2>/dev/null | grep -q healthy; do
+              sleep 2
+            done
+          '
+          docker compose -f docker-compose.ci.yml ps
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: web
+        env:
+          CI: true
+          MONGODB_URL: mongodb://localhost:27017/prismo?directConnection=true&replicaSet=rs0
+          MQTT_URL: mqtt://localhost:1883
+          USERNAME: admin
+          PASSWORD: admin
+          SESSION_SECRET: ci-test-secret
+          GOOGLE_CLIENT_ID: fake-client-id
+          GOOGLE_CLIENT_SECRET: fake-client-secret
+          ORIGIN: http://localhost:4173
+        run: npx playwright test
+
+      - name: Show infra logs on failure
+        if: failure()
+        working-directory: web
+        run: docker compose -f docker-compose.ci.yml logs
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 14

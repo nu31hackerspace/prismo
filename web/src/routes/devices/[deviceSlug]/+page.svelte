@@ -70,9 +70,7 @@
 		return new Date(date).toLocaleString();
 	}
 
-	function truncateHash(hash: string) {
-		return hash.length > 16 ? `${hash.slice(0, 8)}…${hash.slice(-4)}` : hash;
-	}
+
 </script>
 
 <!-- Header -->
@@ -118,9 +116,7 @@
 						</h2>
 					</div>
 					<div class="mb-4 rounded-lg border border-separator-secondary bg-background-primary p-3">
-						<div class="font-mono text-sm text-label-primary" title={lastUnauth.keyId}>
-							{truncateHash(lastUnauth.keyId)}
-						</div>
+						<div class="break-all font-mono text-sm text-label-primary">{lastUnauth.keyId}</div>
 						<div class="mt-1 text-xs text-label-tertiary">{formatDate(lastUnauth.createdAt)}</div>
 					</div>
 					<form method="POST" action="?/addKey" use:enhance class="flex gap-2">
@@ -163,9 +159,7 @@
 							>
 								<div>
 									<div class="text-sm font-semibold text-label-primary">{key.username}</div>
-									<div class="font-mono text-xs text-label-tertiary" title={key.keyId}>
-										{truncateHash(key.keyId)}
-									</div>
+									<div class="break-all font-mono text-xs text-label-tertiary">{key.keyId}</div>
 								</div>
 								<form method="POST" action="?/removeKey" use:enhance>
 									<input type="hidden" name="keyId" value={key.keyId} />
