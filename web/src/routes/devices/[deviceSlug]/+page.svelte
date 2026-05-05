@@ -23,6 +23,8 @@
 	// ── Live history + lastUnauth via SSE ─────────────────────────────────
 	let historyItems = $state([...data.history]);
 	let lastUnauth = $state(data.lastUnauth);
+	let modeParams = $state({ ...data.device.modeParams });
+	let machineIsOn = $derived((modeParams as { isOn?: boolean }).isOn ?? false);
 
 	$effect(() => {
 		historyItems = [...data.history];
@@ -42,10 +44,18 @@
 			}
 		};
 
-		source.addEventListener('status', () => {
+		source.addEventListener('status', (e) => {
 			isOnline = true;
 			if (offlineTimer) clearTimeout(offlineTimer);
-			offlineTimer = setTimeout(() => { isOnline = false; }, ONLINE_THRESHOLD_MS);
+			offlineTimer = setTimeout(() => {
+				isOnline = false;
+			}, ONLINE_THRESHOLD_MS);
+			try {
+				const payload = JSON.parse((e as MessageEvent).data);
+				if (payload.modeParams !== undefined) modeParams = payload.modeParams;
+			} catch {
+				/* ignore malformed events */
+			}
 		});
 
 		source.onerror = () => console.error('[sse] connection error');
@@ -84,7 +94,9 @@
 			</span>
 			<Badge label={isOnline ? 'Online' : 'Offline'} variant={isOnline ? 'success' : 'error'} />
 		</div>
-		<span class="rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-1 font-mono text-xs text-label-tertiary">
+		<span
+			class="rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-1 font-mono text-xs text-label-tertiary"
+		>
 			{data.device.deviceSlug}
 		</span>
 	</nav>
@@ -101,10 +113,14 @@
 						<div class="rounded-xl bg-background-primary p-2 text-label-secondary">
 							<Icon icon="mdi:key-alert" class="h-5 w-5" />
 						</div>
-						<h2 class="font-display text-lg font-bold text-label-primary">Last Unauthorized Scan</h2>
+						<h2 class="font-display text-lg font-bold text-label-primary">
+							Last Unauthorized Scan
+						</h2>
 					</div>
 					<div class="mb-4 rounded-lg border border-separator-secondary bg-background-primary p-3">
-						<div class="font-mono text-sm text-label-primary" title={lastUnauth.keyId}>{truncateHash(lastUnauth.keyId)}</div>
+						<div class="font-mono text-sm text-label-primary" title={lastUnauth.keyId}>
+							{truncateHash(lastUnauth.keyId)}
+						</div>
 						<div class="mt-1 text-xs text-label-tertiary">{formatDate(lastUnauth.createdAt)}</div>
 					</div>
 					<form method="POST" action="?/addKey" use:enhance class="flex gap-2">
@@ -128,24 +144,37 @@
 						<Icon icon="mdi:account-key" class="h-5 w-5" />
 					</div>
 					<h2 class="font-display text-lg font-bold text-label-primary">Allowed Keys</h2>
-					<span class="ml-auto rounded-full border border-separator-secondary bg-background-primary px-2 py-0.5 text-xs text-label-tertiary">
+					<span
+						class="ml-auto rounded-full border border-separator-secondary bg-background-primary px-2 py-0.5 text-xs text-label-tertiary"
+					>
 						{data.keys.length}
 					</span>
 				</div>
 
 				{#if data.keys.length === 0}
-					<p class="text-sm text-label-tertiary">No keys allowed yet. Add a key from the unauthorized scan panel.</p>
+					<p class="text-sm text-label-tertiary">
+						No keys allowed yet. Add a key from the unauthorized scan panel.
+					</p>
 				{:else}
 					<ul class="space-y-2">
 						{#each data.keys as key}
-							<li class="flex items-center justify-between rounded-xl border border-separator-secondary bg-background-primary px-4 py-3">
+							<li
+								class="flex items-center justify-between rounded-xl border border-separator-secondary bg-background-primary px-4 py-3"
+							>
 								<div>
 									<div class="text-sm font-semibold text-label-primary">{key.username}</div>
-									<div class="font-mono text-xs text-label-tertiary" title={key.keyId}>{truncateHash(key.keyId)}</div>
+									<div class="font-mono text-xs text-label-tertiary" title={key.keyId}>
+										{truncateHash(key.keyId)}
+									</div>
 								</div>
 								<form method="POST" action="?/removeKey" use:enhance>
 									<input type="hidden" name="keyId" value={key.keyId} />
-									<MainButton size="S" buttonStyle="ghost" icon="mdi:delete-outline" label="Remove" />
+									<MainButton
+										size="S"
+										buttonStyle="ghost"
+										icon="mdi:delete-outline"
+										label="Remove"
+									/>
 								</form>
 							</li>
 						{/each}
@@ -162,16 +191,50 @@
 					<h2 class="font-display text-lg font-bold text-label-primary">Manual Trigger</h2>
 				</div>
 				<p class="mb-4 text-sm text-label-secondary">
-					Manually send a success or error signal to the device, or push the current key list.
+					Manually send a signal to the device, or push the current key list.
 				</p>
 				<div class="flex flex-wrap gap-3">
-					<form method="POST" action="?/triggerAction" use:enhance>
-						<input type="hidden" name="action" value="success" />
-						<MainButton icon="mdi:check-circle-outline" label="Trigger Success" buttonStyle="primary" size="M" />
-					</form>
+					{#if data.device.mode === 'machine'}
+						<form
+							method="POST"
+							action="?/triggerAction"
+							use:enhance={({ formData }) => {
+								formData.set('action', machineIsOn ? 'off' : 'on');
+								return async ({ result, update }) => {
+									if (result.type === 'success') {
+										modeParams = { ...(modeParams as object), isOn: !machineIsOn };
+									}
+									await update({ reset: false });
+								};
+							}}
+						>
+							<input type="hidden" name="action" value="" />
+							<MainButton
+								icon={machineIsOn ? 'mdi:power-off' : 'mdi:power'}
+								label={machineIsOn ? 'Turn Off' : 'Turn On'}
+								buttonStyle={machineIsOn ? 'secondary' : 'primary'}
+								size="M"
+							/>
+						</form>
+					{:else}
+						<form method="POST" action="?/triggerAction" use:enhance>
+							<input type="hidden" name="action" value="success" />
+							<MainButton
+								icon="mdi:check-circle-outline"
+								label="Trigger Success"
+								buttonStyle="primary"
+								size="M"
+							/>
+						</form>
+					{/if}
 					<form method="POST" action="?/triggerAction" use:enhance>
 						<input type="hidden" name="action" value="error" />
-						<MainButton icon="mdi:alert-circle-outline" label="Trigger Error" buttonStyle="secondary" size="M" />
+						<MainButton
+							icon="mdi:alert-circle-outline"
+							label="Trigger Error"
+							buttonStyle="secondary"
+							size="M"
+						/>
 					</form>
 					<form method="POST" action="?/syncKeys" use:enhance>
 						<MainButton icon="mdi:sync" label="Force Sync Keys" buttonStyle="ghost" size="M" />

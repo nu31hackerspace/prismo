@@ -103,7 +103,6 @@ docker build -f web/worker/Dockerfile -t prismo-worker:local .
 
 Then swap `ghcr.io/nu31hackerspace/prismo-worker:latest` with `prismo-worker:local` in the run command above.
 
-
 ## Run MQTT
 
 Build docker image
@@ -113,6 +112,7 @@ docker build -f mosquitto/Dockerfile -t prismo-mqtt:local .
 ```
 
 Run docker stack
+
 ```sh
 docker stack deploy --resolve-image never -c docker-stack.local.yml prismo_local
 ```
@@ -122,3 +122,46 @@ In case you run docker in some VM envirment, like colima, use socar for port red
 ```
 socat TCP-LISTEN:11883,fork,reuseaddr TCP:192.168.64.2:1883
 ```
+
+---
+
+## Running E2E Tests Locally
+
+E2E tests use Playwright and require MongoDB (replica set) and Mosquitto MQTT broker.
+
+### Using the CI compose file
+
+The simplest way — spins up a fresh, isolated test environment:
+
+```bash
+# Start test infrastructure
+docker compose -f docker-compose.ci.yml up -d --build --wait
+
+# Install Playwright browsers (first time only)
+npx playwright install --with-deps chromium
+
+# Run tests
+npx playwright test
+
+# Tear down when done
+docker compose -f docker-compose.ci.yml down -v
+```
+
+### Using the existing local stack
+
+If you already have the local Docker stack running (`docker-stack.local.yml`), just run:
+
+```bash
+npx playwright test
+```
+
+The tests read `MONGODB_URL` and `MQTT_URL` from your `.env` file automatically.
+
+### Viewing test reports
+
+After a test run, open the HTML report:
+
+```bash
+npx playwright show-report
+```
+

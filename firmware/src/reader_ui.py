@@ -9,6 +9,7 @@ class ReaderUI:
         self.success_pin = Pin(config.PIN_OUTPUT_SUCESS, Pin.OUT)
         self.error_pin = Pin(config.PIN_OUTPUT_ERROR, Pin.OUT)
         self.machine_active = False
+        self.active_uid = None
 
         self.success_pin.off()
         self.error_pin.off()
@@ -34,18 +35,38 @@ class ReaderUI:
         self.error_pin.on()
         color.set_sub_light_color(0xFF0000)
         buzzer.play_error_sound()
-        
+
         utime.sleep_ms(config.ERROR_SIGNAL_DURATION)
         self.error_pin.off()
 
         self.ready_to_read()
 
-    def _handle_machine_success(self):
+    def machine_toggle(self, uid):
         if self.machine_active:
-            self.machine_active = False
-            self.success_pin.off()
-            buzzer.play_success_sound() 
+            if self.active_uid == uid:
+                self.machine_active = False
+                self.active_uid = None
+                self.success_pin.off()
+                buzzer.play_success_sound()
+                self.ready_to_read()
+            else:
+                self.error()
         else:
             self.machine_active = True
-            buzzer.play_success_sound()
+            self.active_uid = uid
             self.success_pin.on()
+            color.set_sub_light_color(0x00FF00)
+            buzzer.play_success_sound()
+
+    def machine_on(self):
+        self.machine_active = True
+        self.success_pin.on()
+        color.set_sub_light_color(0x00FF00)
+        buzzer.play_success_sound()
+
+    def machine_off(self):
+        self.machine_active = False
+        self.active_uid = None
+        self.success_pin.off()
+        buzzer.play_success_sound()
+        self.ready_to_read()

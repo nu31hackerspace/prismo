@@ -116,7 +116,9 @@ export async function flashFirmware(
 		.map((b) => String.fromCharCode(b))
 		.join('');
 
-	callbacks.onLog(createLog('info', `Firmware loaded: ${(firmwareBytes.length / 1024).toFixed(1)} KB`));
+	callbacks.onLog(
+		createLog('info', `Firmware loaded: ${(firmwareBytes.length / 1024).toFixed(1)} KB`)
+	);
 	callbacks.onLog(createLog('info', 'Erasing flash and writing firmware...'));
 
 	await esploader.writeFlash({

@@ -39,4 +39,4 @@ export const POST: RequestHandler = async ({ request, cookies, locals }) => {
 		console.error('Failed to log tracking event:', error);
 		return json({ success: false, error: 'Internal Server Error' }, { status: 500 });
 	}
-}
+};

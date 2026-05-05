@@ -23,7 +23,9 @@
 </script>
 
 <span
-	class="inline-flex items-center justify-center rounded-lg px-3 py-1 text-sm font-semibold {variantClasses[variant]}"
+	class="inline-flex items-center justify-center rounded-lg px-3 py-1 text-sm font-semibold {variantClasses[
+		variant
+	]}"
 	style={variantStyles[variant]}
 >
 	{label}

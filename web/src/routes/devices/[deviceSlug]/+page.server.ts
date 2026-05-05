@@ -36,7 +36,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			id: deviceId.toHexString(),
 			name: device.name,
 			deviceSlug: device.deviceSlug,
-			lastSeenAt: device.lastSeenAt ?? null
+			lastSeenAt: device.lastSeenAt ?? null,
+			mode: device.mode ?? 'door',
+			modeParams: device.modeParams ?? {}
 		},
 		keys: keys.map((k) => ({
 			keyId: k.keyId,
@@ -97,12 +99,12 @@ export const actions: Actions = {
 	triggerAction: async ({ request, params, locals }) => {
 		if (!locals.user) return fail(401, { message: 'Unauthorized' });
 		const data = await request.formData();
-		const action = data.get('action') as 'success' | 'error';
-		if (action !== 'success' && action !== 'error')
-			return fail(400, { message: 'action must be success or error' });
+		const action = data.get('action') as 'success' | 'error' | 'on' | 'off';
+		if (action !== 'success' && action !== 'error' && action !== 'on' && action !== 'off')
+			return fail(400, { message: 'action must be success, error, on, or off' });
 		try {
 			await triggerDevice(params.deviceSlug!, locals.user.id, action);
-			return { success: true };
+			return { success: true, triggerAction: action };
 		} catch (e: unknown) {
 			return fail(400, { message: e instanceof Error ? e.message : 'Unknown error' });
 		}

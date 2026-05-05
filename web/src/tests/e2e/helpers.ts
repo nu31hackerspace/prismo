@@ -1,70 +1,91 @@
 import mqtt from 'mqtt';
+import { MongoClient } from 'mongodb';
 import { expect, type Page } from '@playwright/test';
 
+const MONGODB_URL = process.env.MONGODB_URL ?? 'mongodb://localhost:27017';
+const TEST_DATABASE = 'prismo_e2e';
+
 export async function loginUser(page: Page): Promise<void> {
-    await page.goto('/');
-    await page.click('text="Sign In"');
-    await expect(page.locator('h1', { hasText: 'My Devices' })).toBeVisible({ timeout: 10_000 });
+	await page.goto('/');
+	await page.click('text="Sign In"');
+	await expect(page.locator('h1', { hasText: 'My Devices' })).toBeVisible({ timeout: 10_000 });
 }
 
 export type MqttCredentials = {
-    mqttUser: string;
-    mqttPass: string;
+	mqttUser: string;
+	mqttPass: string;
 };
 
 export async function createDevice(page: Page, deviceName: string): Promise<void> {
-    await expect(page.locator('form[action="?/addDevice"]')).toBeVisible();
-    await page.fill('input[name="name"]', deviceName);
-    await page.click('button:has-text("Add Device")');
-    await expect(page.locator(`h3:has-text("${deviceName}")`)).toBeVisible();
+	await expect(page.locator('form[action="?/addDevice"]')).toBeVisible();
+	await page.fill('input[name="name"]', deviceName);
+	await page.click('button:has-text("Add Device")');
+	await expect(page.locator(`h3:has-text("${deviceName}")`)).toBeVisible();
 }
 
 export async function navigateToDevice(page: Page, deviceName: string): Promise<void> {
-    const deviceCard = page.locator(`h3:has-text("${deviceName}")`).locator('..');
-    await deviceCard.locator('a:has-text("Manage")').click();
-    await expect(page.locator(`nav span:has-text("${deviceName}")`)).toBeVisible();
+	const deviceCard = page.locator(`h3:has-text("${deviceName}")`).locator('..');
+	await deviceCard.locator('a:has-text("Manage")').click();
+	await expect(page.locator(`nav span:has-text("${deviceName}")`)).toBeVisible();
 }
 
 export async function generateMqttCredentials(page: Page): Promise<MqttCredentials> {
-    await page.click('button:has-text("Generate Token")');
-    const mqttCredsAlert = page.locator('div', { hasText: 'New MQTT Credentials Generated' }).first();
-    await expect(mqttCredsAlert).toBeVisible();
+	await page.click('button:has-text("Generate Token")');
+	const mqttCredsAlert = page.locator('div', { hasText: 'New MQTT Credentials Generated' }).first();
+	await expect(mqttCredsAlert).toBeVisible();
 
-    const rawText = await mqttCredsAlert.textContent() ?? '';
-    const mqttUser = rawText.match(/Username:\s*([^\s]+)/)?.[1] ?? '';
-    const mqttPass = rawText.match(/Password:\s*([^\s]+)/)?.[1] ?? '';
+	const rawText = (await mqttCredsAlert.textContent()) ?? '';
+	const mqttUser = rawText.match(/Username:\s*([^\s]+)/)?.[1] ?? '';
+	const mqttPass = rawText.match(/Password:\s*([^\s]+)/)?.[1] ?? '';
 
-    expect(mqttUser).toBeTruthy();
-    expect(mqttPass).toBeTruthy();
+	expect(mqttUser).toBeTruthy();
+	expect(mqttPass).toBeTruthy();
 
-    return { mqttUser, mqttPass };
+	return { mqttUser, mqttPass };
+}
+
+export async function setDeviceModeInDb(
+	deviceName: string,
+	mode: 'door' | 'machine',
+	modeParams: Record<string, unknown> = {}
+): Promise<void> {
+	const client = new MongoClient(MONGODB_URL);
+	try {
+		await client.connect();
+		await client
+			.db(TEST_DATABASE)
+			.collection('devices')
+			.updateOne({ name: deviceName }, { $set: { mode, modeParams } });
+	} finally {
+		await client.close();
+	}
 }
 
 export async function publishDeviceStatus(
-    mqttUrl: string,
-    credentials: MqttCredentials,
-    online: boolean
+	mqttUrl: string,
+	credentials: MqttCredentials,
+	online: boolean
 ): Promise<void> {
-    const { mqttUser, mqttPass } = credentials;
-    const client = mqtt.connect(mqttUrl, {
-        username: mqttUser.trim(),
-        password: mqttPass.trim(),
-        clientId: `ui-test-status-${Date.now()}`
-    });
+	const { mqttUser, mqttPass } = credentials;
+	const client = mqtt.connect(mqttUrl, {
+		username: mqttUser.trim(),
+		password: mqttPass.trim(),
+		clientId: `ui-test-status-${Date.now()}`
+	});
 
-    await new Promise<void>((resolve, reject) => {
-        client.once('connect', () => {
-            client.publish(
-                `prismo/${mqttUser.trim()}/status`,
-                JSON.stringify({ online }),
-                { qos: 1 },
-                (err: Error | undefined) => {
-                    client.end();
-                    if (err) reject(err);
-                    else resolve();
-                }
-            );
-        });
-        client.once('error', reject);
-    });
+	await new Promise<void>((resolve, reject) => {
+		client.once('connect', () => {
+			client.publish(
+				`prismo/${mqttUser.trim()}/status`,
+				JSON.stringify({ online }),
+				{ qos: 1 },
+				(err: Error | undefined) => {
+					client.end();
+					if (err) reject(err);
+					else resolve();
+				}
+			);
+		});
+		client.once('error', reject);
+	});
 }

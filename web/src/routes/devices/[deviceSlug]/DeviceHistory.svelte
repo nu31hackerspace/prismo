@@ -51,7 +51,9 @@
 	{:else}
 		<ul class="space-y-3">
 			{#each items as event}
-				<li class="flex items-start gap-3 rounded-xl border border-separator-secondary bg-background-primary px-4 py-3">
+				<li
+					class="flex items-start gap-3 rounded-xl border border-separator-secondary bg-background-primary px-4 py-3"
+				>
 					<div class="mt-0.5 shrink-0 text-label-secondary">
 						<Icon icon={actionIcons[event.action] ?? 'mdi:circle'} class="h-4 w-4" />
 					</div>
@@ -71,7 +73,8 @@
 							{/if}
 							{#if event.action === 'trigger'}
 								<span
-									class="rounded-full px-2 py-0.5 text-xs font-semibold {event.triggerAction === 'success'
+									class="rounded-full px-2 py-0.5 text-xs font-semibold {event.triggerAction ===
+									'success'
 										? 'bg-green-500/10 text-green-500'
 										: 'bg-red-500/10 text-red-500'}"
 								>

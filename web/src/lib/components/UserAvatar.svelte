@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { getInitials } from '$lib/client/utils';
 
-	let {
-		user,
-		size = 'M'
-	} = $props<{
+	let { user, size = 'M' } = $props<{
 		user: { id: string; name: string; email: string };
 		size?: 'S' | 'M' | 'L' | 'XL';
 	}>();
@@ -51,7 +48,9 @@
 
 	.avatar-link {
 		cursor: pointer;
-		transition: border-color 0.2s ease, background-color 0.2s ease;
+		transition:
+			border-color 0.2s ease,
+			background-color 0.2s ease;
 	}
 
 	.avatar-link:hover {

@@ -93,7 +93,13 @@
 			{#if data.user}
 				<UserAvatar user={data.user} />
 			{:else}
-				<MainButton buttonStyle="primary" size="M" icon="mdi:google" label="Sign In" link="/auth/google" />
+				<MainButton
+					buttonStyle="primary"
+					size="M"
+					icon="mdi:google"
+					label="Sign In"
+					link="/auth/google"
+				/>
 			{/if}
 		</div>
 	</nav>
@@ -110,7 +116,9 @@
 		<div class="relative mx-auto max-w-6xl px-6">
 			<div class="mb-12 flex flex-col items-center justify-between gap-6 md:flex-row">
 				<div class="text-left">
-					<h1 class="font-display text-3xl font-bold tracking-tight text-label-primary md:text-4xl text-left">
+					<h1
+						class="text-left font-display text-3xl font-bold tracking-tight text-label-primary md:text-4xl"
+					>
 						My Devices
 					</h1>
 					<p class="mt-2 text-label-secondary">
@@ -124,23 +132,22 @@
 						name="name"
 						placeholder="Device name (e.g. Front Door)"
 						required
-						class="w-64 sm:w-80 rounded-xl border border-separator-secondary bg-fill-tertiary px-4 py-2 text-label-primary outline-none focus:border-accent-primary"
+						class="w-64 rounded-xl border border-separator-secondary bg-fill-tertiary px-4 py-2 text-label-primary outline-none focus:border-accent-primary sm:w-80"
 					/>
-					<MainButton
-						label="Add Device"
-						icon="mdi:plus"
-						buttonStyle="primary"
-						size="M"
-					/>
+					<MainButton label="Add Device" icon="mdi:plus" buttonStyle="primary" size="M" />
 				</form>
 			</div>
 
 			{#if data.devices && data.devices.length > 0}
 				<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 					{#each data.devices as device}
-						<div class="group relative flex flex-col rounded-2xl border border-separator-secondary bg-fill-tertiary p-6 transition-all hover:border-separator-primary hover:shadow-lg">
+						<div
+							class="group relative flex flex-col rounded-2xl border border-separator-secondary bg-fill-tertiary p-6 transition-all hover:border-separator-primary hover:shadow-lg"
+						>
 							<div class="mb-4 flex items-center justify-between">
-								<div class="rounded-xl bg-background-primary p-3 text-label-secondary group-hover:text-accent-primary transition-colors">
+								<div
+									class="rounded-xl bg-background-primary p-3 text-label-secondary transition-colors group-hover:text-accent-primary"
+								>
 									<Icon icon="mdi:chip" class="h-6 w-6" />
 								</div>
 								<div class="flex items-center gap-2">
@@ -155,7 +162,9 @@
 							</div>
 
 							<h3 class="mb-1 font-display text-xl font-bold text-label-primary">{device.name}</h3>
-							<p class="mb-6 flex-grow font-mono text-xs text-label-tertiary">{device.deviceSlug}</p>
+							<p class="mb-6 flex-grow font-mono text-xs text-label-tertiary">
+								{device.deviceSlug}
+							</p>
 
 							<MainButton
 								label="Manage"
@@ -168,9 +177,13 @@
 					{/each}
 				</div>
 			{:else}
-				<div class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-separator-secondary py-20">
+				<div
+					class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-separator-secondary py-20"
+				>
 					<Icon icon="mdi:chip" class="mb-4 h-12 w-12 text-label-tertiary" />
-					<p class="text-label-secondary">No devices found. Add your first device to get started.</p>
+					<p class="text-label-secondary">
+						No devices found. Add your first device to get started.
+					</p>
 				</div>
 			{/if}
 		</div>
@@ -202,8 +215,8 @@
 			</h1>
 
 			<p class="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-label-secondary">
-				Prismo is a simple NFC/RFID device that lets you control access to doors and machines. Easy to
-				build, free to use, and friendly for beginners.
+				Prismo is a simple NFC/RFID device that lets you control access to doors and machines. Easy
+				to build, free to use, and friendly for beginners.
 			</p>
 
 			<div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -235,7 +248,11 @@
 
 			<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
 				{#each features as feature}
-					<FeatureCard icon={feature.icon} title={feature.title} description={feature.description} />
+					<FeatureCard
+						icon={feature.icon}
+						title={feature.title}
+						description={feature.description}
+					/>
 				{/each}
 			</div>
 		</div>

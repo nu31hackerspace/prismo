@@ -8,9 +8,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		return { devices: [] };
 	}
 
-	const userDevices = await devicesCol
-		.find({ ownerId: new ObjectId(locals.user.id) })
-		.toArray();
+	const userDevices = await devicesCol.find({ ownerId: new ObjectId(locals.user.id) }).toArray();
 
 	return {
 		devices: userDevices.map(({ _id, ownerId, name, deviceSlug, createdAt, lastSeenAt }) => ({
@@ -37,6 +35,5 @@ export const actions: Actions = {
 
 		await createDevice(locals.user.id, name);
 		return { success: true };
-	},
-
+	}
 };

@@ -19,7 +19,7 @@
 			<Icon {icon} class="h-8 w-8 text-background-primary" />
 		</div>
 		<span
-			class="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-background-primary font-display text-xs font-bold text-label-primary ring-2 ring-accent-primary"
+			class="absolute -top-2 -right-2 flex h-7 w-7 items-center justify-center rounded-full bg-background-primary font-display text-xs font-bold text-label-primary ring-2 ring-accent-primary"
 		>
 			{step}
 		</span>

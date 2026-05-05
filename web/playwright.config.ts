@@ -4,21 +4,21 @@ dotenv.config();
 
 export default defineConfig({
 	testDir: './src/tests/e2e',
-	fullyParallel: true,
+	fullyParallel: false,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
+	workers: 1,
 	reporter: 'html',
 	use: {
 		baseURL: 'http://localhost:4173',
-		trace: 'on-first-retry',
+		trace: 'on-first-retry'
 	},
 
 	projects: [
 		{
 			name: 'chromium',
-			use: { ...devices['Desktop Chrome'] },
-		},
+			use: { ...devices['Desktop Chrome'] }
+		}
 	],
 
 	webServer: {
@@ -27,7 +27,7 @@ export default defineConfig({
 		reuseExistingServer: !process.env.CI,
 		env: {
 			TEST_MODE: '1',
-			MONGODB_DATABASE: 'prismo_e2e',
-		},
-	},
+			MONGODB_DATABASE: 'prismo_e2e'
+		}
+	}
 });
