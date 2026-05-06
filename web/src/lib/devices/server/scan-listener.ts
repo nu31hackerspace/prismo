@@ -87,7 +87,7 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 	const allowed = payload?.allowed;
 
 	console.log(
-		`[scan-listener] keyId ${uId} on "${deviceSlug}": ${allowed ? `allowed (${keyDoc!.username})` : 'denied'}`
+		`[scan-listener] keyId ${uId} on "${deviceSlug}": ${allowed ? `allowed (${keyDoc?.username ?? 'unknown'})` : 'denied'}`
 	);
 
 	await deviceHistoryCol.insertOne({

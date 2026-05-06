@@ -29,6 +29,7 @@
 	$effect(() => {
 		historyItems = [...data.history];
 		lastUnauth = data.lastUnauth;
+		modeParams = { ...data.device.modeParams };
 	});
 
 	onMount(() => {
@@ -243,5 +244,5 @@
 		</div>
 	</div>
 
-	<DeviceDangerZone {form} />
+	<DeviceDangerZone {form} deviceMode={data.device.mode} />
 </main>

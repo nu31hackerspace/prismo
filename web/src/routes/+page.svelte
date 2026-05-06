@@ -126,7 +126,7 @@
 					</p>
 				</div>
 
-				<form method="POST" action="?/addDevice" use:enhance class="flex gap-2">
+				<form method="POST" action="?/addDevice" use:enhance class="flex flex-wrap gap-2">
 					<input
 						type="text"
 						name="name"
@@ -134,6 +134,13 @@
 						required
 						class="w-64 rounded-xl border border-separator-secondary bg-fill-tertiary px-4 py-2 text-label-primary outline-none focus:border-accent-primary sm:w-80"
 					/>
+					<select
+						name="mode"
+						class="rounded-xl border border-separator-secondary bg-fill-tertiary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary"
+					>
+						<option value="door">Door Lock</option>
+						<option value="machine">Machine Access</option>
+					</select>
 					<MainButton label="Add Device" icon="mdi:plus" buttonStyle="primary" size="M" />
 				</form>
 			</div>

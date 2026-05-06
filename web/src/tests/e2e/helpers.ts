@@ -1,9 +1,5 @@
 import mqtt from 'mqtt';
-import { MongoClient } from 'mongodb';
 import { expect, type Page } from '@playwright/test';
-
-const MONGODB_URL = process.env.MONGODB_URL ?? 'mongodb://localhost:27017';
-const TEST_DATABASE = 'prismo_e2e';
 
 export async function loginUser(page: Page): Promise<void> {
 	await page.goto('/');
@@ -16,9 +12,14 @@ export type MqttCredentials = {
 	mqttPass: string;
 };
 
-export async function createDevice(page: Page, deviceName: string): Promise<void> {
+export async function createDevice(
+	page: Page,
+	deviceName: string,
+	mode: 'door' | 'machine' = 'door'
+): Promise<void> {
 	await expect(page.locator('form[action="?/addDevice"]')).toBeVisible();
 	await page.fill('input[name="name"]', deviceName);
+	await page.selectOption('select[name="mode"]', mode);
 	await page.click('button:has-text("Add Device")');
 	await expect(page.locator(`h3:has-text("${deviceName}")`)).toBeVisible();
 }
@@ -42,23 +43,6 @@ export async function generateMqttCredentials(page: Page): Promise<MqttCredentia
 	expect(mqttPass).toBeTruthy();
 
 	return { mqttUser, mqttPass };
-}
-
-export async function setDeviceModeInDb(
-	deviceName: string,
-	mode: 'door' | 'machine',
-	modeParams: Record<string, unknown> = {}
-): Promise<void> {
-	const client = new MongoClient(MONGODB_URL);
-	try {
-		await client.connect();
-		await client
-			.db(TEST_DATABASE)
-			.collection('devices')
-			.updateOne({ name: deviceName }, { $set: { mode, modeParams } });
-	} finally {
-		await client.close();
-	}
 }
 
 export async function publishDeviceStatus(

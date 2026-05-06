@@ -24,7 +24,7 @@ function deriveMqttPassword(tokenKey: string): string {
 	return jwt.sign({ tokenKey: tokenKey }, secret, { noTimestamp: true });
 }
 
-export async function createDevice(userId: string, name: string) {
+export async function createDevice(userId: string, name: string, mode: 'door' | 'machine' = 'door') {
 	const tokenKey = crypto.randomBytes(4).toString('hex');
 	const deviceSlug = generateDeviceSlug(name);
 	const mqttPassword = deriveMqttPassword(tokenKey);
@@ -36,6 +36,8 @@ export async function createDevice(userId: string, name: string) {
 		deviceSlug,
 		ownerId: new ObjectId(userId),
 		tokenKey,
+		mode,
+		modeParams: mode === 'machine' ? { isOn: false } : {},
 		createdAt: new Date()
 	});
 
@@ -185,8 +187,6 @@ export async function triggerDevice(
 	const device = await requireOwnedDevice(deviceSlug, userId);
 	const deviceId = device._id!;
 
-	await publishToDevice(deviceSlug, 'cmd/trigger', { action });
-
 	if (action === 'on') {
 		await devicesCol.updateOne({ deviceSlug }, { $set: { 'modeParams.isOn': true } });
 	} else if (action === 'off') {
@@ -201,6 +201,8 @@ export async function triggerDevice(
 		actorUserId: new ObjectId(userId),
 		createdAt: new Date()
 	});
+
+	await publishToDevice(deviceSlug, 'cmd/trigger', { action });
 }
 
 /**

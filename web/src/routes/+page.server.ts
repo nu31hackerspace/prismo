@@ -28,12 +28,14 @@ export const actions: Actions = {
 
 		const data = await request.formData();
 		const name = data.get('name') as string;
+		const modeRaw = data.get('mode') as string;
+		const mode = modeRaw === 'machine' ? 'machine' : 'door';
 
 		if (!name) {
 			return fail(400, { message: 'Name is required' });
 		}
 
-		await createDevice(locals.user.id, name);
+		await createDevice(locals.user.id, name, mode);
 		return { success: true };
 	}
 };

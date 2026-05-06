@@ -16,7 +16,8 @@
 
 	type Token = { mqttUser: string; mqttPass: string };
 
-	let { form }: { form: { token?: Token } | null } = $props();
+	let { form, deviceMode }: { form: { token?: Token } | null; deviceMode: 'door' | 'machine' } =
+		$props();
 
 	// ── MQTT token ────────────────────────────────────────────────────────
 	let newToken = $state<Token | null>(null);
@@ -42,7 +43,6 @@
 	let flashError = $state('');
 	let flashWifiSsid = $state('');
 	let flashWifiPassword = $state('');
-	let flashMode = $state<'door' | 'machine'>('door');
 	let replugCountdown = $state(0);
 	let bootCountdown = $state(0);
 
@@ -61,7 +61,6 @@
 		flashError = '';
 		flashWifiSsid = '';
 		flashWifiPassword = '';
-		flashMode = 'door';
 		esploader = null;
 		transport = null;
 	}
@@ -109,7 +108,7 @@
 					password: flashWifiPassword,
 					mqttUser: newToken.mqttUser,
 					mqttPass: newToken.mqttPass,
-					mode: flashMode
+					mode: deviceMode
 				})
 			});
 			if (!res.ok) throw new Error(await res.text());
@@ -342,33 +341,9 @@
 							/>
 						</div>
 						<div class="mt-3 flex items-center gap-3">
-							<span class="text-xs text-label-secondary">Device Mode</span>
-							<div class="flex gap-2">
-								<button
-									type="button"
-									onclick={() => {
-										flashMode = 'door';
-									}}
-									class="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors {flashMode ===
-									'door'
-										? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-										: 'border-separator-secondary bg-background-primary text-label-secondary hover:text-label-primary'}"
-								>
-									Door Lock
-								</button>
-								<button
-									type="button"
-									onclick={() => {
-										flashMode = 'machine';
-									}}
-									class="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors {flashMode ===
-									'machine'
-										? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-										: 'border-separator-secondary bg-background-primary text-label-secondary hover:text-label-primary'}"
-								>
-									Machine Access
-								</button>
-							</div>
+							<span class="text-xs text-label-secondary">
+								Mode: <strong>{deviceMode === 'machine' ? 'Machine Access' : 'Door Lock'}</strong>
+							</span>
 							<MainButton
 								size="S"
 								buttonStyle="primary"
