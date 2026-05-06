@@ -5,7 +5,10 @@ import { env } from '$env/dynamic/private';
 import { createDeviceMqttUser, updateDeviceMqttPassword, publishToDevice } from './mqtt-admin';
 
 function generateDeviceSlug(name: string): string {
-	const base = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+	const base = name
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-|-$/g, '');
 	const suffix = crypto.randomBytes(3).toString('hex');
 	return `${base}-${suffix}`;
 }
@@ -21,7 +24,11 @@ function deriveMqttPassword(tokenKey: string): string {
 	return jwt.sign({ tokenKey: tokenKey }, secret, { noTimestamp: true });
 }
 
-export async function createDevice(userId: string, name: string) {
+export async function createDevice(
+	userId: string,
+	name: string,
+	mode: 'door' | 'machine' = 'door'
+) {
 	const tokenKey = crypto.randomBytes(4).toString('hex');
 	const deviceSlug = generateDeviceSlug(name);
 	const mqttPassword = deriveMqttPassword(tokenKey);
@@ -33,6 +40,8 @@ export async function createDevice(userId: string, name: string) {
 		deviceSlug,
 		ownerId: new ObjectId(userId),
 		tokenKey,
+		mode,
+		modeParams: mode === 'machine' ? { isOn: false } : {},
 		createdAt: new Date()
 	});
 
@@ -52,10 +61,7 @@ export async function generateMqttCredentials(deviceId: string, userId: string) 
 
 	await updateDeviceMqttPassword(device.deviceSlug, mqttPassword);
 
-	await devicesCol.updateOne(
-		{ _id: new ObjectId(deviceId) },
-		{ $set: { tokenKey } }
-	);
+	await devicesCol.updateOne({ _id: new ObjectId(deviceId) }, { $set: { tokenKey } });
 
 	return {
 		mqttUser: device.deviceSlug,
@@ -80,10 +86,7 @@ export async function generateMqttCredentialsBySlug(deviceSlug: string, userId: 
 
 	await updateDeviceMqttPassword(device.deviceSlug, mqttPassword);
 
-	await devicesCol.updateOne(
-		{ _id: device._id },
-		{ $set: { tokenKey } }
-	);
+	await devicesCol.updateOne({ _id: device._id }, { $set: { tokenKey } });
 
 	return {
 		mqttUser: device.deviceSlug,
@@ -183,12 +186,16 @@ export async function removeKeyFromDevice(
 export async function triggerDevice(
 	deviceSlug: string,
 	userId: string,
-	action: 'success' | 'error'
+	action: 'success' | 'error' | 'on' | 'off'
 ): Promise<void> {
 	const device = await requireOwnedDevice(deviceSlug, userId);
 	const deviceId = device._id!;
 
-	await publishToDevice(deviceSlug, 'cmd/trigger', { action });
+	if (action === 'on') {
+		await devicesCol.updateOne({ deviceSlug }, { $set: { 'modeParams.isOn': true } });
+	} else if (action === 'off') {
+		await devicesCol.updateOne({ deviceSlug }, { $set: { 'modeParams.isOn': false } });
+	}
 
 	await deviceHistoryCol.insertOne({
 		deviceId,
@@ -198,6 +205,8 @@ export async function triggerDevice(
 		actorUserId: new ObjectId(userId),
 		createdAt: new Date()
 	});
+
+	await publishToDevice(deviceSlug, 'cmd/trigger', { action });
 }
 
 /**

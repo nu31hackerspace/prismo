@@ -32,8 +32,6 @@
 	function formatDate(date: Date) {
 		return new Date(date).toLocaleString();
 	}
-
-
 </script>
 
 <div class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-6">
@@ -49,7 +47,9 @@
 	{:else}
 		<ul class="space-y-3">
 			{#each items as event}
-				<li class="flex items-start gap-3 rounded-xl border border-separator-secondary bg-background-primary px-4 py-3">
+				<li
+					class="flex items-start gap-3 rounded-xl border border-separator-secondary bg-background-primary px-4 py-3"
+				>
 					<div class="mt-0.5 shrink-0 text-label-secondary">
 						<Icon icon={actionIcons[event.action] ?? 'mdi:circle'} class="h-4 w-4" />
 					</div>
@@ -69,7 +69,8 @@
 							{/if}
 							{#if event.action === 'trigger'}
 								<span
-									class="rounded-full px-2 py-0.5 text-xs font-semibold {event.triggerAction === 'success'
+									class="rounded-full px-2 py-0.5 text-xs font-semibold {event.triggerAction ===
+									'success'
 										? 'bg-green-500/10 text-green-500'
 										: 'bg-red-500/10 text-red-500'}"
 								>
@@ -78,7 +79,7 @@
 							{/if}
 						</div>
 						{#if event.keyId}
-							<div class="break-all font-mono text-xs text-label-secondary">
+							<div class="font-mono text-xs break-all text-label-secondary">
 								{event.keyId}{event.username ? ` · ${event.username}` : ''}
 							</div>
 						{/if}

@@ -1,6 +1,6 @@
 # Prismo Web
 
-This directory contains the SvelteKit web app and needed workers. 
+This directory contains the SvelteKit web app and needed workers.
 
 ## Prerequisites
 

@@ -1,6 +1,13 @@
 import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
 import { env } from '$env/dynamic/private';
-import type { UserDocument, TrackingDocument, DeviceDocument, WorkerJobDocument, DeviceKeyDocument, DeviceHistoryDocument } from './schema';
+import type {
+	UserDocument,
+	TrackingDocument,
+	DeviceDocument,
+	WorkerJobDocument,
+	DeviceKeyDocument,
+	DeviceHistoryDocument
+} from './schema';
 
 const client = new MongoClient(env.MONGODB_URL ?? 'mongodb://localhost:27017');
 const database = client.db(env.MONGODB_DATABASE ?? 'prismo');
@@ -27,7 +34,10 @@ async function ensureIndexes() {
 		await deviceHistoryCol.createIndex({ deviceSlug: 1, createdAt: -1 });
 		await deviceHistoryCol.createIndex(
 			{ deviceId: 1, createdAt: -1 },
-			{ partialFilterExpression: { action: 'scan', allowed: false }, name: 'device_id_unauth_scans' }
+			{
+				partialFilterExpression: { action: 'scan', allowed: false },
+				name: 'device_id_unauth_scans'
+			}
 		);
 	} catch (error) {
 		console.error('Failed to create MongoDB indexes:', error);
@@ -35,8 +45,8 @@ async function ensureIndexes() {
 }
 
 if (env.MONGODB_URL) {
-	console.info("init the mongo db")
+	console.info('init the mongo db');
 	ensureIndexes().catch(console.error);
 } else {
-	console.error("cannot connect to mongo, MONGODB_URL not exist")
+	console.error('cannot connect to mongo, MONGODB_URL not exist');
 }

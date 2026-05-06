@@ -6,7 +6,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('--- Device Scan Received ---');
 		console.log(JSON.stringify(payload, null, 2));
 		console.log('---------------------------');
-		
+
 		return json({ status: 'ok' });
 	} catch (e) {
 		console.error('Failed to parse scan payload:', e);

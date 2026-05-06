@@ -6,7 +6,12 @@ initializeScanListener();
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// --- CSRF Protection ---
-	if (event.request.method === 'POST' || event.request.method === 'PUT' || event.request.method === 'PATCH' || event.request.method === 'DELETE') {
+	if (
+		event.request.method === 'POST' ||
+		event.request.method === 'PUT' ||
+		event.request.method === 'PATCH' ||
+		event.request.method === 'DELETE'
+	) {
 		if (!event.url.pathname.startsWith('/google/callback')) {
 			const origin = event.request.headers.get('origin') || event.request.headers.get('referer');
 			if (origin && !origin.startsWith(event.url.origin)) {
@@ -35,7 +40,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const sessionCookie = event.cookies.get(SESSION_COOKIE);
 	if (sessionCookie) {
 		const { user, session } = await validateSession(sessionCookie);
-		
+
 		if (user && session) {
 			event.locals.user = user;
 			event.locals.session = session;

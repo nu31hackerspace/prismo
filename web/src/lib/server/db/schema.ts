@@ -34,6 +34,9 @@ export interface DeviceDocument {
 	createdAt: Date;
 	/** Set by the scan-listener on each heartbeat from the device. */
 	lastSeenAt?: Date;
+	mode?: 'door' | 'machine';
+	/** Mode-specific runtime state. For machine mode: { isOn: boolean }. */
+	modeParams?: { isOn?: boolean };
 }
 
 export interface WorkerJobDocument {
@@ -66,7 +69,7 @@ export interface DeviceHistoryDocument {
 	keyId?: string;
 	username?: string;
 	allowed?: boolean;
-	triggerAction?: 'success' | 'error';
+	triggerAction?: 'success' | 'error' | 'on' | 'off';
 	actorUserId?: ObjectId;
 	createdAt: Date;
 }

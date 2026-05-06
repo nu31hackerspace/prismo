@@ -11,14 +11,14 @@ export default defineConfig({
 	reporter: 'html',
 	use: {
 		baseURL: 'http://localhost:4173',
-		trace: 'on-first-retry',
+		trace: 'on-first-retry'
 	},
 
 	projects: [
 		{
 			name: 'chromium',
-			use: { ...devices['Desktop Chrome'] },
-		},
+			use: { ...devices['Desktop Chrome'] }
+		}
 	],
 
 	webServer: {
@@ -27,7 +27,7 @@ export default defineConfig({
 		reuseExistingServer: !process.env.CI,
 		env: {
 			TEST_MODE: '1',
-			MONGODB_DATABASE: 'prismo_e2e',
-		},
-	},
+			MONGODB_DATABASE: 'prismo_e2e'
+		}
+	}
 });

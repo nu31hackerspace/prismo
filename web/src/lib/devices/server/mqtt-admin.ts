@@ -36,7 +36,10 @@ function connectAdmin(): Promise<mqtt.MqttClient> {
 }
 
 async function sendDynSecCommands(commands: DynSecCommand[]): Promise<void> {
-	console.log('[mqtt-admin] sendDynSecCommands:', commands.map((c) => c.command));
+	console.log(
+		'[mqtt-admin] sendDynSecCommands:',
+		commands.map((c) => c.command)
+	);
 	const client = await connectAdmin();
 
 	try {
@@ -132,12 +135,19 @@ export async function publishToDevice(
 	options: { retain?: boolean } = {}
 ): Promise<void> {
 	const topic = `prismo/${slug}/${subtopic}`;
-	console.log(`[mqtt-admin] publishToDevice: ${topic}`, payload, options.retain ? '(retained)' : '');
+	console.log(
+		`[mqtt-admin] publishToDevice: ${topic}`,
+		payload,
+		options.retain ? '(retained)' : ''
+	);
 	const client = await connectAdmin();
 	try {
 		await new Promise<void>((resolve, reject) => {
-			client.publish(topic, JSON.stringify(payload), { qos: 1, retain: options.retain ?? false }, (err) =>
-				err ? reject(err) : resolve()
+			client.publish(
+				topic,
+				JSON.stringify(payload),
+				{ qos: 1, retain: options.retain ?? false },
+				(err) => (err ? reject(err) : resolve())
 			);
 		});
 		console.log(`[mqtt-admin] publishToDevice done: ${topic}`);

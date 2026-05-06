@@ -48,8 +48,10 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			statusStream.on('change', (change) => {
 				if (change.operationType !== 'update') return;
 				const doc = change.fullDocument;
-				if (!doc?.lastSeenAt) return;
-				controller.enqueue(`event: status\ndata: ${JSON.stringify({ lastSeenAt: doc.lastSeenAt })}\n\n`);
+				if (!doc) return;
+				controller.enqueue(
+					`event: status\ndata: ${JSON.stringify({ lastSeenAt: doc.lastSeenAt, modeParams: doc.modeParams ?? {} })}\n\n`
+				);
 			});
 
 			historyStream.on('error', (err) => {

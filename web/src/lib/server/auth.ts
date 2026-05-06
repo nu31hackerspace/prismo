@@ -26,19 +26,12 @@ export async function createSession(userId: string): Promise<string> {
 	const user = await usersCol.findOne({ _id: new ObjectId(userId) });
 	if (!user) throw new Error('User not found');
 
-	const validSessions = (user.sessions ?? []).filter(s => s.expiresAt > Date.now());
+	const validSessions = (user.sessions ?? []).filter((s) => s.expiresAt > Date.now());
 	validSessions.push(newSession);
 
-	await usersCol.updateOne(
-		{ _id: new ObjectId(userId) },
-		{ $set: { sessions: validSessions } }
-	);
+	await usersCol.updateOne({ _id: new ObjectId(userId) }, { $set: { sessions: validSessions } });
 
-	const token = jwt.sign(
-		{ userId, sessionId },
-		getSecret(),
-		{ expiresIn: '365d' }
-	);
+	const token = jwt.sign({ userId, sessionId }, getSecret(), { expiresIn: '365d' });
 
 	return token;
 }
@@ -52,7 +45,7 @@ export async function validateSession(token: string) {
 		if (!user) return { user: null, session: null };
 
 		const activeSession = (user.sessions ?? []).find(
-			s => s.id === sessionId && s.expiresAt > Date.now()
+			(s) => s.id === sessionId && s.expiresAt > Date.now()
 		);
 
 		if (!activeSession) return { user: null, session: null };

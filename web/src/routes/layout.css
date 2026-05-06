@@ -1,32 +1,32 @@
 @import 'tailwindcss';
 
 @theme {
-    --color-*: initial;
+	--color-*: initial;
 
-    --color-fill-tertiary: rgb(0 11 33 / 0.05);
-    --color-label-primary: rgb(0 0 0 / 1);
-    --color-label-secondary: rgb(22 26 33 / 0.8);
-    --color-label-tertiary: rgb(22 26 33 / 0.5);
-    --color-accent-primary: rgb(0 0 0 / 1);
-    --color-accent-secondary: rgb(0 0 0 / 0.8);
-    --color-background-primary: rgb(245 244 240 / 1);
-    --color-fill-secondary: rgb(0 11 33 / 0.08);
-    --color-separator-primary: rgb(0 11 33 / 0.15);
-    --color-separator-secondary: rgb(0 11 33 / 0.1);
+	--color-fill-tertiary: rgb(0 11 33 / 0.05);
+	--color-label-primary: rgb(0 0 0 / 1);
+	--color-label-secondary: rgb(22 26 33 / 0.8);
+	--color-label-tertiary: rgb(22 26 33 / 0.5);
+	--color-accent-primary: rgb(0 0 0 / 1);
+	--color-accent-secondary: rgb(0 0 0 / 0.8);
+	--color-background-primary: rgb(245 244 240 / 1);
+	--color-fill-secondary: rgb(0 11 33 / 0.08);
+	--color-separator-primary: rgb(0 11 33 / 0.15);
+	--color-separator-secondary: rgb(0 11 33 / 0.1);
 
-    --color-success: rgb(0 255 0 / 1);
-    --color-error: rgb(255 0 0 / 1);
+	--color-success: rgb(0 255 0 / 1);
+	--color-error: rgb(255 0 0 / 1);
 
-    --font-display: 'SF Mono', monospace;
+	--font-display: 'SF Mono', monospace;
 }
 
 html {
-    scroll-behavior: smooth;
+	scroll-behavior: smooth;
 }
 
 body {
-    background-color: var(--color-background-primary);
-    font-family: var(--font-display);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+	background-color: var(--color-background-primary);
+	font-family: var(--font-display);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }

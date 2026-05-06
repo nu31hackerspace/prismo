@@ -8,7 +8,7 @@ export function initializeScanListener(): void {
 	if (initialized) return;
 	initialized = true;
 
-	const url = env.MQTT_URL
+	const url = env.MQTT_URL;
 	const clientId = `prismo-scan-listener-${process.pid}`;
 	console.log(`[scan-listener] connecting to ${url} (clientId: ${clientId})`);
 
@@ -59,7 +59,7 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 	}
 	const deviceSlug = parts[1];
 
-	let payload: { uid: string, allowed: boolean };
+	let payload: { uid: string; allowed: boolean; machine_active?: boolean };
 	try {
 		payload = JSON.parse(raw.toString());
 	} catch {
@@ -86,7 +86,9 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 	const keyDoc = await deviceKeysCol.findOne({ deviceId, keyId: uId });
 	const allowed = payload?.allowed;
 
-	console.log(`[scan-listener] keyId ${uId} on "${deviceSlug}": ${allowed ? `allowed (${keyDoc!.username})` : 'denied'}`);
+	console.log(
+		`[scan-listener] keyId ${uId} on "${deviceSlug}": ${allowed ? `allowed (${keyDoc?.username ?? 'unknown'})` : 'denied'}`
+	);
 
 	await deviceHistoryCol.insertOne({
 		deviceId,
@@ -97,6 +99,13 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 		allowed: allowed,
 		createdAt: new Date()
 	});
+
+	if (payload.machine_active !== undefined) {
+		await devicesCol.updateOne(
+			{ deviceSlug },
+			{ $set: { 'modeParams.isOn': payload.machine_active } }
+		);
+	}
 
 	console.log(`[scan-listener] history record saved for "${deviceSlug}"`);
 }

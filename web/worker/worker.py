@@ -59,13 +59,14 @@ def heartbeat_loop(job_id, stop: threading.Event):
             log.warning("Heartbeat failed for job %s: %s", job_id, e)
 
 
-def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str) -> bytes:
+def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str, mode: str = 'door') -> bytes:
     config = CONFIG_TEMPLATE \
         .replace('{{WIFI_SSID}}', ssid) \
         .replace('{{WIFI_PASS}}', password) \
         .replace('{{MQTT_URL}}', _mqtt_url) \
         .replace('{{MQTT_USER}}', mqtt_user) \
-        .replace('{{MQTT_PASS}}', mqtt_pass)
+        .replace('{{MQTT_PASS}}', mqtt_pass) \
+        .replace('{{DEVICE_MODE}}', mode)
 
     with open(CONFIG_PATH, 'w') as f:
         f.write(config)
@@ -135,9 +136,10 @@ def process_job(job: dict):
         password = payload['password']
         mqtt_user = payload['mqttUser']
         mqtt_pass = payload['mqttPass']
+        mode = payload.get('mode', 'door')
         owner_id = str(job['ownerId'])
 
-        firmware = build_firmware(ssid, password, mqtt_user, mqtt_pass)
+        firmware = build_firmware(ssid, password, mqtt_user, mqtt_pass, mode)
 
         file_id = store_file(db, firmware, owner_id)
         complete_job(db, job['_id'], file_id)

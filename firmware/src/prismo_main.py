@@ -17,10 +17,14 @@ def on_key_read(uid):
     allowed = config.is_user_allowed(uid)
     health_log.write_info("Key scanned", uid=uid, allowed=allowed)
     if allowed:
-        ui.success()
+        if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE:
+            ui.machine_toggle(uid)
+        else:
+            ui.success()
     else:
         ui.error()
-    mqtt.publish_scan(uid, allowed)
+    machine_active = ui.machine_active if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE else None
+    mqtt.publish_scan(uid, allowed, machine_active=machine_active)
 
 def on_add_key(uid):
     health_log.write_info('add_key command received', uid=uid)
@@ -50,6 +54,10 @@ def on_trigger(action):
         ui.success()
     elif action == "error":
         ui.error()
+    elif action == "on":
+        ui.machine_on()
+    elif action == "off":
+        ui.machine_off()
     else:
         health_log.write_warn("Unknown trigger action", action=action)
 

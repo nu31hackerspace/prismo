@@ -89,7 +89,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 	let googlePayload;
 	try {
-		const ticket = await client.verifyIdToken({ idToken: credential, audience: env.GOOGLE_CLIENT_ID });
+		const ticket = await client.verifyIdToken({
+			idToken: credential,
+			audience: env.GOOGLE_CLIENT_ID
+		});
 		googlePayload = ticket.getPayload();
 	} catch (e) {
 		console.error('Error verifying Google ID token:', e);

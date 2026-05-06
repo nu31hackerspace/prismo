@@ -148,11 +148,14 @@ class PrismoMQTT:
             self._consecutive_failures += 1
             self._mark_disconnected()
 
-    def publish_scan(self, uid, allowed):
+    def publish_scan(self, uid, allowed, machine_active=None):
         if self._client is None or self._user is None:
             return
         topic = "prismo/{}/scan".format(self._user)
-        payload = ujson.dumps({"uid": uid, "allowed": allowed})
+        data = {"uid": uid, "allowed": allowed}
+        if machine_active is not None:
+            data["machine_active"] = machine_active
+        payload = ujson.dumps(data)
         try:
             self._client.publish(topic, payload)
             self._consecutive_failures = 0

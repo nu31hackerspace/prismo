@@ -7,14 +7,14 @@ export default defineConfig(({ mode }) => {
 	return {
 		test: {
 			environment: 'node',
-			env,
+			env
 		},
 		resolve: {
 			alias: {
 				$lib: path.resolve('./src/lib'),
 				$routes: path.resolve('./src/routes'),
-				'$env/dynamic/private': path.resolve('./src/tests/helpers/env.ts'),
-			},
-		},
+				'$env/dynamic/private': path.resolve('./src/tests/helpers/env.ts')
+			}
+		}
 	};
 });
