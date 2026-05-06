@@ -2,5 +2,5 @@
 .mpy-workbench
 __pycache__
 
-.claude/settings.local.json
+**/.claude/settings.local.json
 firmware/src/config_dev.py
