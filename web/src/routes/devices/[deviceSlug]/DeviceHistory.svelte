@@ -32,8 +32,6 @@
 	function formatDate(date: Date) {
 		return new Date(date).toLocaleString();
 	}
-
-
 </script>
 
 <div class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-6">
@@ -81,7 +79,7 @@
 							{/if}
 						</div>
 						{#if event.keyId}
-							<div class="break-all font-mono text-xs text-label-secondary">
+							<div class="font-mono text-xs break-all text-label-secondary">
 								{event.keyId}{event.username ? ` · ${event.username}` : ''}
 							</div>
 						{/if}

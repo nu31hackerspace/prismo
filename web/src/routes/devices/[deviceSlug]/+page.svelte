@@ -70,8 +70,6 @@
 	function formatDate(date: Date) {
 		return new Date(date).toLocaleString();
 	}
-
-
 </script>
 
 <!-- Header -->
@@ -117,7 +115,7 @@
 						</h2>
 					</div>
 					<div class="mb-4 rounded-lg border border-separator-secondary bg-background-primary p-3">
-						<div class="break-all font-mono text-sm text-label-primary">{lastUnauth.keyId}</div>
+						<div class="font-mono text-sm break-all text-label-primary">{lastUnauth.keyId}</div>
 						<div class="mt-1 text-xs text-label-tertiary">{formatDate(lastUnauth.createdAt)}</div>
 					</div>
 					<form method="POST" action="?/addKey" use:enhance class="flex gap-2">
@@ -160,7 +158,7 @@
 							>
 								<div>
 									<div class="text-sm font-semibold text-label-primary">{key.username}</div>
-									<div class="break-all font-mono text-xs text-label-tertiary">{key.keyId}</div>
+									<div class="font-mono text-xs break-all text-label-tertiary">{key.keyId}</div>
 								</div>
 								<form method="POST" action="?/removeKey" use:enhance>
 									<input type="hidden" name="keyId" value={key.keyId} />

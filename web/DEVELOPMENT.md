@@ -164,4 +164,3 @@ After a test run, open the HTML report:
 ```bash
 npx playwright show-report
 ```
-

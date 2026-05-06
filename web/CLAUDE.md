@@ -11,6 +11,7 @@
 - Never reach into the database to verify state — assert only through what the UI shows.
 
 ### Helpers that are allowed
+
 - `loginUser(page)` — signs in via the UI
 - `createDevice(page, name, mode?)` — creates a device through the form (default mode: `'door'`)
 - `navigateToDevice(page, name)` — clicks through to the device management page
@@ -19,5 +20,6 @@
 - Publishing custom MQTT payloads directly using `mqtt.connect` for scan/command events
 
 ### Helpers that are forbidden in tests
+
 - `setDeviceModeInDb` — bypasses the UI, not black-box
 - Any direct `MongoClient` usage in spec files

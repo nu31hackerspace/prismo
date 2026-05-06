@@ -24,7 +24,11 @@ function deriveMqttPassword(tokenKey: string): string {
 	return jwt.sign({ tokenKey: tokenKey }, secret, { noTimestamp: true });
 }
 
-export async function createDevice(userId: string, name: string, mode: 'door' | 'machine' = 'door') {
+export async function createDevice(
+	userId: string,
+	name: string,
+	mode: 'door' | 'machine' = 'door'
+) {
 	const tokenKey = crypto.randomBytes(4).toString('hex');
 	const deviceSlug = generateDeviceSlug(name);
 	const mqttPassword = deriveMqttPassword(tokenKey);
