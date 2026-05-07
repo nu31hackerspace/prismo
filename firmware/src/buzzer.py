@@ -16,13 +16,13 @@ _buzzer.duty(0)
 
 def _play_tone(note_name, duration_ms):
     freq = NOTES.get(note_name, 0)
-    
+
     if freq > 0:
         _buzzer.freq(freq)
         _buzzer.duty(512)
     else:
         _buzzer.duty(0)
-        
+
     utime.sleep_ms(duration_ms)
     _buzzer.duty(0)
 
@@ -39,7 +39,7 @@ def play_error_sound():
     _play_tone('F3', 200)
     utime.sleep_ms(20)
     _play_tone('F3', 200)
-    
+
 def turn_off():
     _buzzer.duty(0)
 

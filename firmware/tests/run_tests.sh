@@ -3,6 +3,11 @@
 # Usage: bash tests/run_tests.sh [port]
 #   port — USB serial port (e.g. /dev/ttyACM0, /dev/cu.usbmodem1101).
 #          Omit to auto-detect via `mpremote devs`.
+#
+# Environment variables (all optional, for CI):
+#   ESP32_PORT  — serial port override (takes precedence over $1)
+#   TEST_FILES  — space-separated list of test files to run
+#                 (default: tests/test_keys_updates.py)
 
 set -euo pipefail
 
@@ -10,9 +15,21 @@ FIRMWARE="$(cd "$(dirname "$0")/.." && pwd)"
 MICROPYTHON_BIN="${FIRMWARE}/ESP32_GENERIC_C3-20251209-v1.27.0.bin"
 
 # ---------------------------------------------------------------------------
-# Port detection
+# esptool detection: prefer `esptool`, fall back to `esptool.py`
 # ---------------------------------------------------------------------------
-PORT="${1:-}"
+if command -v esptool &>/dev/null; then
+    ESPTOOL=esptool
+elif command -v esptool.py &>/dev/null; then
+    ESPTOOL=esptool.py
+else
+    echo "ERROR: Neither 'esptool' nor 'esptool.py' found on PATH."
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Port detection: $ESP32_PORT > $1 > auto-detect
+# ---------------------------------------------------------------------------
+PORT="${ESP32_PORT:-${1:-}}"
 if [[ -z "$PORT" ]]; then
     PORT=$(mpremote devs 2>/dev/null | awk 'NR==1{print $1}' || true)
     if [[ -z "$PORT" ]]; then
@@ -21,6 +38,15 @@ if [[ -z "$PORT" ]]; then
         exit 1
     fi
     echo ">>> Auto-detected device: $PORT"
+fi
+
+# ---------------------------------------------------------------------------
+# Test files: $TEST_FILES or default
+# ---------------------------------------------------------------------------
+if [[ -n "${TEST_FILES:-}" ]]; then
+    read -ra TEST_FILE_LIST <<< "$TEST_FILES"
+else
+    TEST_FILE_LIST=("${FIRMWARE}/tests/test_keys_updates.py")
 fi
 
 if [[ ! -f "$MICROPYTHON_BIN" ]]; then
@@ -33,6 +59,7 @@ echo "======================================================"
 echo " Prismo Firmware Test Runner"
 echo " Port:   $PORT"
 echo " Binary: $(basename "$MICROPYTHON_BIN")"
+echo " Tests:  ${TEST_FILE_LIST[*]}"
 echo "======================================================"
 
 # ---------------------------------------------------------------------------
@@ -40,14 +67,14 @@ echo "======================================================"
 # ---------------------------------------------------------------------------
 echo ""
 echo "[1/4] Erasing flash..."
-esptool --chip esp32c3 --port "$PORT" erase-flash
+"$ESPTOOL" --chip esp32c3 --port "$PORT" erase-flash
 
 # ---------------------------------------------------------------------------
 # Step 2: Flash MicroPython
 # ---------------------------------------------------------------------------
 echo ""
 echo "[2/4] Flashing MicroPython..."
-esptool --chip esp32c3 --port "$PORT" --baud 460800 \
+"$ESPTOOL" --chip esp32c3 --port "$PORT" --baud 460800 \
     --before default-reset --after hard-reset \
     write-flash 0x0 "$MICROPYTHON_BIN"
 
@@ -68,11 +95,20 @@ mpremote connect "$PORT" mip install unittest || true
 # ---------------------------------------------------------------------------
 echo ""
 echo "[4/4] Running tests..."
-output=$(mpremote connect "$PORT" mount "$FIRMWARE" run "$FIRMWARE/tests/test_keys_updates.py" 2>&1 || true)
-echo "$output"
+FAILED=0
+for test_file in "${TEST_FILE_LIST[@]}"; do
+    echo ""
+    echo "--- Running: $(basename "$test_file") ---"
+    output=$(mpremote connect "$PORT" mount "$FIRMWARE" run "$test_file" 2>&1 || true)
+    echo "$output"
+
+    if ! echo "$output" | grep -q "OK"; then
+        FAILED=1
+    fi
+done
 
 echo ""
-if echo "$output" | grep -q "OK"; then
+if [[ "$FAILED" -eq 0 ]]; then
     echo "======================================================"
     echo "=== TESTS PASSED ==="
     echo "======================================================"

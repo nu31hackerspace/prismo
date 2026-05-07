@@ -1,4 +1,4 @@
-name: Web Tests
+name: Web merge requset pipeline
 
 on:
   pull_request:

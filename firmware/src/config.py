@@ -49,8 +49,8 @@ from src import health_log
 def get_mac_suffix():
     return ubinascii.hexlify(machine.unique_id()).decode().upper()
 
-SUCCESS_SIGNAL_DURATION = 5000 
-ERROR_SIGNAL_DURATION = 1000 
+SUCCESS_SIGNAL_DURATION = 5000
+ERROR_SIGNAL_DURATION = 1000
 
 PWM_FREQ = 1000
 NFC_BAUDRATE = 1_000_000
@@ -90,7 +90,7 @@ def add_uid(uid):
     cfg['allowed_users'] = users
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
-        
+
 def delete_uid(uid):
     health_log.write_info('delete_uid ', uid=uid)
     cfg = load_config() or {}

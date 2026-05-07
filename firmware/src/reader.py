@@ -2,7 +2,6 @@ import time
 import uhashlib
 import ubinascii
 import utime
-import machine
 from machine import SPI, Pin, WDT
 from src import config
 from src import health_log
@@ -17,21 +16,21 @@ reader_ok = None
 def subscribe(callback, mqtt_manager=None):
     if mqtt_manager:
         mqtt_manager.maintain()
-    
+
     global reader_ok
     health_log.write_info("Starting Prismo Reader (SPI)")
-    
+
     try:
-        spi = SPI(1, baudrate=config.NFC_BAUDRATE, polarity=0, phase=0, 
-                  sck=Pin(config.PIN_NFC_SCK), 
-                  mosi=Pin(config.PIN_NFC_MOSI), 
+        spi = SPI(1, baudrate=config.NFC_BAUDRATE, polarity=0, phase=0,
+                  sck=Pin(config.PIN_NFC_SCK),
+                  mosi=Pin(config.PIN_NFC_MOSI),
                   miso=Pin(config.PIN_NFC_MISO))
         health_log.write_info("SPI initialized", spi=str(spi))
     except Exception as e:
         health_log.write_error("Hardware SPI init failed", error=str(e))
         reader_ok = False
         return
-    
+
     cs_pin = Pin(config.PIN_NFC_SS, Pin.OUT)
     cs_pin.on()
 
@@ -41,12 +40,12 @@ def subscribe(callback, mqtt_manager=None):
     while True:
         try:
             nfc = PN532(spi, cs_pin, debug=config.DEBUG)
-            
+
             time.sleep(0.1)
-            
+
             ic, ver, rev, support = nfc.get_firmware_version()
             health_log.write_info("PN532 found", fw_version="{}.{}".format(ver, rev))
-            
+
             nfc.SAM_configuration()
             reader_ok = True
             break
