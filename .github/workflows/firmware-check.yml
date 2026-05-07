@@ -1,13 +1,7 @@
 name: Firmware merge request pipeline
 
 on:
-  push:
-    paths:
-      - "firmware/**"
   pull_request:
-    paths:
-      - "firmware/**"
-  workflow_dispatch:
 
 jobs:
   firmware-lint:

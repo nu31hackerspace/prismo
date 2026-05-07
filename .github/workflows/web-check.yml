@@ -2,8 +2,7 @@ name: Web merge requset pipeline
 
 on:
   pull_request:
-    paths:
-      - "web/**"
+
 jobs:
   web-lint:
     runs-on: ubuntu-24.04
