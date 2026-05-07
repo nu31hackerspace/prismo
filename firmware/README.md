@@ -78,6 +78,25 @@ mpremote cp src/config_dev.py :src/config_dev.py + reset
 
 ---
 
+## Linting
+
+Install [ruff](https://docs.astral.sh/ruff/) and run it from the `firmware/` directory:
+
+```bash
+pip install ruff
+ruff check .
+```
+
+To auto-fix safe issues:
+
+```bash
+ruff check --fix .
+```
+
+The CI pipeline runs this check on every pull request that touches `firmware/`.
+
+---
+
 ## Development
 
 Erase board

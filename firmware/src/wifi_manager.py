@@ -2,7 +2,6 @@ import network
 import gc
 from src import config
 from src import health_log
-import _thread
 
 class WiFiManager:
     def __init__(self):
@@ -17,9 +16,9 @@ class WiFiManager:
         wlan_sta = network.WLAN(network.STA_IF)
         wlan_sta.active(True)
         wlan_sta.config(txpower=8.5)
-        
+
         ssid, password = config.get_wifi()
-        
+
         health_log.write_info("Connecting to WiFi", ssid=ssid, password=password)
         wlan_sta.connect(ssid, password)
 

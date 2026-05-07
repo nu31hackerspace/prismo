@@ -1,0 +1,24 @@
+[tool.ruff]
+# Lint application code only; skip third-party libs, build artefacts, and the
+# MicroPython build-system manifest (which uses DSL functions like include/freeze
+# that are not valid Python names).
+exclude = [
+    "build/",
+    "dist/",
+    "libs/",
+    "manifest.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "W", "F"]
+ignore = [
+    "E501",  # line too long — not enforced for embedded code
+    "E402",  # module-level import not at top — common MicroPython pattern (config constants first)
+    "F403",  # star import — used intentionally in config.py for config_dev override
+    "F405",  # may-be-from-star-import names — consequence of F403 pattern above
+]
+
+[tool.ruff.lint.per-file-ignores]
+# boot.py and main.py import modules purely for their side-effects (entry-points).
+"boot.py" = ["F401"]
+"main.py" = ["F401"]

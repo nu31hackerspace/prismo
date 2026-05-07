@@ -10,7 +10,6 @@ import sys
 import os
 import utime
 import unittest
-from machine import Pin
 
 import src.config as config
 
