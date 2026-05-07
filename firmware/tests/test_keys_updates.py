@@ -186,6 +186,41 @@ class TestE2EScan(unittest.TestCase):
         self.assertTrue(len(success_off_events) >= 1, "Success pin was not turned OFF by 'off' trigger")
         self.assertFalse(ui.machine_active, "machine_active should be False after 'off' trigger")
 
+    def test_machine_mode_toggle(self):
+        import src.prismo_main
+        ui = src.prismo_main.ui
+        config.DEVICE_MODE = config.DEVICE_MODE_MACHINE
+
+        self._send_mqtt_cmd("add_key", '{"uid": "AABBCC"}')
+
+        print("\n>>> Machine mode: first scan should latch success pin ON")
+        MockReader.callback("AABBCC")
+
+        success_on = [e for e in self.pin_events if e["pin"] == config.PIN_OUTPUT_SUCESS and e["state"] == 1]
+        self.assertTrue(len(success_on) >= 1, "Success pin was not turned ON on first scan")
+        self.assertTrue(ui.machine_active, "machine_active should be True after first scan")
+        self.pin_events.clear()
+
+        print(">>> Machine mode: second scan with same UID should turn success pin OFF")
+        MockReader.callback("AABBCC")
+
+        success_off = [e for e in self.pin_events if e["pin"] == config.PIN_OUTPUT_SUCESS and e["state"] == 0]
+        self.assertTrue(len(success_off) >= 1, "Success pin was not turned OFF on second scan")
+        self.assertFalse(ui.machine_active, "machine_active should be False after second scan")
+        self.pin_events.clear()
+
+        print(">>> Machine mode: activate again, then scan with different UID should trigger error")
+        MockReader.callback("AABBCC")
+        self.assertTrue(ui.machine_active)
+        self.pin_events.clear()
+
+        MockReader.callback("DIFFERENT")
+
+        error_events = [e for e in self.pin_events if e["pin"] == config.PIN_OUTPUT_ERROR]
+        self.assertTrue(len(error_events) >= 2, "Error pin was not toggled for wrong UID while machine active")
+        self.assertTrue(ui.machine_active, "machine_active should remain True after wrong UID scan")
+        self.pin_events.clear()
+
 
 if __name__ == '__main__':
     unittest.main()
