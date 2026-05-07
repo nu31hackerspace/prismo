@@ -17,7 +17,7 @@ env:
 
 jobs:
   check-dev-flags:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Check dev flags are off
@@ -32,7 +32,7 @@ jobs:
           exit $FAIL
 
   build-web-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check-dev-flags
     permissions:
       contents: read
@@ -62,7 +62,7 @@ jobs:
           cache-to: type=inline
 
   build-worker-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check-dev-flags
     permissions:
       contents: read
@@ -91,7 +91,7 @@ jobs:
           cache-to: type=inline
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs:
       - build-web-image
       - build-worker-image
