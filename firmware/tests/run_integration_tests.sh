@@ -6,13 +6,12 @@
 #
 # Environment variables (all optional, for CI):
 #   ESP32_PORT  — serial port override (takes precedence over $1)
-#   TEST_FILES  — space-separated list of test files to run
-#                 (default: tests/test_keys_updates.py)
 
 set -euo pipefail
 
 FIRMWARE="$(cd "$(dirname "$0")/.." && pwd)"
 MICROPYTHON_BIN="${FIRMWARE}/ESP32_GENERIC_C3-20251209-v1.27.0.bin"
+TEST_FILE_LIST=("${FIRMWARE}/tests/test_keys_updates.py")
 
 # ---------------------------------------------------------------------------
 # esptool detection: prefer `esptool`, fall back to `esptool.py`
@@ -40,14 +39,6 @@ if [[ -z "$PORT" ]]; then
     echo ">>> Auto-detected device: $PORT"
 fi
 
-# ---------------------------------------------------------------------------
-# Test files: $TEST_FILES or default
-# ---------------------------------------------------------------------------
-if [[ -n "${TEST_FILES:-}" ]]; then
-    read -ra TEST_FILE_LIST <<< "$TEST_FILES"
-else
-    TEST_FILE_LIST=("${FIRMWARE}/tests/test_keys_updates.py")
-fi
 
 if [[ ! -f "$MICROPYTHON_BIN" ]]; then
     echo "ERROR: MicroPython binary not found: $MICROPYTHON_BIN"
@@ -106,6 +97,33 @@ for test_file in "${TEST_FILE_LIST[@]}"; do
         FAILED=1
     fi
 done
+
+# ---------------------------------------------------------------------------
+# Step 5 (optional): GPIO hardware verification on Raspberry Pi
+# Enable with:  GPIO_TEST=1 bash tests/run_tests.sh
+#
+# Required wiring (both devices must share GND):
+#   ESP32-C3 GPIO 2  →  Pi BCM 17  (physical pin 11)   [success]
+#   ESP32-C3 GPIO 1  →  Pi BCM 27  (physical pin 13)   [error]
+#   ESP32-C3 GND     →  Pi GND     (physical pin 9/14)
+#
+# Voltage safety: ESP32-C3 GPIO = 3.3 V output. Pi GPIO = 3.3 V input.
+# Direct connection is safe. Never connect a 5 V line to the Pi GPIO header.
+# ---------------------------------------------------------------------------
+if [[ "${GPIO_TEST:-0}" == "1" ]]; then
+    echo ""
+    echo "[5/5] Running GPIO hardware verification..."
+    echo "      (requires Pi GPIO wired to device — see script header for pinout)"
+    echo ""
+    if python3 "${FIRMWARE}/tests/pi_gpio_monitor.py" "$PORT"; then
+        echo ""
+        echo ">>> GPIO hardware verification: PASSED"
+    else
+        FAILED=1
+        echo ""
+        echo ">>> GPIO hardware verification: FAILED"
+    fi
+fi
 
 echo ""
 if [[ "$FAILED" -eq 0 ]]; then
