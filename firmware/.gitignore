@@ -4,3 +4,5 @@ build
 dist
 
 src/config_dev.py
+health_log
+health_log.*

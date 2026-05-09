@@ -63,9 +63,11 @@ Device ends signal
 SSH to PI in two terminal windows
 
 Run in first ssh session:
+
 ```bash
 while true; do   echo "$(date +%T.%3N) $(gpioget -c gpiochip4 17)";   sleep 1; done
-``` 
+```
+
 The command will print the statu of the PI GPIO pin each second
 
 Run in second ssh session:
@@ -102,6 +104,12 @@ root@teststand:/etc/udev/rules.d# ls -la /dev/ttyESP32C3
 lrwxrwxrwx 1 root root 7 May  7 19:04 /dev/ttyESP32C3 -> ttyACM0
 root@teststand:/etc/udev/rules.d#
 ```
+
+### Set pin pull down after reboot
+
+`/boot/firmware`
+
+file: `config.txt`
 
 #### Runner lable
 

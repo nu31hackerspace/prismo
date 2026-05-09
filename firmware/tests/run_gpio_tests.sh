@@ -28,20 +28,6 @@ else
     exit 1
 fi
 
-# ---------------------------------------------------------------------------
-# Port detection
-# ---------------------------------------------------------------------------
-PORT="${ESP32_PORT:-${1:-}}"
-if [[ -z "$PORT" ]]; then
-    PORT=$(mpremote devs 2>/dev/null | awk 'NR==1{print $1}' || true)
-    if [[ -z "$PORT" ]]; then
-        echo "ERROR: No device detected. Plug in the ESP32 or pass the port as the first argument."
-        echo "       List connected devices with: mpremote devs"
-        exit 1
-    fi
-    echo ">>> Auto-detected device: $PORT"
-fi
-
 if [[ ! -f "$MICROPYTHON_BIN" ]]; then
     echo "ERROR: MicroPython binary not found: $MICROPYTHON_BIN"
     exit 1
@@ -50,7 +36,7 @@ fi
 echo ""
 echo "======================================================"
 echo " Prismo GPIO Hardware Test"
-echo " Port:   $PORT"
+echo " Port:   $ESP32_PORT"
 echo " Binary: $(basename "$MICROPYTHON_BIN")"
 echo "======================================================"
 
@@ -58,15 +44,15 @@ echo "======================================================"
 # Step 1: Erase flash
 # ---------------------------------------------------------------------------
 echo ""
-echo "[1/4] Erasing flash..."
-"$ESPTOOL" --chip esp32c3 --port "$PORT" erase-flash
+echo "[1/3] Erasing flash..."
+"$ESPTOOL" --chip esp32c3 --port "$ESP32_PORT" erase-flash
 
 # ---------------------------------------------------------------------------
 # Step 2: Flash MicroPython
 # ---------------------------------------------------------------------------
 echo ""
-echo "[2/4] Flashing MicroPython..."
-"$ESPTOOL" --chip esp32c3 --port "$PORT" --baud 460800 \
+echo "[2/3] Flashing MicroPython..."
+"$ESPTOOL" --chip esp32c3 --port "$ESP32_PORT" --baud 460800 \
     --before default-reset --after hard-reset \
     write-flash 0x0 "$MICROPYTHON_BIN"
 
@@ -74,21 +60,14 @@ echo ">>> Waiting for device to boot..."
 sleep 4
 
 # ---------------------------------------------------------------------------
-# Step 3: Install unittest
+# Step 3: Emulate PN532 card scan and verify Pi GPIO response
 # ---------------------------------------------------------------------------
 echo ""
-echo "[3/4] Installing unittest on device..."
-mpremote connect "$PORT" mip install unittest || true
-
-# ---------------------------------------------------------------------------
-# Step 4: Run GPIO hardware test via Pi GPIO monitor
-# ---------------------------------------------------------------------------
-echo ""
-echo "[4/4] Running GPIO hardware test..."
+echo "[3/3] Running card-scan GPIO test..."
 echo "      Relay must be wired — see test-stand/README.md"
 echo ""
 
-if ESP32_PORT="$PORT" python3 "${FIRMWARE}/tests/pi_gpio_monitor.py"; then
+if python3 "${FIRMWARE}/tests/pi_gpio_monitor.py"; then
     echo ""
     echo "======================================================"
     echo "=== GPIO TESTS PASSED ==="
