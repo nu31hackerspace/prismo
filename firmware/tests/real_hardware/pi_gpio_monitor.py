@@ -46,9 +46,9 @@ def _read_pin(pin: int) -> int | None:
         ["gpioget", "-c", "gpiochip4", str(pin)],
         capture_output=True, text=True,
     )
-    # _log(f"_read_pin: {r.stdout}")
     if r.returncode != 0:
-        return None
+        _log(f"ERROR: gpioget failed (rc={r.returncode}): {r.stderr.strip()}")
+        sys.exit(1)
 
     output = r.stdout.strip()
 
@@ -62,7 +62,8 @@ def _read_pin(pin: int) -> int | None:
     try:
         return int(output)
     except ValueError:
-        return None
+        _log(f"ERROR: unexpected gpioget output: {output!r}")
+        sys.exit(1)
 
 
 def _wait_for(pin: int, target: int, timeout_s: float) -> bool:
