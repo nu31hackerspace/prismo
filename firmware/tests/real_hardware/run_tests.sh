@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-FIRMWARE="$(cd "$(dirname "$0")/.." && pwd)"
+FIRMWARE="$(cd "$(dirname "$0")/../.." && pwd)"
 MICROPYTHON_BIN="${FIRMWARE}/ESP32_GENERIC_C3-20251209-v1.27.0.bin"
 
 # ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ echo "[3/3] Running card-scan GPIO test..."
 echo "      Relay must be wired — see test-stand/README.md"
 echo ""
 
-if python3 "${FIRMWARE}/tests/pi_gpio_monitor.py"; then
+if python3 "${FIRMWARE}/tests/real_hardware/pi_gpio_monitor.py"; then
     echo ""
     echo "======================================================"
     echo "=== GPIO TESTS PASSED ==="

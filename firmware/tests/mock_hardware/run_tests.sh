@@ -9,9 +9,9 @@
 
 set -euo pipefail
 
-FIRMWARE="$(cd "$(dirname "$0")/.." && pwd)"
+FIRMWARE="$(cd "$(dirname "$0")/../.." && pwd)"
 MICROPYTHON_BIN="${FIRMWARE}/ESP32_GENERIC_C3-20251209-v1.27.0.bin"
-TEST_FILE_LIST=("${FIRMWARE}/tests/test_keys_updates.py")
+TEST_FILE_LIST=("${FIRMWARE}/tests/mock_hardware/test_keys_updates.py")
 
 # ---------------------------------------------------------------------------
 # esptool detection: prefer `esptool`, fall back to `esptool.py`
@@ -115,7 +115,7 @@ if [[ "${GPIO_TEST:-0}" == "1" ]]; then
     echo "[5/5] Running GPIO hardware verification..."
     echo "      (requires Pi GPIO wired to device — see script header for pinout)"
     echo ""
-    if python3 "${FIRMWARE}/tests/pi_gpio_monitor.py" "$PORT"; then
+    if python3 "${FIRMWARE}/tests/real_hardware/pi_gpio_monitor.py" "$PORT"; then
         echo ""
         echo ">>> GPIO hardware verification: PASSED"
     else

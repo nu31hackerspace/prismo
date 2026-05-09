@@ -28,6 +28,7 @@ import sys
 import time
 
 _SUCCESS_PIN      = 17
+_TEST_UID         = "test_card_uid"
 _POLL_S           = 0.1    # 10 ms between gpioget calls
 _WAIT_ACTIVE_S    = 15     # timeout waiting for pin to go active
 _EXPECTED_MS      = 5000   # firmware SUCCESS_SIGNAL_DURATION
@@ -82,13 +83,17 @@ def main():
     _log("Start board and wait for 3 seconds")
     time.sleep(3)
 
-    firmware_dir   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    test_script    = os.path.join(firmware_dir, "tests", "test_gpio_real.py")
-    trigger_script = os.path.join(firmware_dir, "tests", "trigger_gpio_test.py")
+    firmware_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-    _log("Running device setup (registering test UID)...")
+    # mpremote run does not support passing arguments, and MicroPython's sys
+    # has no argv in an exec context, so inject key_uid as a plain variable.
+    setup_exec = (
+        f"key_uid = '{_TEST_UID}'; "
+        f"exec(open('tests/real_hardware/add_key_for_success_pull.py').read())"
+    )
+    _log(f"Running device setup (registering UID '{_TEST_UID}')...")
     setup = subprocess.run(
-        ["mpremote", "connect", port, "mount", firmware_dir, "run", test_script],
+        ["mpremote", "connect", port, "mount", firmware_dir, "exec", setup_exec],
         capture_output=True, text=True,
     )
     if setup.returncode != 0:
@@ -99,9 +104,13 @@ def main():
     _log("Setup complete. Waiting 3 seconds before triggering...")
     time.sleep(3)
 
-    _log("Triggering card scan (calling on_key_read)...")
+    trigger_exec = (
+        f"key_uid = '{_TEST_UID}'; "
+        f"exec(open('tests/real_hardware/send_rfid_key_scan.py').read())"
+    )
+    _log(f"Triggering card scan with UID '{_TEST_UID}'...")
     device = subprocess.Popen(
-        ["mpremote", "connect", port, "mount", firmware_dir, "run", trigger_script],
+        ["mpremote", "connect", port, "mount", firmware_dir, "exec", trigger_exec],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
     )
 

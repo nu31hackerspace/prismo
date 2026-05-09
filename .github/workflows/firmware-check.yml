@@ -17,7 +17,7 @@ jobs:
       - name: Lint firmware
         run: ruff check firmware/
 
-  firmware-tests:
+  firmware-mock-tests:
     runs-on: [test-stand]
     timeout-minutes: 20
     concurrency:
@@ -41,9 +41,50 @@ jobs:
           echo "--- device ---"
           ls -l "$ESP32_PORT"
 
-      - name: Run firmware tests
+      - name: Run firmware mock tests
         working-directory: firmware
-        run: bash tests/run_tests.sh
+        run: bash tests/mock_hardware/run_tests.sh
+
+      - name: Capture device state on failure
+        if: failure()
+        continue-on-error: true
+        run: |
+          echo "--- dmesg (last 30 USB-related lines) ---"
+          dmesg | grep -i -E 'usb|tty|acm' | tail -30 || true
+          echo ""
+          echo "--- device node ---"
+          ls -l "$ESP32_PORT" 2>/dev/null || echo "Device not present"
+          echo ""
+          echo "--- mpremote devs ---"
+          mpremote devs 2>/dev/null || echo "mpremote devs failed"
+
+  firmware-real-hardware-tests:
+    runs-on: [test-stand]
+    timeout-minutes: 20
+    concurrency:
+      group: hardware-esp32c3
+      cancel-in-progress: false
+
+    env:
+      ESP32_PORT: /dev/ttyESP32C3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tool sanity check
+        run: |
+          echo "--- mpremote ---"
+          mpremote --version
+          echo ""
+          echo "--- esptool ---"
+          esptool version || esptool.py version
+          echo ""
+          echo "--- device ---"
+          ls -l "$ESP32_PORT"
+
+      - name: Run real hardware GPIO tests
+        working-directory: firmware
+        run: bash tests/real_hardware/run_tests.sh
 
       - name: Capture device state on failure
         if: failure()

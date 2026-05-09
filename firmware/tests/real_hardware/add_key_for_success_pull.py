@@ -1,8 +1,9 @@
 """
-Device-side card-scan simulation — runs on ESP32-C3 via mpremote.
-Registers a test UID then calls on_key_read() exactly as the PN532 reader
-driver would after detecting and hashing a card.
-The Raspberry Pi monitors GPIO 17 independently.
+Runs on ESP32-C3 via mpremote exec. Registers the given UID as an allowed key
+so that a subsequent scan of that UID triggers the success GPIO pull.
+
+Invoked by pi_gpio_monitor.py as:
+  mpremote exec "key_uid='<uid>'; exec(open('tests/real_hardware/add_key_for_success_pull.py').read())"
 """
 
 import os
@@ -41,4 +42,4 @@ prismo_main.mqtt.subscribe_commands(
     prismo_main.on_sync_keys,
 )
 
-prismo_main.mqtt._on_message("prismo/test_user/cmd/add_key", '{"uid": "test_card_uid"}')
+prismo_main.mqtt._on_message("prismo/test_user/cmd/add_key", f'{{"uid": "{key_uid}"}}')
