@@ -17,7 +17,7 @@ class ReaderUI:
     def show_configuration_save(self):
         color.set_sub_light_color(0x00FF00)
         buzzer.play_success_sound()
-        
+
     def reset(self):
         self.success_pin.off()
         self.error_pin.off()
