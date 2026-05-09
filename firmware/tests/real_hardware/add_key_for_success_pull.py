@@ -42,4 +42,4 @@ prismo_main.mqtt.subscribe_commands(
     prismo_main.on_sync_keys,
 )
 
-prismo_main.mqtt._on_message("prismo/test_user/cmd/add_key", f'{{"uid": "{key_uid}"}}')
+prismo_main.mqtt._on_message("prismo/test_user/cmd/add_key", f'{{"uid": "{key_uid}"}}') # noqa: F821

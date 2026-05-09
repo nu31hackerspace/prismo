@@ -28,4 +28,5 @@ sys.modules['src.reader'] = _MockReader
 
 import src.prismo_main as prismo_main
 
-prismo_main.on_key_read(key_uid)
+prismo_main.on_key_read(key_uid) # noqa: F821
+
