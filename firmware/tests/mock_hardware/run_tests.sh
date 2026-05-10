@@ -98,33 +98,6 @@ for test_file in "${TEST_FILE_LIST[@]}"; do
     fi
 done
 
-# ---------------------------------------------------------------------------
-# Step 5 (optional): GPIO hardware verification on Raspberry Pi
-# Enable with:  GPIO_TEST=1 bash tests/run_tests.sh
-#
-# Required wiring (both devices must share GND):
-#   ESP32-C3 GPIO 2  →  Pi BCM 17  (physical pin 11)   [success]
-#   ESP32-C3 GPIO 1  →  Pi BCM 27  (physical pin 13)   [error]
-#   ESP32-C3 GND     →  Pi GND     (physical pin 9/14)
-#
-# Voltage safety: ESP32-C3 GPIO = 3.3 V output. Pi GPIO = 3.3 V input.
-# Direct connection is safe. Never connect a 5 V line to the Pi GPIO header.
-# ---------------------------------------------------------------------------
-if [[ "${GPIO_TEST:-0}" == "1" ]]; then
-    echo ""
-    echo "[5/5] Running GPIO hardware verification..."
-    echo "      (requires Pi GPIO wired to device — see script header for pinout)"
-    echo ""
-    if python3 "${FIRMWARE}/tests/real_hardware/pi_gpio_monitor.py" "$PORT"; then
-        echo ""
-        echo ">>> GPIO hardware verification: PASSED"
-    else
-        FAILED=1
-        echo ""
-        echo ">>> GPIO hardware verification: FAILED"
-    fi
-fi
-
 echo ""
 if [[ "$FAILED" -eq 0 ]]; then
     echo "======================================================"

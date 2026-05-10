@@ -19,7 +19,7 @@ jobs:
 
   firmware-mock-tests:
     runs-on: [test-stand]
-    timeout-minutes: 20
+    timeout-minutes: 10
     concurrency:
       group: hardware-esp32c3
       cancel-in-progress: false
@@ -60,7 +60,7 @@ jobs:
 
   firmware-real-hardware-tests:
     runs-on: [test-stand]
-    timeout-minutes: 20
+    timeout-minutes: 15
     concurrency:
       group: hardware-esp32c3
       cancel-in-progress: false
@@ -82,7 +82,7 @@ jobs:
           echo "--- device ---"
           ls -l "$ESP32_PORT"
 
-      - name: Run real hardware GPIO tests
+      - name: Run firmware real hardware tests
         working-directory: firmware
         run: bash tests/real_hardware/run_tests.sh
 

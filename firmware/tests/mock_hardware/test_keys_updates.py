@@ -24,6 +24,10 @@ config.WIFI_SSID = "{{WIFI_SSID}}"
 config.WIFI_PASS = "{{WIFI_PASS}}"
 config.MQTT_URL  = "{{MQTT_URL}}"
 
+# mpremote mount makes the working directory /remote (read-only host mount).
+# Point config writes to the device's own writable flash instead.
+config.RUN_TIME_CONFIG_FILE = "/runtime_config.json"
+
 
 class MockReader:
     callback = None

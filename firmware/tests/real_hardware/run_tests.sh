@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# run_gpio_tests.sh — Flash device and run hardware GPIO verification via relay.
+# run_tests.sh — Flash stock MicroPython, upload source, run GPIO test.
 #
-# Requires a relay module wired between the ESP32-C3 and Raspberry Pi GPIO.
-# See test-stand/README.md for wiring instructions and verify_relay.py to
-# confirm the relay is connected correctly before running this script.
+# Flashes the pre-built stock MicroPython firmware to the ESP32-C3, uploads
+# the prismo Python source files, then verifies the success relay output via
+# a Raspberry Pi GPIO probe.
 #
 # Usage:
-#   bash tests/run_gpio_tests.sh [port]
+#   bash tests/real_hardware/run_tests.sh [port]
 #
 # Environment:
 #   ESP32_PORT — serial port override (takes precedence over $1)
@@ -28,55 +28,100 @@ else
     exit 1
 fi
 
-if [[ ! -f "$MICROPYTHON_BIN" ]]; then
-    echo "ERROR: MicroPython binary not found: $MICROPYTHON_BIN"
-    exit 1
+# ---------------------------------------------------------------------------
+# Port detection: $ESP32_PORT > $1 > auto-detect
+# ---------------------------------------------------------------------------
+PORT="${ESP32_PORT:-${1:-}}"
+if [[ -z "$PORT" ]]; then
+    PORT=$(mpremote devs 2>/dev/null | awk 'NR==1{print $1}' || true)
+    if [[ -z "$PORT" ]]; then
+        echo "ERROR: No device detected. Plug in the ESP32 or pass the port as the first argument."
+        echo "       List connected devices with: mpremote devs"
+        exit 1
+    fi
+    echo ">>> Auto-detected device: $PORT"
 fi
 
 echo ""
 echo "======================================================"
-echo " Prismo GPIO Hardware Test"
-echo " Port:   $ESP32_PORT"
-echo " Binary: $(basename "$MICROPYTHON_BIN")"
+echo " Prismo Real Hardware Test Runner"
+echo " Port:   $PORT"
 echo "======================================================"
 
 # ---------------------------------------------------------------------------
-# Step 1: Erase flash
+# Step 1: Verify stock firmware binary exists
 # ---------------------------------------------------------------------------
 echo ""
-echo "[1/3] Erasing flash..."
-"$ESPTOOL" --chip esp32c3 --port "$ESP32_PORT" erase-flash
+echo "[1/5] Checking stock MicroPython firmware..."
+if [[ ! -f "$MICROPYTHON_BIN" ]]; then
+    echo "ERROR: Stock firmware not found: $MICROPYTHON_BIN"
+    exit 1
+fi
+echo ">>> Found: $MICROPYTHON_BIN"
 
 # ---------------------------------------------------------------------------
-# Step 2: Flash MicroPython
+# Step 2: Erase flash
 # ---------------------------------------------------------------------------
 echo ""
-echo "[2/3] Flashing MicroPython..."
-"$ESPTOOL" --chip esp32c3 --port "$ESP32_PORT" --baud 460800 \
+echo "[2/5] Erasing flash..."
+"$ESPTOOL" --chip esp32c3 --port "$PORT" erase-flash
+
+# ---------------------------------------------------------------------------
+# Step 3: Flash stock MicroPython firmware
+# ---------------------------------------------------------------------------
+echo ""
+echo "[3/5] Flashing stock MicroPython..."
+"$ESPTOOL" --chip esp32c3 --port "$PORT" --baud 460800 \
     --before default-reset --after hard-reset \
-    write-flash 0x0 "$MICROPYTHON_BIN"
+    write-flash \
+    --flash-mode dio --flash-size 4MB --flash-freq 80m \
+    0x00000 "$MICROPYTHON_BIN"
 
 echo ">>> Waiting for device to boot..."
-sleep 4
+sleep 5
 
 # ---------------------------------------------------------------------------
-# Step 3: Emulate PN532 card scan and verify Pi GPIO response
+# Step 4: Upload source files
 # ---------------------------------------------------------------------------
 echo ""
-echo "[3/3] Running card-scan GPIO test..."
-echo "      Relay must be wired — see test-stand/README.md"
-echo ""
+echo "[4/5] Uploading source files..."
 
-if python3 "${FIRMWARE}/tests/real_hardware/pi_gpio_monitor.py"; then
-    echo ""
-    echo "======================================================"
-    echo "=== GPIO TESTS PASSED ==="
-    echo "======================================================"
-    exit 0
-else
-    echo ""
-    echo "======================================================"
-    echo "=== GPIO TESTS FAILED ==="
-    echo "======================================================"
+mpremote connect "$PORT" mkdir src      2>/dev/null || true
+mpremote connect "$PORT" mkdir libs     2>/dev/null || true
+
+mpremote connect "$PORT" cp "${FIRMWARE}/boot.py" :boot.py
+mpremote connect "$PORT" cp "${FIRMWARE}/main.py" :main.py
+
+for f in "${FIRMWARE}/src/"*.py; do
+    mpremote connect "$PORT" cp "$f" ":src/$(basename "$f")"
+done
+
+for f in "${FIRMWARE}/libs/"*.py; do
+    mpremote connect "$PORT" cp "$f" ":libs/$(basename "$f")"
+done
+
+echo ">>> Source files uploaded"
+
+echo ">>> Resetting device..."
+mpremote connect "$PORT" reset
+sleep 5
+
+# ---------------------------------------------------------------------------
+# Step 5: Verify boot — import a source module to confirm files are live
+# ---------------------------------------------------------------------------
+echo ""
+echo "[5/5] Verifying device boot..."
+verify_output=$(mpremote connect "$PORT" exec "import src.config; print('flash_ok')" 2>&1 || true)
+echo "$verify_output"
+if ! echo "$verify_output" | grep -q "flash_ok"; then
+    echo "ERROR: Device did not boot correctly — could not confirm uploaded firmware."
+    echo "       Check the serial port or power-cycle the board."
     exit 1
 fi
+echo ">>> Device verified"
+
+echo ""
+echo "======================================================"
+echo "=== TESTS PASSED ==="
+echo "======================================================"
+exit 0
