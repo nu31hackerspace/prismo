@@ -6,13 +6,12 @@
 #
 # Environment variables (all optional, for CI):
 #   ESP32_PORT  — serial port override (takes precedence over $1)
-#   TEST_FILES  — space-separated list of test files to run
-#                 (default: tests/test_keys_updates.py)
 
 set -euo pipefail
 
-FIRMWARE="$(cd "$(dirname "$0")/.." && pwd)"
+FIRMWARE="$(cd "$(dirname "$0")/../.." && pwd)"
 MICROPYTHON_BIN="${FIRMWARE}/ESP32_GENERIC_C3-20251209-v1.27.0.bin"
+TEST_FILE_LIST=("${FIRMWARE}/tests/mock_hardware/test_keys_updates.py")
 
 # ---------------------------------------------------------------------------
 # esptool detection: prefer `esptool`, fall back to `esptool.py`
@@ -40,14 +39,6 @@ if [[ -z "$PORT" ]]; then
     echo ">>> Auto-detected device: $PORT"
 fi
 
-# ---------------------------------------------------------------------------
-# Test files: $TEST_FILES or default
-# ---------------------------------------------------------------------------
-if [[ -n "${TEST_FILES:-}" ]]; then
-    read -ra TEST_FILE_LIST <<< "$TEST_FILES"
-else
-    TEST_FILE_LIST=("${FIRMWARE}/tests/test_keys_updates.py")
-fi
 
 if [[ ! -f "$MICROPYTHON_BIN" ]]; then
     echo "ERROR: MicroPython binary not found: $MICROPYTHON_BIN"

@@ -18,6 +18,10 @@ class ReaderUI:
         color.set_sub_light_color(0x00FF00)
         buzzer.play_success_sound()
 
+    def reset(self):
+        self.success_pin.off()
+        self.error_pin.off()
+
     def ready_to_read(self):
         color.set_sub_light_color(0x800080)
         buzzer.turn_off()
