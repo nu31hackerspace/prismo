@@ -91,5 +91,6 @@ if mqtt_cfg:
     color.turn_off_all()
 
 health_log.write_info("Start reader")
+ui.reset()
 ui.ready_to_read()
 reader.subscribe(on_key_read, mqtt)
