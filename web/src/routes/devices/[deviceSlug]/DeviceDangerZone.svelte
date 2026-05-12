@@ -454,8 +454,12 @@
 										Connect your ESP32-C3 via USB to flash it.
 									</p>
 									<p class="text-xs text-label-secondary">
-										<Icon icon="mdi:alert-outline" class="inline h-3.5 w-3.5 align-text-bottom text-label-tertiary" />
-										Plug the device directly into your computer. USB hubs and extension cables may cause flashing failures.
+										<Icon
+											icon="mdi:alert-outline"
+											class="inline h-3.5 w-3.5 align-text-bottom text-label-tertiary"
+										/>
+										Plug the device directly into your computer. USB hubs and extension cables may cause
+										flashing failures.
 									</p>
 								</div>
 								<div class="flex justify-center gap-3">
