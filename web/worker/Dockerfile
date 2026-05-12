@@ -40,6 +40,7 @@ RUN bash -c ". /opt/esp-idf/export.sh && \
 # ── Worker script ─────────────────────────────────────────────────────────────
 COPY web/worker/build.sh /worker/build.sh
 COPY web/worker/worker.py /worker/worker.py
+COPY web/worker/build_cli.sh /worker/build_cli.sh 
 RUN chmod +x /worker/build.sh
 
 CMD ["python3", "/worker/worker.py"]
