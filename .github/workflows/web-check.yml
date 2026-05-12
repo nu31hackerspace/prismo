@@ -27,7 +27,7 @@ jobs:
 
   web-e2e-tests:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -36,11 +36,14 @@ jobs:
         working-directory: web
         run: |
           docker compose -f docker-compose.ci.yml up -d --build
-          # --wait exits 1 in some Compose versions when a restart:no service
-          # finishes (even with exit code 0). Poll healthchecks manually instead.
           timeout 60 bash -c '
             until docker inspect --format "{{.State.Health.Status}}" web-mongo-1 2>/dev/null | grep -q healthy \
                && docker inspect --format "{{.State.Health.Status}}" web-mqtt-1  2>/dev/null | grep -q healthy; do
+              sleep 2
+            done
+          '
+          timeout 30 bash -c '
+            until docker inspect --format "{{.State.Status}}" web-worker-1 2>/dev/null | grep -q running; do
               sleep 2
             done
           '

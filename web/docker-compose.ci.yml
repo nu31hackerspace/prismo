@@ -32,3 +32,17 @@ services:
       interval: 3s
       timeout: 5s
       retries: 10
+
+  worker:
+    build:
+      context: ..
+      dockerfile: web/worker/Dockerfile
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/prismo_e2e?directConnection=true&replicaSet=rs0
+      - MQTT_URL=mqtt://mqtt:1883
+    restart: on-failure
