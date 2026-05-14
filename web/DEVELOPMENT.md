@@ -16,11 +16,11 @@ docker compose -f docker-compose.dev.yml up --build -d
 
 ### Available Services
 
-| Service | URL | Credentials |
-|---|---|---|
-| SvelteKit app (HMR) | http://localhost:3000 | admin / admin |
+| Service               | URL                   | Credentials   |
+| --------------------- | --------------------- | ------------- |
+| SvelteKit app (HMR)   | http://localhost:3000 | admin / admin |
 | Compass Web (MongoDB) | http://localhost:5000 | admin / admin |
-| MQTT broker | mqtt://localhost:1883 | admin / admin |
+| MQTT broker           | mqtt://localhost:1883 | admin / admin |
 
 ### Live editing
 
@@ -79,7 +79,7 @@ GOOGLE_CLIENT_ID=your-google-client-id
 
 ---
 
-### 2. Install dependencies 
+### 2. Install dependencies
 
 ```bash
 npm install
