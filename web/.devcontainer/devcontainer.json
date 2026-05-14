@@ -1,0 +1,25 @@
+{
+  "name": "Prismo Web",
+  "dockerComposeFile": "../docker-compose.dev.yml",
+  "service": "app",
+  "workspaceFolder": "/app",
+  "forwardPorts": [3000, 24678],
+  "postCreateCommand": "npm install && cd /mqtt && npm install && cd /app && npx playwright install-deps && npx playwright install chromium",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "svelte.svelte-vscode",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-playwright.playwright"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "[svelte]": {
+          "editor.defaultFormatter": "svelte.svelte-vscode"
+        }
+      }
+    }
+  },
+  "remoteUser": "root"
+}
