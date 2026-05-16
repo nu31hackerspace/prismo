@@ -1,0 +1,13 @@
+kibot:
+  version: 1
+
+outputs:
+  - name: bottom_render
+    comment: Bottom-side PCB render
+    type: pcbdraw
+    dir: render
+    options:
+      format: png
+      bottom: true
+      dpi: 300
+      style: set-blue-enig
