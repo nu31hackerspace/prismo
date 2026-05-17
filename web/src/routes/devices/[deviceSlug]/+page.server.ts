@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { devicesCol, deviceKeysCol, deviceHistoryCol, ObjectId } from '$lib/server/db';
+import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol, ObjectId } from '$lib/server/db';
 import {
 	addKeyToDevice,
 	removeKeyFromDevice,
@@ -21,8 +21,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!device) throw error(404, 'Device not found');
 
 	const deviceId = device._id!;
+	const ownerId = device.ownerId;
 
-	const [keys, history, lastUnauth] = await Promise.all([
+	const [deviceKeys, history, lastUnauth] = await Promise.all([
 		deviceKeysCol.find({ deviceId }).toArray(),
 		deviceHistoryCol.find({ deviceId }).sort({ createdAt: -1 }).limit(50).toArray(),
 		deviceHistoryCol.findOne(
@@ -30,6 +31,15 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			{ sort: { createdAt: -1 } }
 		)
 	]);
+
+	const keyIdsForLookup = new Set<string>(deviceKeys.map((k) => k.keyId));
+	if (lastUnauth?.keyId) keyIdsForLookup.add(lastUnauth.keyId);
+
+	const orgKeys =
+		keyIdsForLookup.size > 0
+			? await keysCol.find({ ownerId, keyId: { $in: [...keyIdsForLookup] } }).toArray()
+			: [];
+	const nameByKeyId = new Map(orgKeys.map((k) => [k.keyId, k.name]));
 
 	return {
 		device: {
@@ -40,9 +50,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			mode: device.mode ?? 'door',
 			modeParams: device.modeParams ?? {}
 		},
-		keys: keys.map((k) => ({
+		keys: deviceKeys.map((k) => ({
 			keyId: k.keyId,
-			username: k.username,
+			name: nameByKeyId.get(k.keyId) ?? '',
 			addedAt: k.addedAt
 		})),
 		history: history.map((h) => ({
@@ -54,7 +64,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			triggerAction: h.triggerAction ?? null,
 			createdAt: h.createdAt
 		})),
-		lastUnauth: lastUnauth ? { keyId: lastUnauth.keyId!, createdAt: lastUnauth.createdAt } : null
+		lastUnauth: lastUnauth
+			? {
+					keyId: lastUnauth.keyId!,
+					createdAt: lastUnauth.createdAt,
+					knownName: nameByKeyId.get(lastUnauth.keyId!) ?? null
+				}
+			: null
 	};
 };
 
@@ -63,10 +79,10 @@ export const actions: Actions = {
 		if (!locals.user) return fail(401, { message: 'Unauthorized' });
 		const data = await request.formData();
 		const keyId = (data.get('keyId') as string)?.trim();
-		const username = (data.get('username') as string)?.trim();
-		if (!keyId || !username) return fail(400, { message: 'keyId and username are required' });
+		const name = (data.get('name') as string)?.trim();
+		if (!keyId) return fail(400, { message: 'keyId is required' });
 		try {
-			await addKeyToDevice(params.deviceSlug!, locals.user.id, keyId, username);
+			await addKeyToDevice(params.deviceSlug!, locals.user.id, keyId, name || undefined);
 			return { success: true };
 		} catch (e: unknown) {
 			return fail(400, { message: e instanceof Error ? e.message : 'Unknown error' });

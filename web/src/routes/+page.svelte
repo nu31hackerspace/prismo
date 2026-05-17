@@ -89,6 +89,9 @@
 			prismo
 		</a>
 		<div class="flex items-center gap-3">
+			{#if data.user}
+				<MainButton buttonStyle="ghost" size="S" icon="mdi:key-outline" label="Keys" link="/keys" />
+			{/if}
 			<MainButton buttonStyle="ghost" size="S" icon="mdi:github" label="GitHub" link={githubUrl} />
 			{#if data.user}
 				<UserAvatar user={data.user} />

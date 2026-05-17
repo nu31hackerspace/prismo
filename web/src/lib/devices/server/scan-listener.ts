@@ -1,6 +1,6 @@
 import mqtt from 'mqtt';
 import { env } from '$env/dynamic/private';
-import { devicesCol, deviceKeysCol, deviceHistoryCol } from '$lib/server/db';
+import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol } from '$lib/server/db';
 
 let initialized = false;
 
@@ -83,11 +83,14 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 
 	const deviceId = device._id;
 
-	const keyDoc = await deviceKeysCol.findOne({ deviceId, keyId: uId });
+	const [deviceKey, orgKey] = await Promise.all([
+		deviceKeysCol.findOne({ deviceId, keyId: uId }),
+		keysCol.findOne({ ownerId: device.ownerId, keyId: uId })
+	]);
 	const allowed = payload?.allowed;
 
 	console.log(
-		`[scan-listener] keyId ${uId} on "${deviceSlug}": ${allowed ? `allowed (${keyDoc?.username ?? 'unknown'})` : 'denied'}`
+		`[scan-listener] keyId ${uId} on "${deviceSlug}": ${allowed ? `allowed (${orgKey?.name ?? 'unknown'})` : 'denied'}, deviceKey: ${deviceKey ? 'yes' : 'no'}`
 	);
 
 	await deviceHistoryCol.insertOne({
@@ -95,7 +98,7 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 		deviceSlug,
 		action: 'scan',
 		keyId: uId,
-		username: keyDoc?.username,
+		username: orgKey?.name,
 		allowed: allowed,
 		createdAt: new Date()
 	});
