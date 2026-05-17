@@ -41,12 +41,12 @@
 			</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			{#each data.keys as key (key.keyId)}
 				{@const candidateDevices = devicesNotAttached(key.devices)}
 				<div
 					data-key-id={key.keyId}
-					class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-6 flex flex-col justify-between"
+					class="flex flex-col justify-between rounded-2xl border border-separator-secondary bg-fill-tertiary p-6"
 				>
 					<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
 						<div class="min-w-0 flex-1">

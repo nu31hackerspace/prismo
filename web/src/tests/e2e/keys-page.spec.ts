@@ -58,9 +58,9 @@ test('scanning a known key on a second device does NOT trigger the unauthorized 
 	});
 	await page.fill('input[name="name"]', 'Bob');
 	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
-	await expect(
-		page.locator('[data-section="allowed-keys"]').locator('text=Bob')
-	).toBeVisible({ timeout: 10_000 });
+	await expect(page.locator('[data-section="allowed-keys"]').locator('text=Bob')).toBeVisible({
+		timeout: 10_000
+	});
 
 	await page.goto('/devices');
 	await createDevice(page, deviceB, 'machine');
@@ -83,9 +83,9 @@ test('scanning a known key on a second device does NOT trigger the unauthorized 
 
 	await page.goto('/devices');
 	await navigateToDevice(page, deviceB);
-	await expect(
-		page.locator('[data-section="allowed-keys"]').locator('text=Bob')
-	).toBeVisible({ timeout: 10_000 });
+	await expect(page.locator('[data-section="allowed-keys"]').locator('text=Bob')).toBeVisible({
+		timeout: 10_000
+	});
 });
 
 test('deleting a key from /keys revokes it from every device', async ({ page }) => {
@@ -106,9 +106,9 @@ test('deleting a key from /keys revokes it from every device', async ({ page }) 
 	});
 	await page.fill('input[name="name"]', 'Dave');
 	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
-	await expect(
-		page.locator('[data-section="allowed-keys"]').locator('text=Dave')
-	).toBeVisible({ timeout: 10_000 });
+	await expect(page.locator('[data-section="allowed-keys"]').locator('text=Dave')).toBeVisible({
+		timeout: 10_000
+	});
 
 	await page.goto('/devices');
 	await createDevice(page, deviceB);
@@ -122,7 +122,9 @@ test('deleting a key from /keys revokes it from every device', async ({ page }) 
 	page.once('dialog', (dialog) => dialog.accept());
 	await daveRow.locator('button:has-text("Delete")').click();
 
-	await expect(page.locator('div[data-key-id]', { hasText: 'Dave' })).toHaveCount(0, { timeout: 10_000 });
+	await expect(page.locator('div[data-key-id]', { hasText: 'Dave' })).toHaveCount(0, {
+		timeout: 10_000
+	});
 
 	await page.goto('/devices');
 	await navigateToDevice(page, deviceA);
@@ -203,9 +205,9 @@ test('attach a known key to another device from /keys', async ({ page }) => {
 	});
 	await page.fill('input[name="name"]', 'Eve');
 	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
-	await expect(
-		page.locator('[data-section="allowed-keys"]').locator('text=Eve')
-	).toBeVisible({ timeout: 10_000 });
+	await expect(page.locator('[data-section="allowed-keys"]').locator('text=Eve')).toBeVisible({
+		timeout: 10_000
+	});
 
 	await page.goto('/devices');
 	await createDevice(page, deviceB);
@@ -219,7 +221,7 @@ test('attach a known key to another device from /keys', async ({ page }) => {
 
 	await page.goto('/devices');
 	await navigateToDevice(page, deviceB);
-	await expect(
-		page.locator('[data-section="allowed-keys"]').locator('text=Eve')
-	).toBeVisible({ timeout: 10_000 });
+	await expect(page.locator('[data-section="allowed-keys"]').locator('text=Eve')).toBeVisible({
+		timeout: 10_000
+	});
 });
