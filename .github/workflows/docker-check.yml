@@ -1,0 +1,69 @@
+name: Docker merge request pipeline
+
+on:
+  pull_request:
+
+jobs:
+  check-dev-flags:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check dev flags are off
+        run: |
+          FAIL=0
+          for flag in DEBUG QUICK_START MUTE_BUZZER; do
+            if grep -qP "^${flag}\s*=\s*True" firmware/src/config.py; then
+              echo "ERROR: $flag is set to True in firmware/src/config.py — must be False for production builds"
+              FAIL=1
+            fi
+          done
+          exit $FAIL
+
+  build-web-image:
+    runs-on: ubuntu-24.04
+    needs: check-dev-flags
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: web
+          push: false
+          build-args: |
+            COMMIT_SHA=${{ github.sha }}
+
+  build-worker-image:
+    needs: check-dev-flags
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare platform pair
+        run: echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+        env:
+          platform: ${{ matrix.platform }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: web/worker/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: false
+          cache-from: type=gha,scope=worker-${{ env.PLATFORM_PAIR }}
+          cache-to: type=gha,mode=max,scope=worker-${{ env.PLATFORM_PAIR }}
