@@ -9,6 +9,7 @@
 		state?: 'default' | 'disabled';
 		link?: string;
 		icon?: string;
+		active?: boolean;
 		children?: Snippet;
 		onclick?: (event: MouseEvent) => void;
 	}
@@ -20,6 +21,7 @@
 		state = 'default',
 		link = '',
 		icon = '',
+		active = false,
 		children,
 		onclick
 	}: Props = $props();
@@ -44,13 +46,19 @@
 		ghost: 'bg-transparent hover:bg-fill-tertiary text-label-primary'
 	};
 
-	const classes = $derived(
-		`inline-flex items-center justify-center font-semibold rounded-lg gap-2 ${variantClasses[buttonStyle]} ${sizeClasses[size]}`
+	const activeClasses = $derived(
+		active && buttonStyle === 'ghost' ? 'bg-fill-tertiary text-label-primary' : ''
 	);
+
+	const classes = $derived(
+		`inline-flex items-center justify-center font-semibold rounded-lg gap-2 ${variantClasses[buttonStyle]} ${sizeClasses[size]} ${activeClasses}`
+	);
+
+	const ariaCurrent = $derived(active ? 'page' : undefined);
 </script>
 
 {#if link}
-	<a href={link} rel="noopener noreferrer" class={classes}>
+	<a href={link} rel="noopener noreferrer" class={classes} aria-current={ariaCurrent}>
 		{#if icon}
 			<span class="flex items-center">
 				<Icon {icon} class={iconSizeClasses[size]} />
@@ -62,7 +70,7 @@
 		{/if}
 	</a>
 {:else}
-	<button class={classes} {onclick}>
+	<button class={classes} {onclick} aria-current={ariaCurrent}>
 		{#if icon}
 			<span class="flex items-center">
 				<Icon {icon} class={iconSizeClasses[size]} />

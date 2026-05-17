@@ -1,4 +1,4 @@
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { devicesCol, ObjectId } from '$lib/server/db';
 import {
@@ -10,12 +10,11 @@ import {
 import { removeKeyFromDevice } from '$lib/devices/server/device-service';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user) throw redirect(303, '/');
-
-	const ownerId = new ObjectId(locals.user.id);
+	const user = locals.user!;
+	const ownerId = new ObjectId(user.id);
 
 	const [keys, devices] = await Promise.all([
-		listOrgKeys(locals.user.id),
+		listOrgKeys(user.id),
 		devicesCol.find({ ownerId }).sort({ createdAt: 1 }).toArray()
 	]);
 

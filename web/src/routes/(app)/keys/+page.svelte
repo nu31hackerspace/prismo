@@ -18,25 +18,11 @@
 	}
 </script>
 
-<header
-	class="fixed top-0 right-0 left-0 z-50 border-b border-separator-secondary bg-background-primary/80 backdrop-blur-lg"
->
-	<nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-		<div class="flex items-center gap-3">
-			<a
-				href="/"
-				class="flex items-center gap-1 text-label-secondary transition-colors hover:text-label-primary"
-			>
-				<Icon icon="mdi:arrow-left" class="h-5 w-5" />
-				<span class="font-display text-sm font-bold">Back</span>
-			</a>
-			<span class="text-separator-secondary">/</span>
-			<span class="font-display text-xl font-bold tracking-tight text-label-primary">Keys</span>
-		</div>
-	</nav>
-</header>
+<svelte:head>
+	<title>Keys — Prismo</title>
+</svelte:head>
 
-<main class="mx-auto max-w-4xl px-6 pt-32 pb-20">
+<main class="mx-auto max-w-4xl px-6 pt-10 pb-20 md:pt-16">
 	<div class="mb-8">
 		<h1 class="font-display text-3xl font-bold tracking-tight text-label-primary">Keys</h1>
 		<p class="mt-2 text-label-secondary">

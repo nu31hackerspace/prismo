@@ -4,6 +4,7 @@ import { expect, type Page } from '@playwright/test';
 export async function loginUser(page: Page): Promise<void> {
 	await page.goto('/');
 	await page.click('text="Sign In"');
+	await expect(page).toHaveURL(/\/devices$/, { timeout: 10_000 });
 	await expect(page.locator('h1', { hasText: 'My Devices' })).toBeVisible({ timeout: 10_000 });
 }
 

@@ -1,4 +1,4 @@
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol, ObjectId } from '$lib/server/db';
 import {
@@ -10,13 +10,12 @@ import {
 } from '$lib/devices/server/device-service';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	if (!locals.user) throw redirect(303, '/');
-
+	const user = locals.user!;
 	const { deviceSlug } = params;
 
 	const device = await devicesCol.findOne({
 		deviceSlug,
-		ownerId: new ObjectId(locals.user.id)
+		ownerId: new ObjectId(user.id)
 	});
 	if (!device) throw error(404, 'Device not found');
 

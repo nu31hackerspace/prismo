@@ -75,34 +75,36 @@
 	}
 </script>
 
-<!-- Header -->
+<svelte:head>
+	<title>{data.device.name} — Prismo</title>
+</svelte:head>
+
 <header
-	class="fixed top-0 right-0 left-0 z-50 border-b border-separator-secondary bg-background-primary/80 backdrop-blur-lg"
+	class="sticky top-14 z-30 border-b border-separator-secondary bg-background-primary/80 backdrop-blur-lg md:top-0"
 >
-	<nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-		<div class="flex items-center gap-3">
+	<nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+		<div class="flex min-w-0 items-center gap-3">
 			<a
-				href="/"
+				href="/devices"
 				class="flex items-center gap-1 text-label-secondary transition-colors hover:text-label-primary"
+				aria-label="Back to devices"
 			>
 				<Icon icon="mdi:arrow-left" class="h-5 w-5" />
-				<span class="font-display text-sm font-bold">Back</span>
 			</a>
-			<span class="text-separator-secondary">/</span>
-			<span class="font-display text-xl font-bold tracking-tight text-label-primary">
+			<span class="truncate font-display text-xl font-bold tracking-tight text-label-primary">
 				{data.device.name}
 			</span>
 			<Badge label={isOnline ? 'Online' : 'Offline'} variant={isOnline ? 'success' : 'error'} />
 		</div>
 		<span
-			class="rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-1 font-mono text-xs text-label-tertiary"
+			class="hidden rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-1 font-mono text-xs text-label-tertiary sm:inline"
 		>
 			{data.device.deviceSlug}
 		</span>
 	</nav>
 </header>
 
-<main class="mx-auto max-w-6xl px-6 pt-32 pb-20">
+<main class="mx-auto max-w-6xl px-6 pt-8 pb-20">
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 		<!-- Left column -->
 		<div class="flex flex-col gap-6">

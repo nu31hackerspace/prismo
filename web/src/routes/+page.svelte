@@ -1,21 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { ActionData, PageData } from './$types';
 	import MainButton from '$lib/components/MainButton.svelte';
-	import Badge from '$lib/components/Badge.svelte';
 	import FeatureCard from '$lib/components/FeatureCard.svelte';
 	import StepCard from '$lib/components/StepCard.svelte';
 	import Icon from '@iconify/svelte';
-	import UserAvatar from '$lib/components/UserAvatar.svelte';
-
-	const ONLINE_THRESHOLD_MS = 15_000;
-
-	function isOnline(lastSeenAt: Date | null): boolean {
-		if (!lastSeenAt) return false;
-		return Date.now() - new Date(lastSeenAt).getTime() < ONLINE_THRESHOLD_MS;
-	}
-
-	let { data }: { data: PageData; form: ActionData } = $props();
 
 	const githubUrl = 'https://github.com/nu31hackerspace/prismo';
 
@@ -89,187 +76,84 @@
 			prismo
 		</a>
 		<div class="flex items-center gap-3">
-			{#if data.user}
-				<MainButton buttonStyle="ghost" size="S" icon="mdi:key-outline" label="Keys" link="/keys" />
-			{/if}
 			<MainButton buttonStyle="ghost" size="S" icon="mdi:github" label="GitHub" link={githubUrl} />
-			{#if data.user}
-				<UserAvatar user={data.user} />
-			{:else}
-				<MainButton
-					buttonStyle="primary"
-					size="M"
-					icon="mdi:google"
-					label="Sign In"
-					link="/auth/google"
-				/>
-			{/if}
+			<MainButton
+				buttonStyle="primary"
+				size="M"
+				icon="mdi:google"
+				label="Sign In"
+				link="/auth/google"
+			/>
 		</div>
 	</nav>
 </header>
 
-{#if data.user}
-	<!-- Block 1 & 2 for authenticated users: device management -->
-	<section class="relative overflow-hidden pt-32 pb-20">
+<!-- Hero -->
+<section class="relative overflow-hidden pt-32 pb-20">
+	<div
+		class="pointer-events-none absolute inset-0 opacity-[0.03]"
+		style="background-image: linear-gradient(rgb(0,0,0) 1px, transparent 1px), linear-gradient(90deg, rgb(0,0,0) 1px, transparent 1px); background-size: 60px 60px;"
+	></div>
+
+	<div class="relative mx-auto max-w-4xl px-6 text-center">
 		<div
-			class="pointer-events-none absolute inset-0 opacity-[0.03]"
-			style="background-image: linear-gradient(rgb(0,0,0) 1px, transparent 1px), linear-gradient(90deg, rgb(0,0,0) 1px, transparent 1px); background-size: 60px 60px;"
-		></div>
-
-		<div class="relative mx-auto max-w-6xl px-6">
-			<div class="mb-12 flex flex-col items-center justify-between gap-6 md:flex-row">
-				<div class="text-left">
-					<h1
-						class="text-left font-display text-3xl font-bold tracking-tight text-label-primary md:text-4xl"
-					>
-						My Devices
-					</h1>
-					<p class="mt-2 text-label-secondary">
-						Manage your Prismo devices and generate API tokens.
-					</p>
-				</div>
-
-				<form method="POST" action="?/addDevice" use:enhance class="flex flex-wrap gap-2">
-					<input
-						type="text"
-						name="name"
-						placeholder="Device name (e.g. Front Door)"
-						required
-						class="w-64 rounded-xl border border-separator-secondary bg-fill-tertiary px-4 py-2 text-label-primary outline-none focus:border-accent-primary sm:w-80"
-					/>
-					<select
-						name="mode"
-						class="rounded-xl border border-separator-secondary bg-fill-tertiary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary"
-					>
-						<option value="door">Door Lock</option>
-						<option value="machine">Machine Access</option>
-					</select>
-					<MainButton label="Add Device" icon="mdi:plus" buttonStyle="primary" size="M" />
-				</form>
-			</div>
-
-			{#if data.devices && data.devices.length > 0}
-				<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-					{#each data.devices as device}
-						<div
-							class="group relative flex flex-col rounded-2xl border border-separator-secondary bg-fill-tertiary p-6 transition-all hover:border-separator-primary hover:shadow-lg"
-						>
-							<div class="mb-4 flex items-center justify-between">
-								<div
-									class="rounded-xl bg-background-primary p-3 text-label-secondary transition-colors group-hover:text-accent-primary"
-								>
-									<Icon icon="mdi:chip" class="h-6 w-6" />
-								</div>
-								<div class="flex items-center gap-2">
-									<Badge
-										label={isOnline(device.lastSeenAt) ? 'Online' : 'Offline'}
-										variant={isOnline(device.lastSeenAt) ? 'success' : 'error'}
-									/>
-									<span class="text-xs text-label-tertiary">
-										{new Date(device.createdAt).toLocaleDateString()}
-									</span>
-								</div>
-							</div>
-
-							<h3 class="mb-1 font-display text-xl font-bold text-label-primary">{device.name}</h3>
-							<p class="mb-6 flex-grow font-mono text-xs text-label-tertiary">
-								{device.deviceSlug}
-							</p>
-
-							<MainButton
-								label="Manage"
-								icon="mdi:cog"
-								buttonStyle="secondary"
-								size="M"
-								link="/devices/{device.deviceSlug}"
-							/>
-						</div>
-					{/each}
-				</div>
-			{:else}
-				<div
-					class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-separator-secondary py-20"
-				>
-					<Icon icon="mdi:chip" class="mb-4 h-12 w-12 text-label-tertiary" />
-					<p class="text-label-secondary">
-						No devices found. Add your first device to get started.
-					</p>
-				</div>
-			{/if}
+			class="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-separator-secondary bg-fill-tertiary px-4 py-1.5"
+		>
+			<span class="h-2 w-2 animate-pulse rounded-full bg-accent-primary"></span>
+			<span class="font-display text-xs font-bold tracking-wide text-label-secondary uppercase">
+				Pre-release — In Active Development
+			</span>
 		</div>
-	</section>
-{:else}
-	<!-- Block 1: Hero for unauthenticated users -->
-	<section class="relative overflow-hidden pt-32 pb-20">
-		<div
-			class="pointer-events-none absolute inset-0 opacity-[0.03]"
-			style="background-image: linear-gradient(rgb(0,0,0) 1px, transparent 1px), linear-gradient(90deg, rgb(0,0,0) 1px, transparent 1px); background-size: 60px 60px;"
-		></div>
 
-		<div class="relative mx-auto max-w-4xl px-6 text-center">
-			<div
-				class="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-separator-secondary bg-fill-tertiary px-4 py-1.5"
+		<h1
+			class="mb-6 font-display text-4xl leading-tight font-bold tracking-tight text-label-primary md:text-6xl md:leading-tight"
+		>
+			Open-source access control
+			<br />
+			<span class="text-label-tertiary">for hackerspaces</span>
+		</h1>
+
+		<p class="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-label-secondary">
+			Prismo is a simple NFC/RFID device that lets you control access to doors and machines. Easy to
+			build, free to use, and friendly for beginners.
+		</p>
+
+		<div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
+			<MainButton
+				buttonStyle="primary"
+				size="XL"
+				icon="mdi:flash"
+				label="Login to Flash Firmware"
+				link="/auth/google"
+			/>
+		</div>
+	</div>
+</section>
+
+<!-- Features -->
+<section id="features" class="py-20">
+	<div class="mx-auto max-w-6xl px-6">
+		<div class="mb-14 text-center">
+			<h2
+				class="mb-4 font-display text-3xl font-bold tracking-tight text-label-primary md:text-4xl"
 			>
-				<span class="h-2 w-2 animate-pulse rounded-full bg-accent-primary"></span>
-				<span class="font-display text-xs font-bold tracking-wide text-label-secondary uppercase">
-					Pre-release — In Active Development
-				</span>
-			</div>
-
-			<h1
-				class="mb-6 font-display text-4xl leading-tight font-bold tracking-tight text-label-primary md:text-6xl md:leading-tight"
-			>
-				Open-source access control
-				<br />
-				<span class="text-label-tertiary">for hackerspaces</span>
-			</h1>
-
-			<p class="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-label-secondary">
-				Prismo is a simple NFC/RFID device that lets you control access to doors and machines. Easy
-				to build, free to use, and friendly for beginners.
+				Built for makerspaces
+			</h2>
+			<p class="mx-auto max-w-xl text-base text-label-secondary">
+				Everything you need to set up access control — simple hardware, free software, and a
+				community-driven approach.
 			</p>
-
-			<div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
-				<MainButton
-					buttonStyle="primary"
-					size="XL"
-					icon="mdi:flash"
-					label="Login to Flash Firmware"
-					link="/auth/google"
-				/>
-			</div>
 		</div>
-	</section>
 
-	<!-- Block 2: Features for unauthenticated users -->
-	<section id="features" class="py-20">
-		<div class="mx-auto max-w-6xl px-6">
-			<div class="mb-14 text-center">
-				<h2
-					class="mb-4 font-display text-3xl font-bold tracking-tight text-label-primary md:text-4xl"
-				>
-					Built for makerspaces
-				</h2>
-				<p class="mx-auto max-w-xl text-base text-label-secondary">
-					Everything you need to set up access control — simple hardware, free software, and a
-					community-driven approach.
-				</p>
-			</div>
-
-			<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-				{#each features as feature}
-					<FeatureCard
-						icon={feature.icon}
-						title={feature.title}
-						description={feature.description}
-					/>
-				{/each}
-			</div>
+		<div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+			{#each features as feature (feature.title)}
+				<FeatureCard icon={feature.icon} title={feature.title} description={feature.description} />
+			{/each}
 		</div>
-	</section>
-{/if}
+	</div>
+</section>
 
-<!-- How It Works (always visible) -->
+<!-- How It Works -->
 <section class="border-t border-b border-separator-secondary py-20">
 	<div class="mx-auto max-w-5xl px-6">
 		<div class="mb-14 text-center">
@@ -284,7 +168,7 @@
 		</div>
 
 		<div class="grid grid-cols-1 gap-12 md:grid-cols-3">
-			{#each steps as stepItem, i}
+			{#each steps as stepItem, i (stepItem.title)}
 				<StepCard
 					step={i + 1}
 					icon={stepItem.icon}
@@ -296,7 +180,7 @@
 	</div>
 </section>
 
-<!-- CTA (always visible) -->
+<!-- CTA -->
 <section class="py-20">
 	<div class="mx-auto max-w-3xl px-6 text-center">
 		<div class="rounded-3xl border border-separator-secondary bg-fill-tertiary p-12 md:p-16">
@@ -321,7 +205,7 @@
 	</div>
 </section>
 
-<!-- Footer (always visible) -->
+<!-- Footer -->
 <footer class="border-t border-separator-secondary py-8">
 	<div class="mx-auto max-w-6xl px-6">
 		<div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
