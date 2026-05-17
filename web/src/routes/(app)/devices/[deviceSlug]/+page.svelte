@@ -156,12 +156,13 @@
 						No keys allowed yet. Add a key from the unauthorized scan panel.
 					</p>
 				{:else}
-					<ul class="space-y-2">
-						{#each data.keys as key}
-							<li
-								class="flex items-center justify-between rounded-xl border border-separator-secondary bg-background-primary px-4 py-3"
+					<div data-section="allowed-keys" class="grid grid-cols-1 gap-2">
+						{#each data.keys as key (key.keyId)}
+							<div
+								data-allowed-key-id={key.keyId}
+								class="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-separator-secondary bg-background-primary px-4 py-3"
 							>
-								<div>
+								<div class="min-w-0">
 									<div class="text-sm font-semibold text-label-primary">{key.name}</div>
 									<div class="font-mono text-xs break-all text-label-tertiary">{key.keyId}</div>
 								</div>
@@ -174,9 +175,9 @@
 										label="Remove"
 									/>
 								</form>
-							</li>
+							</div>
 						{/each}
-					</ul>
+					</div>
 				{/if}
 			</div>
 

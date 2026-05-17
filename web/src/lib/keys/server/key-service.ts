@@ -1,9 +1,5 @@
 import { devicesCol, deviceKeysCol, keysCol, ObjectId } from '$lib/server/db';
-import {
-	addKeyToDevice,
-	removeKeyFromDevice,
-	pushRetainedSync
-} from '$lib/devices/server/device-service';
+import { addKeyToDevice, removeKeyFromDevice } from '$lib/devices/server/device-service';
 
 export interface OrgKeyWithDevices {
 	keyId: string;
@@ -47,31 +43,6 @@ export async function listOrgKeys(userId: string): Promise<OrgKeyWithDevices[]> 
 		createdAt: k.createdAt,
 		devices: devicesByKeyId.get(k.keyId) ?? []
 	}));
-}
-
-export async function renameOrgKey(userId: string, keyId: string, newName: string): Promise<void> {
-	const ownerId = new ObjectId(userId);
-	const trimmed = newName.trim();
-	if (!trimmed) throw new Error('Name is required');
-
-	const result = await keysCol.updateOne({ ownerId, keyId }, { $set: { name: trimmed } });
-	if (result.matchedCount === 0) throw new Error('Key not found');
-
-	const links = await deviceKeysCol.find({ keyId }).toArray();
-	const affectedDeviceIds = links.map((l) => l.deviceId);
-	if (affectedDeviceIds.length === 0) return;
-
-	const affectedDevices = await devicesCol
-		.find({ _id: { $in: affectedDeviceIds }, ownerId })
-		.toArray();
-
-	await Promise.all(
-		affectedDevices.map((d) =>
-			pushRetainedSync(d.deviceSlug).catch((err) =>
-				console.error(`[key-service] retained sync failed for "${d.deviceSlug}":`, err)
-			)
-		)
-	);
 }
 
 export async function deleteOrgKey(userId: string, keyId: string): Promise<void> {

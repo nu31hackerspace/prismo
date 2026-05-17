@@ -1,12 +1,7 @@
 import { fail, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { devicesCol, ObjectId } from '$lib/server/db';
-import {
-	listOrgKeys,
-	renameOrgKey,
-	deleteOrgKey,
-	attachKeyToDevice
-} from '$lib/keys/server/key-service';
+import { listOrgKeys, deleteOrgKey, attachKeyToDevice } from '$lib/keys/server/key-service';
 import { removeKeyFromDevice } from '$lib/devices/server/device-service';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -25,20 +20,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	rename: async ({ request, locals }) => {
-		if (!locals.user) return fail(401, { message: 'Unauthorized' });
-		const data = await request.formData();
-		const keyId = (data.get('keyId') as string)?.trim();
-		const name = (data.get('name') as string)?.trim();
-		if (!keyId || !name) return fail(400, { message: 'keyId and name are required' });
-		try {
-			await renameOrgKey(locals.user.id, keyId, name);
-			return { success: true };
-		} catch (e: unknown) {
-			return fail(400, { message: e instanceof Error ? e.message : 'Unknown error' });
-		}
-	},
-
 	attachDevice: async ({ request, locals }) => {
 		if (!locals.user) return fail(401, { message: 'Unauthorized' });
 		const data = await request.formData();

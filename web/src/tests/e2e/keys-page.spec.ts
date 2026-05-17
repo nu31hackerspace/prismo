@@ -32,7 +32,7 @@ test('scanning + naming a key surfaces it on /keys with the device chip', async 
 
 	await navigateToKeys(page);
 
-	const aliceRow = page.locator('li', { hasText: 'Alice' }).first();
+	const aliceRow = page.locator('div[data-key-id]', { hasText: 'Alice' }).first();
 	await expect(aliceRow).toBeVisible();
 	await expect(aliceRow.locator(`text="${deviceName}"`)).toBeVisible();
 });
@@ -59,8 +59,8 @@ test('scanning a known key on a second device does NOT trigger the unauthorized 
 	await page.fill('input[name="name"]', 'Bob');
 	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
 	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Bob')
-	).toBeVisible();
+		page.locator('[data-section="allowed-keys"]').locator('text=Bob')
+	).toBeVisible({ timeout: 10_000 });
 
 	await page.goto('/devices');
 	await createDevice(page, deviceB, 'machine');
@@ -75,48 +75,16 @@ test('scanning a known key on a second device does NOT trigger the unauthorized 
 	await expect(page.locator('h2:has-text("Last Unauthorized Scan")')).toHaveCount(0);
 
 	await navigateToKeys(page);
-	const bobRow = page.locator('li', { hasText: 'Bob' }).first();
+	const bobRow = page.locator('div[data-key-id]', { hasText: 'Bob' }).first();
 	await expect(bobRow).toBeVisible();
 	await bobRow.locator('select[name="deviceSlug"]').selectOption({ label: deviceB });
-	await bobRow.locator('button:has-text("Attach")').click();
+	await bobRow.locator('button:has-text("Add")').click();
 	await expect(bobRow.locator(`text="${deviceB}"`)).toBeVisible({ timeout: 10_000 });
 
+	await page.goto('/devices');
 	await navigateToDevice(page, deviceB);
 	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Bob')
-	).toBeVisible({ timeout: 10_000 });
-});
-
-test('renaming on /keys propagates to the device page', async ({ page }) => {
-	await loginUser(page);
-
-	const deviceName = `KeysRename ${Date.now()}`;
-	await createDevice(page, deviceName);
-	await navigateToDevice(page, deviceName);
-	const creds = await generateMqttCredentials(page);
-
-	const mqttUrl = requireMqttUrl();
-	const uid = `KEYS3-${Date.now()}`;
-	await publishScan(mqttUrl, creds, uid);
-	await expect(page.locator('h2:has-text("Last Unauthorized Scan")')).toBeVisible({
-		timeout: 10_000
-	});
-	await page.fill('input[name="name"]', 'Carol');
-	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
-	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Carol')
-	).toBeVisible();
-
-	await navigateToKeys(page);
-	const row = page.locator('li', { hasText: 'Carol' }).first();
-	await row.locator('input[name="name"]').fill('Carol Smith');
-	await row.locator('button:has-text("Rename")').click();
-
-	await expect(row.locator('input[name="name"]')).toHaveValue('Carol Smith', { timeout: 10_000 });
-
-	await navigateToDevice(page, deviceName);
-	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Carol Smith')
+		page.locator('[data-section="allowed-keys"]').locator('text=Bob')
 	).toBeVisible({ timeout: 10_000 });
 });
 
@@ -139,22 +107,22 @@ test('deleting a key from /keys revokes it from every device', async ({ page }) 
 	await page.fill('input[name="name"]', 'Dave');
 	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
 	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Dave')
-	).toBeVisible();
+		page.locator('[data-section="allowed-keys"]').locator('text=Dave')
+	).toBeVisible({ timeout: 10_000 });
 
 	await page.goto('/devices');
 	await createDevice(page, deviceB);
 
 	await navigateToKeys(page);
-	const daveRow = page.locator('li', { hasText: 'Dave' }).first();
+	const daveRow = page.locator('div[data-key-id]', { hasText: 'Dave' }).first();
 	await daveRow.locator('select[name="deviceSlug"]').selectOption({ label: deviceB });
-	await daveRow.locator('button:has-text("Attach")').click();
+	await daveRow.locator('button:has-text("Add")').click();
 	await expect(daveRow.locator(`text="${deviceB}"`)).toBeVisible({ timeout: 10_000 });
 
 	page.once('dialog', (dialog) => dialog.accept());
 	await daveRow.locator('button:has-text("Delete")').click();
 
-	await expect(page.locator('li', { hasText: 'Dave' })).toHaveCount(0, { timeout: 10_000 });
+	await expect(page.locator('div[data-key-id]', { hasText: 'Dave' })).toHaveCount(0, { timeout: 10_000 });
 
 	await page.goto('/devices');
 	await navigateToDevice(page, deviceA);
@@ -236,21 +204,22 @@ test('attach a known key to another device from /keys', async ({ page }) => {
 	await page.fill('input[name="name"]', 'Eve');
 	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
 	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Eve')
-	).toBeVisible();
+		page.locator('[data-section="allowed-keys"]').locator('text=Eve')
+	).toBeVisible({ timeout: 10_000 });
 
 	await page.goto('/devices');
 	await createDevice(page, deviceB);
 
 	await navigateToKeys(page);
-	const row = page.locator('li', { hasText: 'Eve' }).first();
+	const row = page.locator('div[data-key-id]', { hasText: 'Eve' }).first();
 	await row.locator('select[name="deviceSlug"]').selectOption({ label: deviceB });
-	await row.locator('button:has-text("Attach")').click();
+	await row.locator('button:has-text("Add")').click();
 
 	await expect(row.locator(`text="${deviceB}"`)).toBeVisible({ timeout: 10_000 });
 
+	await page.goto('/devices');
 	await navigateToDevice(page, deviceB);
 	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Eve')
+		page.locator('[data-section="allowed-keys"]').locator('text=Eve')
 	).toBeVisible({ timeout: 10_000 });
 });

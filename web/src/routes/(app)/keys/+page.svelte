@@ -26,8 +26,8 @@
 	<div class="mb-8">
 		<h1 class="font-display text-3xl font-bold tracking-tight text-label-primary">Keys</h1>
 		<p class="mt-2 text-label-secondary">
-			Every NFC key you've named appears here. Rename it once, attach it to any locker, or revoke it
-			everywhere at once.
+			Every NFC key you've named appears here. Attach it to any locker, or revoke it everywhere at
+			once.
 		</p>
 	</div>
 
@@ -41,27 +41,16 @@
 			</p>
 		</div>
 	{:else}
-		<ul class="flex flex-col gap-4">
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			{#each data.keys as key (key.keyId)}
 				{@const candidateDevices = devicesNotAttached(key.devices)}
-				<li
+				<div
 					data-key-id={key.keyId}
-					class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-6"
+					class="rounded-2xl border border-separator-secondary bg-fill-tertiary p-6 flex flex-col justify-between"
 				>
 					<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
 						<div class="min-w-0 flex-1">
-							<form method="POST" action="?/rename" use:enhance class="flex flex-wrap gap-2">
-								<input type="hidden" name="keyId" value={key.keyId} />
-								<input
-									type="text"
-									name="name"
-									value={key.name}
-									required
-									aria-label="Key name"
-									class="min-w-0 flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm font-semibold text-label-primary outline-none focus:border-accent-primary"
-								/>
-								<MainButton size="S" buttonStyle="secondary" icon="mdi:rename" label="Rename" />
-							</form>
+							<div class="text-sm font-semibold text-label-primary">{key.name}</div>
 							<div class="mt-2 font-mono text-xs break-all text-label-tertiary">{key.keyId}</div>
 						</div>
 						<form
@@ -82,9 +71,9 @@
 						{#if key.devices.length === 0}
 							<p class="mb-3 text-sm text-label-tertiary">Not attached to any device yet.</p>
 						{:else}
-							<ul class="mb-3 flex flex-wrap gap-2">
+							<div class="mb-3 flex flex-wrap gap-2">
 								{#each key.devices as device (device.deviceSlug)}
-									<li
+									<div
 										class="flex items-center gap-2 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2"
 									>
 										<a
@@ -104,9 +93,9 @@
 												<Icon icon="mdi:close" class="h-4 w-4" />
 											</button>
 										</form>
-									</li>
+									</div>
 								{/each}
-							</ul>
+							</div>
 						{/if}
 
 						{#if candidateDevices.length > 0}
@@ -115,7 +104,7 @@
 								<select
 									name="deviceSlug"
 									required
-									aria-label="Attach to device"
+									aria-label="Add to device"
 									class="min-w-0 flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary"
 								>
 									<option value="" disabled selected>Attach to device…</option>
@@ -123,12 +112,12 @@
 										<option value={device.deviceSlug}>{device.name}</option>
 									{/each}
 								</select>
-								<MainButton size="S" buttonStyle="primary" icon="mdi:plus" label="Attach" />
+								<MainButton size="S" buttonStyle="primary" icon="mdi:plus" label="Add" />
 							</form>
 						{/if}
 					</div>
-				</li>
+				</div>
 			{/each}
-		</ul>
+		</div>
 	{/if}
 </main>
