@@ -23,23 +23,26 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const deviceId = device._id!;
 	const ownerId = device.ownerId;
 
-	const [deviceKeys, history, lastUnauth] = await Promise.all([
+	const orgKeyIds = (await keysCol.find({ ownerId }, { projection: { keyId: 1 } }).toArray()).map(
+		(k) => k.keyId
+	);
+
+	const [deviceKeys, history, lastUnknownScan] = await Promise.all([
 		deviceKeysCol.find({ deviceId }).toArray(),
 		deviceHistoryCol.find({ deviceId }).sort({ createdAt: -1 }).limit(50).toArray(),
 		deviceHistoryCol.findOne(
-			{ deviceId, action: 'scan', allowed: false },
+			{ deviceId, action: 'scan', keyId: { $exists: true, $nin: orgKeyIds } },
 			{ sort: { createdAt: -1 } }
 		)
 	]);
 
-	const keyIdsForLookup = new Set<string>(deviceKeys.map((k) => k.keyId));
-	if (lastUnauth?.keyId) keyIdsForLookup.add(lastUnauth.keyId);
-
-	const orgKeys =
-		keyIdsForLookup.size > 0
-			? await keysCol.find({ ownerId, keyId: { $in: [...keyIdsForLookup] } }).toArray()
-			: [];
-	const nameByKeyId = new Map(orgKeys.map((k) => [k.keyId, k.name]));
+	const nameByKeyId = new Map(
+		deviceKeys.length > 0
+			? (
+					await keysCol.find({ ownerId, keyId: { $in: deviceKeys.map((k) => k.keyId) } }).toArray()
+				).map((k) => [k.keyId, k.name])
+			: []
+	);
 
 	return {
 		device: {
@@ -64,12 +67,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			triggerAction: h.triggerAction ?? null,
 			createdAt: h.createdAt
 		})),
-		lastUnauth: lastUnauth
-			? {
-					keyId: lastUnauth.keyId!,
-					createdAt: lastUnauth.createdAt,
-					knownName: nameByKeyId.get(lastUnauth.keyId!) ?? null
-				}
+		lastUnauth: lastUnknownScan
+			? { keyId: lastUnknownScan.keyId!, createdAt: lastUnknownScan.createdAt }
 			: null
 	};
 };

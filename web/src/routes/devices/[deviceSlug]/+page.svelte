@@ -38,12 +38,11 @@
 		source.onmessage = (e) => {
 			const event = JSON.parse(e.data);
 			historyItems = [event, ...historyItems].slice(0, 50);
-			if (event.action === 'scan' && event.allowed === false) {
+			if (event.action === 'scan' && event.keyId && event.username == null) {
 				if (!lastUnauth || new Date(event.createdAt) > new Date(lastUnauth.createdAt)) {
 					lastUnauth = {
 						keyId: event.keyId,
-						createdAt: new Date(event.createdAt),
-						knownName: event.username ?? null
+						createdAt: new Date(event.createdAt)
 					};
 				}
 			}
@@ -122,33 +121,17 @@
 						<div class="font-mono text-sm break-all text-label-primary">{lastUnauth.keyId}</div>
 						<div class="mt-1 text-xs text-label-tertiary">{formatDate(lastUnauth.createdAt)}</div>
 					</div>
-					{#if lastUnauth.knownName}
-						<div class="mb-3 text-sm text-label-secondary">
-							Known key: <span class="font-semibold text-label-primary">{lastUnauth.knownName}</span
-							>
-						</div>
-						<form method="POST" action="?/addKey" use:enhance>
-							<input type="hidden" name="keyId" value={lastUnauth.keyId} />
-							<MainButton
-								size="S"
-								buttonStyle="primary"
-								icon="mdi:plus"
-								label="Add to this device"
-							/>
-						</form>
-					{:else}
-						<form method="POST" action="?/addKey" use:enhance class="flex gap-2">
-							<input type="hidden" name="keyId" value={lastUnauth.keyId} />
-							<input
-								type="text"
-								name="name"
-								placeholder="Name (e.g. Alice)"
-								required
-								class="flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary"
-							/>
-							<MainButton size="S" buttonStyle="primary" icon="mdi:plus" label="Add" />
-						</form>
-					{/if}
+					<form method="POST" action="?/addKey" use:enhance class="flex gap-2">
+						<input type="hidden" name="keyId" value={lastUnauth.keyId} />
+						<input
+							type="text"
+							name="name"
+							placeholder="Name (e.g. Alice)"
+							required
+							class="flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary"
+						/>
+						<MainButton size="S" buttonStyle="primary" icon="mdi:plus" label="Add" />
+					</form>
 				</div>
 			{/if}
 

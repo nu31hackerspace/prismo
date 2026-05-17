@@ -37,7 +37,9 @@ test('scanning + naming a key surfaces it on /keys with the device chip', async 
 	await expect(aliceRow.locator(`text="${deviceName}"`)).toBeVisible();
 });
 
-test('known key on a second device shows no name input, just an Add button', async ({ page }) => {
+test('scanning a known key on a second device does NOT trigger the unauthorized panel', async ({
+	page
+}) => {
 	await loginUser(page);
 
 	const deviceA = `KeysA ${Date.now()}`;
@@ -67,20 +69,22 @@ test('known key on a second device shows no name input, just an Add button', asy
 
 	await publishScan(mqttUrl, credsB, uid);
 
-	const knownBanner = page.locator('text=/Known key:/');
-	await expect(knownBanner).toBeVisible({ timeout: 10_000 });
-	await expect(page.locator('input[name="name"]')).toHaveCount(0);
-	await page.locator('button:has-text("Add to this device")').click();
-
-	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Bob')
-	).toBeVisible({ timeout: 10_000 });
+	// Give the SSE event a moment, then assert the panel does NOT appear —
+	// the key is already in the org, so it's not a new unknown.
+	await page.waitForTimeout(2_000);
+	await expect(page.locator('h2:has-text("Last Unauthorized Scan")')).toHaveCount(0);
 
 	await navigateToKeys(page);
 	const bobRow = page.locator('li', { hasText: 'Bob' }).first();
 	await expect(bobRow).toBeVisible();
-	await expect(bobRow.locator(`text="${deviceA}"`)).toBeVisible();
-	await expect(bobRow.locator(`text="${deviceB}"`)).toBeVisible();
+	await bobRow.locator('select[name="deviceSlug"]').selectOption({ label: deviceB });
+	await bobRow.locator('button:has-text("Attach")').click();
+	await expect(bobRow.locator(`text="${deviceB}"`)).toBeVisible({ timeout: 10_000 });
+
+	await navigateToDevice(page, deviceB);
+	await expect(
+		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Bob')
+	).toBeVisible({ timeout: 10_000 });
 });
 
 test('renaming on /keys propagates to the device page', async ({ page }) => {
@@ -140,28 +144,77 @@ test('deleting a key from /keys revokes it from every device', async ({ page }) 
 
 	await page.goto('/');
 	await createDevice(page, deviceB);
-	await navigateToDevice(page, deviceB);
-	const credsB = await generateMqttCredentials(page);
-
-	await publishScan(mqttUrl, credsB, uid);
-	await expect(page.locator('text=/Known key:/')).toBeVisible({ timeout: 10_000 });
-	await page.locator('button:has-text("Add to this device")').click();
-	await expect(
-		page.locator('h2:has-text("Allowed Keys")').locator('..').locator('text=Dave')
-	).toBeVisible();
 
 	await navigateToKeys(page);
+	const daveRow = page.locator('li', { hasText: 'Dave' }).first();
+	await daveRow.locator('select[name="deviceSlug"]').selectOption({ label: deviceB });
+	await daveRow.locator('button:has-text("Attach")').click();
+	await expect(daveRow.locator(`text="${deviceB}"`)).toBeVisible({ timeout: 10_000 });
+
 	page.once('dialog', (dialog) => dialog.accept());
-	await page.locator('li', { hasText: 'Dave' }).locator('button:has-text("Delete")').click();
+	await daveRow.locator('button:has-text("Delete")').click();
 
 	await expect(page.locator('li', { hasText: 'Dave' })).toHaveCount(0, { timeout: 10_000 });
 
+	await page.goto('/');
 	await navigateToDevice(page, deviceA);
 	await expect(page.locator('text=No keys allowed yet')).toBeVisible({ timeout: 10_000 });
 
 	await page.goto('/');
 	await navigateToDevice(page, deviceB);
 	await expect(page.locator('text=No keys allowed yet')).toBeVisible({ timeout: 10_000 });
+});
+
+test('Last Unauthorized Scan shows the most recent unknown key and stays empty for keys already known by the org', async ({
+	page
+}) => {
+	await loginUser(page);
+
+	const deviceA = `KeysUnauthA ${Date.now()}`;
+	const deviceB = `KeysUnauthB ${Date.now()}`;
+
+	await createDevice(page, deviceA);
+	await navigateToDevice(page, deviceA);
+	const credsA = await generateMqttCredentials(page);
+
+	const mqttUrl = requireMqttUrl();
+	const uid1 = `KEYS-UNAUTH1-${Date.now()}`;
+	const uid2 = `KEYS-UNAUTH2-${Date.now()}`;
+
+	// First unknown scan — panel should appear and show uid1.
+	await publishScan(mqttUrl, credsA, uid1);
+	await expect(page.locator('h2:has-text("Last Unauthorized Scan")')).toBeVisible({
+		timeout: 10_000
+	});
+	await expect(page.locator(`form[action="?/addKey"] input[name="keyId"]`)).toHaveValue(uid1);
+
+	await page.fill('input[name="name"]', 'success_key_1');
+	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
+	await expect(page.locator('text=success_key_1').first()).toBeVisible({ timeout: 10_000 });
+
+	// Second unknown scan with a different uid — panel should refresh to uid2.
+	await publishScan(mqttUrl, credsA, uid2);
+	await expect(page.locator('h2:has-text("Last Unauthorized Scan")')).toBeVisible({
+		timeout: 10_000
+	});
+	await expect(page.locator(`form[action="?/addKey"] input[name="keyId"]`)).toHaveValue(uid2, {
+		timeout: 10_000
+	});
+
+	await page.fill('input[name="name"]', 'key_2');
+	await page.locator('form[action="?/addKey"] button:has-text("Add")').click();
+	await expect(page.locator('text=key_2').first()).toBeVisible({ timeout: 10_000 });
+
+	// New device — scanning uid2 (already known by the org) must NOT raise the unauthorized panel.
+	await page.goto('/');
+	await createDevice(page, deviceB);
+	await navigateToDevice(page, deviceB);
+	const credsB = await generateMqttCredentials(page);
+
+	await publishScan(mqttUrl, credsB, uid2);
+
+	await page.waitForTimeout(2_000);
+	await expect(page.locator('h2:has-text("Last Unauthorized Scan")')).toHaveCount(0);
 });
 
 test('attach a known key to another device from /keys', async ({ page }) => {
