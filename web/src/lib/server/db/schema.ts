@@ -57,8 +57,15 @@ export interface DeviceKeyDocument {
 	_id?: ObjectId;
 	deviceId: ObjectId;
 	keyId: string;
-	username: string;
 	addedAt: Date;
+}
+
+export interface KeyDocument {
+	_id?: ObjectId;
+	ownerId: ObjectId;
+	keyId: string;
+	name: string;
+	createdAt: Date;
 }
 
 export interface DeviceHistoryDocument {

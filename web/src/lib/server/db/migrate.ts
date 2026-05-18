@@ -37,10 +37,6 @@ async function main() {
 	const deviceHistory = db.collection('device_history');
 	await deviceHistory.createIndex({ deviceId: 1, createdAt: -1 });
 	await deviceHistory.createIndex({ deviceSlug: 1, createdAt: -1 });
-	await deviceHistory.createIndex(
-		{ deviceId: 1, createdAt: -1 },
-		{ partialFilterExpression: { action: 'scan', allowed: false }, name: 'device_id_unauth_scans' }
-	);
 
 	console.log('Database setup complete!');
 	await client.close();

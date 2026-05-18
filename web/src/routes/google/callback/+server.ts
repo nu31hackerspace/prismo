@@ -41,7 +41,7 @@ async function loginWithPayload(
 		maxAge: 365 * 24 * 60 * 60
 	});
 
-	throw redirect(303, '/');
+	throw redirect(303, '/devices');
 }
 
 // OAuth2 code flow (from /auth/google redirect)

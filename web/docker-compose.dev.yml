@@ -1,0 +1,108 @@
+services:
+  mongo:
+    image: mongo:8
+    ports:
+      - '27017:27017'
+    command: --replSet rs0
+    volumes:
+      - mongo-dev-data:/data/db
+    healthcheck:
+      test: mongosh --eval "db.runCommand({ping:1})" --quiet
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  mongo-init:
+    image: mongo:8
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: 'no'
+    entrypoint: >
+      mongosh --host mongo --eval
+      "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
+
+  mongo-viewer:
+    image: haohanyang/compass-web:0.3.1
+    restart: unless-stopped
+    ports:
+      - '5000:8080'
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      - CW_MONGO_URI=mongodb://mongo:27017/?directConnection=true
+      - CW_BASIC_AUTH_USERNAME=admin
+      - CW_BASIC_AUTH_PASSWORD=admin
+
+  mqtt:
+    build: ./mosquitto
+    ports:
+      - '1883:1883'
+    environment:
+      - MQTT_ADMIN_USER=admin
+      - MQTT_ADMIN_PASSWORD=admin
+    volumes:
+      - mqtt-dev-data:/mosquitto/data
+    healthcheck:
+      test: mosquitto_sub -h localhost -p 1883 -u admin -P admin -t '$$SYS/#' -C 1 -W 2
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: node:22
+    working_dir: /app
+    ports:
+      - '3000:3000'
+      - '24678:24678'
+    volumes:
+      - ../web:/app
+      - app-node-modules:/app/node_modules
+      - ../web/mosquitto/mqtt.js:/mqtt/mqtt.js:ro
+      - ../web/mosquitto/package.json:/mqtt/package.json:ro
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+      mqtt:
+        condition: service_healthy
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - MQTT_URL=mqtt://admin:admin@mqtt:1883
+      - SESSION_SECRET=dev-secret-not-for-production
+      - ORIGIN=http://localhost:3000
+      - USERNAME=admin
+      - PASSWORD=admin
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-unused}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-unused}
+    command:
+      - bash
+      - -c
+      - |
+        npm install
+        cd /mqtt && npm install && cd /app
+        npm run dev -- --host 0.0.0.0
+
+  worker:
+    image: ghcr.io/nu31hackerspace/prismo-worker:latest
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+      mqtt:
+        condition: service_healthy
+    volumes:
+      - ./worker/worker.py:/worker/worker.py:ro
+      - ./worker/build.sh:/worker/build.sh:ro
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - MQTT_URL=mqtt://admin:admin@mqtt:1883
+    restart: on-failure
+
+volumes:
+  mongo-dev-data:
+  mqtt-dev-data:
+  app-node-modules:

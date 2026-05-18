@@ -1,4 +1,57 @@
-## Local Development Setup
+## Quick Start (Dev Container)
+
+The fastest way to get the full stack running locally. Everything runs in Docker — no local Node.js, MongoDB, or MQTT setup needed.
+
+### Start
+
+```bash
+bash dev.sh
+```
+
+Or manually:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build -d
+```
+
+### Available Services
+
+| Service               | URL                   | Credentials   |
+| --------------------- | --------------------- | ------------- |
+| SvelteKit app (HMR)   | http://localhost:3000 | admin / admin |
+| Compass Web (MongoDB) | http://localhost:5000 | admin / admin |
+| MQTT broker           | mqtt://localhost:1883 | admin / admin |
+
+### Live editing
+
+- **Web app**: The `web/` directory is mounted into the `app` container. Any change to `.svelte`, `.ts`, or other source files triggers Vite HMR instantly.
+- **Worker**: `worker/worker.py` and `worker/build.sh` are mounted read-only into the worker container. Changes are picked up on the next job cycle (no rebuild needed).
+
+### Using mqtt.js
+
+Exec into the `app` container to use the MQTT helper:
+
+```bash
+# Subscribe to all topics
+docker compose -f docker-compose.dev.yml exec app \
+  node /mqtt/mqtt.js --mode=read --topic='#'
+
+# Publish a message
+docker compose -f docker-compose.dev.yml exec app \
+  node /mqtt/mqtt.js --mode=write --topic='prismo/test' --message='hello'
+```
+
+The `MQTT_BROKER`, `MQTT_USER`, and `MQTT_PASSWORD` env vars are pre-configured inside the container — `mqtt.js` defaults work out of the box.
+
+### Stop
+
+```bash
+bash dev-down.sh
+```
+
+---
+
+## Local Development Setup (Manual)
 
 ### Prerequisites
 
@@ -26,11 +79,10 @@ GOOGLE_CLIENT_ID=your-google-client-id
 
 ---
 
-### 2. Install dependencies and run migrations
+### 2. Install dependencies
 
 ```bash
 npm install
-npm run db:migrate
 ```
 
 ---
