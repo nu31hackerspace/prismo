@@ -8,7 +8,7 @@
 	import DeviceHistory from './DeviceHistory.svelte';
 	import DeviceDangerZone from './DeviceDangerZone.svelte';
 
-	const ONLINE_THRESHOLD_MS = 15_000;
+	const ONLINE_THRESHOLD_MS = 10_000;
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
