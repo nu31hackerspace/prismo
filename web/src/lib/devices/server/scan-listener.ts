@@ -37,7 +37,7 @@ export function initializeScanListener(): void {
 				console.error('[scan-listener] unhandled scan error:', err)
 			);
 		} else if (subtopic === 'status') {
-			handleHeartbeat(topic, raw).catch((err) =>
+			handleHeartbeat(topic).catch((err) =>
 				console.error('[scan-listener] unhandled heartbeat error:', err)
 			);
 		}
@@ -113,22 +113,11 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 	console.log(`[scan-listener] history record saved for "${deviceSlug}"`);
 }
 
-export async function handleHeartbeat(topic: string, raw: Buffer): Promise<void> {
+export async function handleHeartbeat(topic: string): Promise<void> {
 	// topic format: prismo/{deviceSlug}/status
 	const parts = topic.split('/');
 	if (parts.length !== 3) return;
 	const deviceSlug = parts[1];
-
-	let payload: { online?: boolean; status?: string };
-	try {
-		payload = JSON.parse(raw.toString());
-	} catch {
-		console.warn(`[scan-listener] invalid JSON on status topic ${topic}:`, raw.toString());
-		return;
-	}
-
-	const isOnline = payload.online === true || payload.status === 'online';
-	if (!isOnline) return;
 
 	await devicesCol.updateOne({ deviceSlug }, { $set: { lastSeenAt: new Date() } });
 }
