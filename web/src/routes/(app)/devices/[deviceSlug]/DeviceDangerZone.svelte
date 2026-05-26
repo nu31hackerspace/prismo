@@ -453,14 +453,29 @@
 									<p class="text-xs text-label-tertiary">
 										Connect your ESP32-C3 via USB to flash it.
 									</p>
+									<p class="text-xs text-label-secondary">
+										<Icon
+											icon="mdi:alert-outline"
+											class="inline h-3.5 w-3.5 align-text-bottom text-label-tertiary"
+										/>
+										Plug the device directly into your computer. USB hubs and extension cables may cause
+										flashing failures.
+									</p>
 								</div>
-								<div class="flex justify-center">
+								<div class="flex justify-center gap-3">
 									<MainButton
 										buttonStyle="primary"
 										size="M"
 										icon="mdi:usb-port"
 										label="Connect Device"
 										onclick={handleConnect}
+									/>
+									<MainButton
+										buttonStyle="secondary"
+										size="M"
+										icon="mdi:download"
+										label="Download Firmware"
+										link="/api/files/{firmwareFileId}"
 									/>
 								</div>
 							{:else if flasherState === 'connecting'}

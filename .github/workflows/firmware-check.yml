@@ -20,9 +20,6 @@ jobs:
   firmware-mock-tests:
     runs-on: [test-stand]
     timeout-minutes: 10
-    concurrency:
-      group: hardware-esp32c3
-      cancel-in-progress: false
 
     env:
       ESP32_PORT: /dev/ttyESP32C3
@@ -61,9 +58,6 @@ jobs:
   firmware-real-hardware-tests:
     runs-on: [test-stand]
     timeout-minutes: 15
-    concurrency:
-      group: hardware-esp32c3
-      cancel-in-progress: false
 
     env:
       ESP32_PORT: /dev/ttyESP32C3

@@ -1,4 +1,4 @@
-import { devicesCol, deviceKeysCol, deviceHistoryCol, ObjectId } from '$lib/server/db';
+import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol, ObjectId } from '$lib/server/db';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
@@ -100,18 +100,26 @@ export async function generateMqttCredentialsBySlug(deviceSlug: string, userId: 
  * This is the "source of truth" sync — call it whenever the key list changes.
  * Internal function — no ownership check, callers are responsible for auth.
  */
-async function pushRetainedSync(deviceSlug: string): Promise<void> {
+export async function pushRetainedSync(deviceSlug: string): Promise<void> {
 	const device = await devicesCol.findOne({ deviceSlug });
 	if (!device || !device._id) {
 		console.warn(`[device-service] pushRetainedSync: unknown device "${deviceSlug}"`);
 		return;
 	}
-	const keys = await deviceKeysCol.find({ deviceId: device._id }).toArray();
-	console.log(`[device-service] pushing retained sync to "${deviceSlug}" (${keys.length} keys)`);
+	const deviceKeys = await deviceKeysCol.find({ deviceId: device._id }).toArray();
+	const orgKeys = await keysCol
+		.find({ ownerId: device.ownerId, keyId: { $in: deviceKeys.map((k) => k.keyId) } })
+		.toArray();
+	const nameByKeyId = new Map(orgKeys.map((k) => [k.keyId, k.name]));
+	console.log(
+		`[device-service] pushing retained sync to "${deviceSlug}" (${deviceKeys.length} keys)`
+	);
 	await publishToDevice(
 		deviceSlug,
 		'cmd/sync',
-		{ keys: keys.map((k) => ({ uid: k.keyId, username: k.username })) },
+		{
+			keys: deviceKeys.map((k) => ({ uid: k.keyId, username: nameByKeyId.get(k.keyId) ?? '' }))
+		},
 		{ retain: true }
 	);
 }
@@ -120,15 +128,29 @@ export async function addKeyToDevice(
 	deviceSlug: string,
 	userId: string,
 	keyId: string,
-	username: string
+	name?: string
 ): Promise<void> {
 	const device = await requireOwnedDevice(deviceSlug, userId);
 	const deviceId = device._id!;
+	const ownerId = new ObjectId(userId);
 	const now = new Date();
+
+	if (name) {
+		await keysCol.updateOne(
+			{ ownerId, keyId },
+			{ $setOnInsert: { ownerId, keyId, name, createdAt: now } },
+			{ upsert: true }
+		);
+	}
+
+	const orgKey = await keysCol.findOne({ ownerId, keyId });
+	if (!orgKey) {
+		throw new Error('Unknown key — provide a name to create it');
+	}
 
 	await deviceKeysCol.updateOne(
 		{ deviceId, keyId },
-		{ $setOnInsert: { deviceId, keyId, username, addedAt: now } },
+		{ $setOnInsert: { deviceId, keyId, addedAt: now } },
 		{ upsert: true }
 	);
 
@@ -137,8 +159,8 @@ export async function addKeyToDevice(
 		deviceSlug,
 		action: 'key_added',
 		keyId,
-		username,
-		actorUserId: new ObjectId(userId),
+		username: orgKey.name,
+		actorUserId: ownerId,
 		createdAt: now
 	});
 
@@ -159,17 +181,20 @@ export async function removeKeyFromDevice(
 ): Promise<void> {
 	const device = await requireOwnedDevice(deviceSlug, userId);
 	const deviceId = device._id!;
+	const ownerId = new ObjectId(userId);
 
 	const keyDoc = await deviceKeysCol.findOneAndDelete({ deviceId, keyId });
 	if (!keyDoc) throw new Error('Key not found');
+
+	const orgKey = await keysCol.findOne({ ownerId, keyId });
 
 	await deviceHistoryCol.insertOne({
 		deviceId,
 		deviceSlug,
 		action: 'key_removed',
 		keyId,
-		username: keyDoc.username,
-		actorUserId: new ObjectId(userId),
+		username: orgKey?.name,
+		actorUserId: ownerId,
 		createdAt: new Date()
 	});
 

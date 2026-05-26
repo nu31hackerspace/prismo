@@ -1,7 +1,6 @@
 <script lang="ts">
 	import MainButton from '$lib/components/MainButton.svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import Icon from '@iconify/svelte';
 
 	let { data } = $props();
 	let user = $derived(data.user);
@@ -11,27 +10,7 @@
 	<title>Profile — Prismo</title>
 </svelte:head>
 
-<!-- Header -->
-<header
-	class="fixed top-0 right-0 left-0 z-50 border-b border-separator-secondary bg-background-primary/80 backdrop-blur-lg"
->
-	<nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-		<a href="/" class="font-display text-xl font-bold tracking-tight text-label-primary">
-			prismo
-		</a>
-		<div class="flex items-center gap-3">
-			<MainButton
-				buttonStyle="ghost"
-				size="S"
-				icon="mdi:arrow-left"
-				label="Back to Home"
-				link="/"
-			/>
-		</div>
-	</nav>
-</header>
-
-<main class="flex min-h-screen flex-col items-center justify-center px-6 pt-24 pb-12">
+<main class="flex flex-col items-center justify-center px-6 pt-10 pb-12 md:pt-16">
 	<div
 		class="w-full max-w-xl rounded-3xl border border-separator-secondary bg-fill-tertiary p-8 sm:p-12"
 	>

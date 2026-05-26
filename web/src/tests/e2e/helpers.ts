@@ -4,6 +4,7 @@ import { expect, type Page } from '@playwright/test';
 export async function loginUser(page: Page): Promise<void> {
 	await page.goto('/');
 	await page.click('text="Sign In"');
+	await expect(page).toHaveURL(/\/devices$/, { timeout: 10_000 });
 	await expect(page.locator('h1', { hasText: 'My Devices' })).toBeVisible({ timeout: 10_000 });
 }
 
@@ -72,4 +73,53 @@ export async function publishDeviceStatus(
 		});
 		client.once('error', reject);
 	});
+}
+
+export type ScanOptions = { allowed?: boolean; machineActive?: boolean };
+
+export async function publishScan(
+	mqttUrl: string,
+	credentials: MqttCredentials,
+	uid: string,
+	opts: ScanOptions = {}
+): Promise<void> {
+	const { mqttUser, mqttPass } = credentials;
+	const payload: { uid: string; allowed: boolean; machine_active?: boolean } = {
+		uid,
+		allowed: opts.allowed ?? false
+	};
+	if (opts.machineActive !== undefined) payload.machine_active = opts.machineActive;
+
+	const client = mqtt.connect(mqttUrl, {
+		username: mqttUser.trim(),
+		password: mqttPass.trim(),
+		clientId: `ui-test-scan-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+	});
+
+	await new Promise<void>((resolve, reject) => {
+		client.once('connect', () => {
+			client.publish(
+				`prismo/${mqttUser.trim()}/scan`,
+				JSON.stringify(payload),
+				{ qos: 1 },
+				(err: Error | undefined) => {
+					client.end();
+					if (err) reject(err);
+					else resolve();
+				}
+			);
+		});
+		client.once('error', reject);
+	});
+}
+
+export async function navigateToKeys(page: Page): Promise<void> {
+	await page.goto('/keys');
+	await expect(page.locator('h1', { hasText: 'Keys' })).toBeVisible();
+}
+
+export function requireMqttUrl(): string {
+	const url = process.env.MQTT_URL;
+	if (!url) throw new Error('MQTT_URL env var is required for E2E testing');
+	return url;
 }

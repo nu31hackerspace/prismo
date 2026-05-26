@@ -6,7 +6,8 @@ import type {
 	DeviceDocument,
 	WorkerJobDocument,
 	DeviceKeyDocument,
-	DeviceHistoryDocument
+	DeviceHistoryDocument,
+	KeyDocument
 } from './schema';
 
 const client = new MongoClient(env.MONGODB_URL ?? 'mongodb://localhost:27017');
@@ -18,6 +19,7 @@ export const devicesCol = database.collection<DeviceDocument>('devices');
 export const workerJobsCol = database.collection<WorkerJobDocument>('worker_jobs');
 export const deviceKeysCol = database.collection<DeviceKeyDocument>('device_keys');
 export const deviceHistoryCol = database.collection<DeviceHistoryDocument>('device_history');
+export const keysCol = database.collection<KeyDocument>('keys');
 export const firmwareBucket = new GridFSBucket(database, { bucketName: 'firmware' });
 export { ObjectId };
 
@@ -29,6 +31,8 @@ async function ensureIndexes() {
 
 		await deviceKeysCol.createIndex({ deviceId: 1 });
 		await deviceKeysCol.createIndex({ deviceId: 1, keyId: 1 }, { unique: true });
+
+		await keysCol.createIndex({ ownerId: 1, keyId: 1 }, { unique: true });
 
 		await deviceHistoryCol.createIndex({ deviceId: 1, createdAt: -1 });
 		await deviceHistoryCol.createIndex({ deviceSlug: 1, createdAt: -1 });
