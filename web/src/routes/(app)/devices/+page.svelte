@@ -5,7 +5,7 @@
 	import Badge from '$lib/components/Badge.svelte';
 	import Icon from '@iconify/svelte';
 
-	const ONLINE_THRESHOLD_MS = 15_000;
+	const ONLINE_THRESHOLD_MS = 10_000;
 
 	function isOnline(lastSeenAt: Date | null): boolean {
 		if (!lastSeenAt) return false;

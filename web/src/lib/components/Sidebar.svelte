@@ -77,11 +77,7 @@
 	</nav>
 
 	<div class="border-t border-separator-secondary p-3">
-		<a
-			href="/profile"
-			class="mb-2 flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-fill-tertiary"
-			onclick={close}
-		>
+		<div class="mb-2 flex items-center gap-3 p-2">
 			<span
 				class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2 border-separator-secondary bg-fill-tertiary text-sm font-semibold text-label-primary"
 				>{initials}</span
@@ -90,7 +86,7 @@
 				<div class="truncate text-sm font-semibold text-label-primary">{user.name}</div>
 				<div class="truncate text-xs text-label-tertiary">{user.email}</div>
 			</div>
-		</a>
+		</div>
 		<form method="POST" action="/auth/logout">
 			<button
 				type="submit"
