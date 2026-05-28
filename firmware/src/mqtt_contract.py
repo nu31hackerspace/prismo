@@ -1,5 +1,5 @@
 # AUTO-GENERATED from mqtt-contract/contract.json — do not edit manually.
-# Run: npm run mqtt-contract:generate
+# Run: npm run generate (from mqtt-contract/)
 
 TOPIC_PREFIX = "prismo"
 

@@ -6,7 +6,7 @@ import {
 	SCAN_WILDCARD,
 	STATUS_WILDCARD,
 	type ScanPayload
-} from '../mqtt-contract.generated';
+} from 'mqtt-contract';
 
 let initialized = false;
 

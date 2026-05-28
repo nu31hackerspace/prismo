@@ -1,7 +1,7 @@
 import mqtt from 'mqtt';
 import { test, expect } from './fixtures';
 import { loginUser, createDevice, navigateToDevice, generateMqttCredentials } from './helpers';
-import { deviceTopic, SUBTOPICS, type ScanPayload } from '$lib/devices/mqtt-contract.generated';
+import { deviceTopic, SUBTOPICS, type ScanPayload } from 'mqtt-contract';
 
 test('machine mode page shows turn on/off toggle, not trigger success', async ({ page }) => {
 	await loginUser(page);

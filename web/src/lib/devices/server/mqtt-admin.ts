@@ -1,7 +1,7 @@
 import mqtt from 'mqtt';
 import crypto from 'crypto';
 import { env } from '$env/dynamic/private';
-import { TOPIC_PREFIX } from '../mqtt-contract.generated';
+import { TOPIC_PREFIX } from 'mqtt-contract';
 
 const DYNSEC_TOPIC = '$CONTROL/dynamic-security/v1';
 const DYNSEC_RESPONSE_TOPIC = '$CONTROL/dynamic-security/v1/response';

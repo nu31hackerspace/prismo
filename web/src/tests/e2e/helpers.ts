@@ -5,7 +5,7 @@ import {
 	SUBTOPICS,
 	type StatusPayload,
 	type ScanPayload
-} from '$lib/devices/mqtt-contract.generated';
+} from 'mqtt-contract';
 
 export async function loginUser(page: Page): Promise<void> {
 	await page.goto('/');
