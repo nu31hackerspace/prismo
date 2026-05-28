@@ -1,0 +1,20 @@
+{
+	"name": "mqtt-contract",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"generate": "npx tsx generate.ts",
+		"check": "npx tsx generate.ts --check",
+		"lint": "prettier --check .",
+		"format": "prettier --write ."
+	},
+	"exports": {
+		".": "./mqtt-contract.generated.ts"
+	},
+	"devDependencies": {
+		"@types/node": "^25.9.1",
+		"prettier": "^3.8.1",
+		"tsx": "^4.21.0"
+	}
+}

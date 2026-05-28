@@ -31,7 +31,8 @@ jobs:
       - name: Build web image
         uses: docker/build-push-action@v6
         with:
-          context: web
+          context: .
+          file: web/Dockerfile
           push: false
           build-args: |
             COMMIT_SHA=${{ github.sha }}

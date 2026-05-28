@@ -11,9 +11,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
-		"format": "prettier --write .",
-		"mqtt-contract:generate": "npx tsx ../mqtt-contract/generate.ts",
-		"mqtt-contract:check": "npx tsx ../mqtt-contract/generate.ts --check"
+		"format": "prettier --write ."
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.59.1",
@@ -44,6 +42,7 @@
 		"jsonwebtoken": "^9.0.3",
 		"mongodb": "^6.17.0",
 		"mqtt": "^5.10.4",
+		"mqtt-contract": "file:../mqtt-contract",
 		"qrcode": "^1.5.4",
 		"tsx": "^4.21.0"
 	}

@@ -1,11 +1,6 @@
 import mqtt from 'mqtt';
 import { expect, type Page } from '@playwright/test';
-import {
-	deviceTopic,
-	SUBTOPICS,
-	type StatusPayload,
-	type ScanPayload
-} from '$lib/devices/mqtt-contract.generated';
+import { deviceTopic, SUBTOPICS, type StatusPayload, type ScanPayload } from 'mqtt-contract';
 
 export async function loginUser(page: Page): Promise<void> {
 	await page.goto('/');

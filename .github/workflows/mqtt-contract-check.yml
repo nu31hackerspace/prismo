@@ -1,0 +1,30 @@
+name: MQTT Contract merge request pipeline
+
+on:
+  pull_request:
+
+jobs:
+  mqtt-contract-lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mqtt-contract/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mqtt-contract
+        run: npm ci
+
+      - name: Lint
+        working-directory: mqtt-contract
+        run: npm run lint
+
+      - name: Consistency Check
+        working-directory: mqtt-contract
+        run: npm run check

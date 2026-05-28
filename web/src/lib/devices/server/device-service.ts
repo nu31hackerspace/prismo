@@ -10,7 +10,7 @@ import {
 	type CmdTriggerPayload,
 	type CmdTriggerAction,
 	type CmdSyncPayload
-} from '../mqtt-contract.generated';
+} from 'mqtt-contract';
 
 function generateDeviceSlug(name: string): string {
 	const base = name
