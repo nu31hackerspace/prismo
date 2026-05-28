@@ -1,6 +1,7 @@
 import mqtt from 'mqtt';
 import crypto from 'crypto';
 import { env } from '$env/dynamic/private';
+import { TOPIC_PREFIX } from '../mqtt-contract.generated';
 
 const DYNSEC_TOPIC = '$CONTROL/dynamic-security/v1';
 const DYNSEC_RESPONSE_TOPIC = '$CONTROL/dynamic-security/v1/response';
@@ -107,14 +108,14 @@ export async function createDeviceMqttUser(slug: string, password: string): Prom
 			command: 'addRoleACL',
 			rolename: roleName,
 			acltype: 'publishClientSend',
-			topic: `prismo/${slug}/#`,
+			topic: `${TOPIC_PREFIX}/${slug}/#`,
 			allow: true
 		},
 		{
 			command: 'addRoleACL',
 			rolename: roleName,
 			acltype: 'subscribePattern',
-			topic: `prismo/${slug}/#`,
+			topic: `${TOPIC_PREFIX}/${slug}/#`,
 			allow: true
 		},
 		{ command: 'addClientRole', username: slug, rolename: roleName }
@@ -134,7 +135,7 @@ export async function publishToDevice(
 	payload: Record<string, unknown>,
 	options: { retain?: boolean } = {}
 ): Promise<void> {
-	const topic = `prismo/${slug}/${subtopic}`;
+	const topic = `${TOPIC_PREFIX}/${slug}/${subtopic}`;
 	console.log(
 		`[mqtt-admin] publishToDevice: ${topic}`,
 		payload,
