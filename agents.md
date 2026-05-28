@@ -24,4 +24,5 @@ Each sub-project has its own `AGENTS.md` with detailed instructions:
 
 ## Global Rules
 
+- **Language Rule:** Write all code in this project (scripts, tools, frontend, etc.) in TypeScript. The only exception is the `firmware/` directory, which must use MicroPython to run on the ESP32-C3 microcontroller.
 - **AI Rule:** Never add unnecessary or redundant comments to the code. Write clean, self-documenting code instead.

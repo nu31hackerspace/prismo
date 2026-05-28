@@ -3,6 +3,14 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
 import { createDeviceMqttUser, updateDeviceMqttPassword, publishToDevice } from './mqtt-admin';
+import {
+	SUBTOPICS,
+	type CmdAddKeyPayload,
+	type CmdRemoveKeyPayload,
+	type CmdTriggerPayload,
+	type CmdTriggerAction,
+	type CmdSyncPayload
+} from '../mqtt-contract.generated';
 
 function generateDeviceSlug(name: string): string {
 	const base = name
@@ -116,10 +124,10 @@ export async function pushRetainedSync(deviceSlug: string): Promise<void> {
 	);
 	await publishToDevice(
 		deviceSlug,
-		'cmd/sync',
+		SUBTOPICS.cmd_sync,
 		{
 			keys: deviceKeys.map((k) => ({ uid: k.keyId, username: nameByKeyId.get(k.keyId) ?? '' }))
-		},
+		} satisfies CmdSyncPayload,
 		{ retain: true }
 	);
 }
@@ -165,7 +173,9 @@ export async function addKeyToDevice(
 	});
 
 	// Incremental: immediate effect if device is online now.
-	publishToDevice(deviceSlug, 'cmd/add_key', { uid: keyId }).catch((err) =>
+	publishToDevice(deviceSlug, SUBTOPICS.cmd_add_key, {
+		uid: keyId
+	} satisfies CmdAddKeyPayload).catch((err) =>
 		console.error(`[device-service] cmd/add_key failed for "${deviceSlug}":`, err)
 	);
 	// Retained full sync: device receives current state on next reconnect.
@@ -199,7 +209,9 @@ export async function removeKeyFromDevice(
 	});
 
 	// Incremental: immediate effect if device is online now.
-	publishToDevice(deviceSlug, 'cmd/remove_key', { uid: keyId }).catch((err) =>
+	publishToDevice(deviceSlug, SUBTOPICS.cmd_remove_key, {
+		uid: keyId
+	} satisfies CmdRemoveKeyPayload).catch((err) =>
 		console.error(`[device-service] cmd/remove_key failed for "${deviceSlug}":`, err)
 	);
 	// Retained full sync: device receives current state on next reconnect.
@@ -211,7 +223,7 @@ export async function removeKeyFromDevice(
 export async function triggerDevice(
 	deviceSlug: string,
 	userId: string,
-	action: 'success' | 'error' | 'on' | 'off'
+	action: CmdTriggerAction
 ): Promise<void> {
 	const device = await requireOwnedDevice(deviceSlug, userId);
 	const deviceId = device._id!;
@@ -231,7 +243,7 @@ export async function triggerDevice(
 		createdAt: new Date()
 	});
 
-	await publishToDevice(deviceSlug, 'cmd/trigger', { action });
+	await publishToDevice(deviceSlug, SUBTOPICS.cmd_trigger, { action } satisfies CmdTriggerPayload);
 }
 
 /**

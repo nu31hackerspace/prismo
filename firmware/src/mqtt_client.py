@@ -3,6 +3,11 @@ import utime
 import network
 from umqtt.robust import MQTTClient as _RobustClient
 from src import health_log
+from src.mqtt_contract import (
+    device_topic, SUBTOPIC_SCAN, SUBTOPIC_STATUS, SUBTOPIC_LOGS,
+    SUBTOPIC_CMD_ADD_KEY, SUBTOPIC_CMD_REMOVE_KEY, SUBTOPIC_CMD_TRIGGER,
+    SUBTOPIC_CMD_SYNC,
+)
 
 class _RobustPrismoMQTT(_RobustClient):
     """umqtt.robust subclass with bounded reconnect for WDT-safe operation."""
@@ -98,16 +103,16 @@ class PrismoMQTT:
         except Exception:
             data = {}
 
-        if topic_str == "prismo/{}/cmd/add_key".format(self._user):
+        if topic_str == device_topic(self._user, SUBTOPIC_CMD_ADD_KEY):
             if self._on_add_key:
                 self._on_add_key(data.get("uid", ""))
-        elif topic_str == "prismo/{}/cmd/remove_key".format(self._user):
+        elif topic_str == device_topic(self._user, SUBTOPIC_CMD_REMOVE_KEY):
             if self._on_remove_key:
                 self._on_remove_key(data.get("uid", ""))
-        elif topic_str == "prismo/{}/cmd/trigger".format(self._user):
+        elif topic_str == device_topic(self._user, SUBTOPIC_CMD_TRIGGER):
             if self._on_trigger:
                 self._on_trigger(data.get("action", ""))
-        elif topic_str == "prismo/{}/cmd/sync".format(self._user):
+        elif topic_str == device_topic(self._user, SUBTOPIC_CMD_SYNC):
             if self._on_sync_keys:
                 self._on_sync_keys(data.get("keys", []))
 
@@ -120,25 +125,25 @@ class PrismoMQTT:
 
         if self._client and self._user:
             health_log.write_info("Subscribing to command topics", user=self._user)
-            self._client.subscribe("prismo/{}/cmd/add_key".format(self._user))
-            self._client.subscribe("prismo/{}/cmd/remove_key".format(self._user))
-            self._client.subscribe("prismo/{}/cmd/trigger".format(self._user))
-            self._client.subscribe("prismo/{}/cmd/sync".format(self._user))
+            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_ADD_KEY))
+            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_REMOVE_KEY))
+            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_TRIGGER))
+            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_SYNC))
             health_log.write_info("MQTT subscribed to command topics", user=self._user)
         else:
             health_log.write_error("MQTT client or user not initialized", client=str(self._client), user=self._user)
 
     def _subscribe_commands_internal(self):
         if self._client and self._user and (self._on_add_key is not None or self._on_remove_key is not None or self._on_trigger is not None):
-            self._client.subscribe("prismo/{}/cmd/add_key".format(self._user))
-            self._client.subscribe("prismo/{}/cmd/remove_key".format(self._user))
-            self._client.subscribe("prismo/{}/cmd/trigger".format(self._user))
-            self._client.subscribe("prismo/{}/cmd/sync".format(self._user))
+            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_ADD_KEY))
+            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_REMOVE_KEY))
+            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_TRIGGER))
+            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_SYNC))
 
     def publish_heartbeat(self):
         if self._client is None or self._user is None:
             return
-        topic = "prismo/{}/status".format(self._user)
+        topic = device_topic(self._user, SUBTOPIC_STATUS)
         try:
             self._client.publish(topic, ujson.dumps({"online": True}))
             self._last_heartbeat_ms = utime.ticks_ms()
@@ -151,7 +156,7 @@ class PrismoMQTT:
     def publish_scan(self, uid, allowed, machine_active=None):
         if self._client is None or self._user is None:
             return
-        topic = "prismo/{}/scan".format(self._user)
+        topic = device_topic(self._user, SUBTOPIC_SCAN)
         data = {"uid": uid, "allowed": allowed}
         if machine_active is not None:
             data["machine_active"] = machine_active
@@ -170,7 +175,7 @@ class PrismoMQTT:
                 self._pending_logs.append(entry)
             return
         try:
-            self._client.publish("prismo/{}/logs".format(self._user), ujson.dumps(entry))
+            self._client.publish(device_topic(self._user, SUBTOPIC_LOGS), ujson.dumps(entry))
             self._consecutive_failures = 0
         except Exception:
             if len(self._pending_logs) < self._MAX_PENDING:
@@ -181,7 +186,7 @@ class PrismoMQTT:
     def _flush_pending(self):
         if not self._pending_logs or self._client is None or self._user is None:
             return
-        topic = "prismo/{}/logs".format(self._user)
+        topic = device_topic(self._user, SUBTOPIC_LOGS)
         remaining = list(self._pending_logs)
         sent = 0
         while remaining:

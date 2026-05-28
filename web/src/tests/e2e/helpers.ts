@@ -1,5 +1,11 @@
 import mqtt from 'mqtt';
 import { expect, type Page } from '@playwright/test';
+import {
+	deviceTopic,
+	SUBTOPICS,
+	type StatusPayload,
+	type ScanPayload
+} from '$lib/devices/mqtt-contract.generated';
 
 export async function loginUser(page: Page): Promise<void> {
 	await page.goto('/');
@@ -61,8 +67,8 @@ export async function publishDeviceStatus(
 	await new Promise<void>((resolve, reject) => {
 		client.once('connect', () => {
 			client.publish(
-				`prismo/${mqttUser.trim()}/status`,
-				JSON.stringify({ online }),
+				deviceTopic(mqttUser.trim(), SUBTOPICS.status),
+				JSON.stringify({ online } satisfies StatusPayload),
 				{ qos: 1 },
 				(err: Error | undefined) => {
 					client.end();
@@ -84,7 +90,7 @@ export async function publishScan(
 	opts: ScanOptions = {}
 ): Promise<void> {
 	const { mqttUser, mqttPass } = credentials;
-	const payload: { uid: string; allowed: boolean; machine_active?: boolean } = {
+	const payload: ScanPayload = {
 		uid,
 		allowed: opts.allowed ?? false
 	};
@@ -99,7 +105,7 @@ export async function publishScan(
 	await new Promise<void>((resolve, reject) => {
 		client.once('connect', () => {
 			client.publish(
-				`prismo/${mqttUser.trim()}/scan`,
+				deviceTopic(mqttUser.trim(), SUBTOPICS.scan),
 				JSON.stringify(payload),
 				{ qos: 1 },
 				(err: Error | undefined) => {
