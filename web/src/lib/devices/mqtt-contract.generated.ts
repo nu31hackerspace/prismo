@@ -10,7 +10,7 @@ export const SUBTOPICS = {
 	cmd_add_key: 'cmd/add_key',
 	cmd_remove_key: 'cmd/remove_key',
 	cmd_trigger: 'cmd/trigger',
-	cmd_sync: 'cmd/sync',
+	cmd_sync: 'cmd/sync'
 } as const;
 
 export type SubtopicKey = keyof typeof SUBTOPICS;
@@ -56,10 +56,10 @@ export type CmdTriggerPayload = {
 };
 
 export type CmdSyncPayload = {
-	keys: ({
+	keys: {
 		uid: string;
 		username?: string;
-	})[];
+	}[];
 };
 
 export const SCAN_WILDCARD = `${TOPIC_PREFIX}/+/${SUBTOPICS.scan}`;

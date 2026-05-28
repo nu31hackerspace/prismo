@@ -89,7 +89,11 @@ test('mqtt scan with machine_active false turns machine off via sse', async ({ p
 		deviceClient.once('connect', () => {
 			deviceClient.publish(
 				deviceTopic(mqttUser.trim(), SUBTOPICS.scan),
-				JSON.stringify({ uid: scannedUid, allowed: true, machine_active: false } satisfies ScanPayload),
+				JSON.stringify({
+					uid: scannedUid,
+					allowed: true,
+					machine_active: false
+				} satisfies ScanPayload),
 				{ qos: 1 },
 				(err: Error | undefined) => {
 					deviceClient.end();
@@ -129,7 +133,11 @@ test('mqtt scan with machine_active updates toggle button via sse', async ({ pag
 		deviceClient.once('connect', () => {
 			deviceClient.publish(
 				deviceTopic(mqttUser.trim(), SUBTOPICS.scan),
-				JSON.stringify({ uid: scannedUid, allowed: true, machine_active: true } satisfies ScanPayload),
+				JSON.stringify({
+					uid: scannedUid,
+					allowed: true,
+					machine_active: true
+				} satisfies ScanPayload),
 				{ qos: 1 },
 				(err: Error | undefined) => {
 					deviceClient.end();

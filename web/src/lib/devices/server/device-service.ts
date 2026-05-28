@@ -173,7 +173,9 @@ export async function addKeyToDevice(
 	});
 
 	// Incremental: immediate effect if device is online now.
-	publishToDevice(deviceSlug, SUBTOPICS.cmd_add_key, { uid: keyId } satisfies CmdAddKeyPayload).catch((err) =>
+	publishToDevice(deviceSlug, SUBTOPICS.cmd_add_key, {
+		uid: keyId
+	} satisfies CmdAddKeyPayload).catch((err) =>
 		console.error(`[device-service] cmd/add_key failed for "${deviceSlug}":`, err)
 	);
 	// Retained full sync: device receives current state on next reconnect.
@@ -207,7 +209,9 @@ export async function removeKeyFromDevice(
 	});
 
 	// Incremental: immediate effect if device is online now.
-	publishToDevice(deviceSlug, SUBTOPICS.cmd_remove_key, { uid: keyId } satisfies CmdRemoveKeyPayload).catch((err) =>
+	publishToDevice(deviceSlug, SUBTOPICS.cmd_remove_key, {
+		uid: keyId
+	} satisfies CmdRemoveKeyPayload).catch((err) =>
 		console.error(`[device-service] cmd/remove_key failed for "${deviceSlug}":`, err)
 	);
 	// Retained full sync: device receives current state on next reconnect.
