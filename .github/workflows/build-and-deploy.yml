@@ -183,7 +183,7 @@ jobs:
         uses: cssnr/stack-deploy-action@v1
         with:
           name: prismo
-          file: web/docker-stack.yml
+          file: docker-stack.yml
           host: ${{ env.HOST }}
           port: 22
           user: ${{ env.USERNAME }}

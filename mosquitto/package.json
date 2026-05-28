@@ -10,7 +10,7 @@
 	"type": "commonjs",
 	"dependencies": {
 		"mqtt": "^5.10.4",
-		"mqtt-contract": "file:../../mqtt-contract",
+		"mqtt-contract": "file:../mqtt-contract",
 		"tsx": "^4.21.0",
 		"typescript": "^6.0.2"
 	}

@@ -33,17 +33,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Start test infrastructure
-        working-directory: web
         run: |
           docker compose -f docker-compose.ci.yml up -d --build
           timeout 60 bash -c '
-            until docker inspect --format "{{.State.Health.Status}}" web-mongo-1 2>/dev/null | grep -q healthy \
-               && docker inspect --format "{{.State.Health.Status}}" web-mqtt-1  2>/dev/null | grep -q healthy; do
+            until docker inspect --format "{{.State.Health.Status}}" prismo-mongo-1 2>/dev/null | grep -q healthy \
+               && docker inspect --format "{{.State.Health.Status}}" prismo-mqtt-1  2>/dev/null | grep -q healthy; do
               sleep 2
             done
           '
           timeout 30 bash -c '
-            until docker inspect --format "{{.State.Status}}" web-worker-1 2>/dev/null | grep -q running; do
+            until docker inspect --format "{{.State.Status}}" prismo-worker-1 2>/dev/null | grep -q running; do
               sleep 2
             done
           '
@@ -79,7 +78,6 @@ jobs:
 
       - name: Show infra logs on failure
         if: failure()
-        working-directory: web
         run: docker compose -f docker-compose.ci.yml logs
 
       - name: Upload test report
