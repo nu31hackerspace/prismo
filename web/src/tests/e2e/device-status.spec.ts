@@ -23,8 +23,8 @@ test('device status transitions: offline → online → offline → online', asy
 	await publishDeviceStatus(MQTT_URL, credentials, true);
 	await expect(page.locator('text="Online"').first()).toBeVisible({ timeout: 5_000 });
 
-	// Wait for client-side offline timer (ONLINE_THRESHOLD_MS = 15s) to expire
-	await expect(page.locator('text="Offline"').first()).toBeVisible({ timeout: 20_000 });
+	// Wait for client-side offline timer (ONLINE_THRESHOLD_MS = 10s) to expire
+	await expect(page.locator('text="Offline"').first()).toBeVisible({ timeout: 15_000 });
 
 	await publishDeviceStatus(MQTT_URL, credentials, true);
 	await expect(page.locator('text="Online"').first()).toBeVisible({ timeout: 5_000 });
