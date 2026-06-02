@@ -35,7 +35,7 @@ services:
 
   worker:
     build:
-      context: ..
+      context: .
       dockerfile: web/worker/Dockerfile
     depends_on:
       mongo:

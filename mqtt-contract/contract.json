@@ -1,0 +1,112 @@
+{
+	"topicPrefix": "prismo",
+	"messages": {
+		"scan": {
+			"direction": "device_to_server",
+			"subtopic": "scan",
+			"description": "Device reports an NFC card scan result to the server.",
+			"payload": {
+				"type": "object",
+				"properties": {
+					"uid": { "type": "string", "required": true, "description": "Hashed NFC card UID" },
+					"allowed": {
+						"type": "boolean",
+						"required": true,
+						"description": "Whether the key is in the local allowlist"
+					},
+					"machine_active": {
+						"type": "boolean",
+						"required": false,
+						"description": "Current machine-mode latch state (only present in machine mode)"
+					}
+				}
+			}
+		},
+		"status": {
+			"direction": "device_to_server",
+			"subtopic": "status",
+			"description": "Periodic heartbeat from the device.",
+			"payload": {
+				"type": "object",
+				"properties": {
+					"online": { "type": "boolean", "required": true }
+				}
+			}
+		},
+		"logs": {
+			"direction": "device_to_server",
+			"subtopic": "logs",
+			"description": "Structured log entry forwarded from the device health logger.",
+			"payload": {
+				"type": "object",
+				"properties": {
+					"log_version": { "type": "string", "required": true },
+					"type": { "type": "string", "required": true, "const": "event" },
+					"level": { "type": "string", "required": true, "enum": ["INFO", "WARN", "ERROR"] },
+					"msg": { "type": "string", "required": true },
+					"device_id": { "type": "string", "required": true },
+					"uptime_s": { "type": "integer", "required": true },
+					"timestamp_ms": { "type": "integer", "required": true }
+				}
+			}
+		},
+		"cmd_add_key": {
+			"direction": "server_to_device",
+			"subtopic": "cmd/add_key",
+			"description": "Server instructs device to add a key to the local allowlist.",
+			"payload": {
+				"type": "object",
+				"properties": {
+					"uid": { "type": "string", "required": true }
+				}
+			}
+		},
+		"cmd_remove_key": {
+			"direction": "server_to_device",
+			"subtopic": "cmd/remove_key",
+			"description": "Server instructs device to remove a key from the local allowlist.",
+			"payload": {
+				"type": "object",
+				"properties": {
+					"uid": { "type": "string", "required": true }
+				}
+			}
+		},
+		"cmd_trigger": {
+			"direction": "server_to_device",
+			"subtopic": "cmd/trigger",
+			"description": "Server triggers a physical action on the device (LED/relay/buzzer).",
+			"payload": {
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"required": true,
+						"enum": ["success", "error", "on", "off"]
+					}
+				}
+			}
+		},
+		"cmd_sync": {
+			"direction": "server_to_device",
+			"subtopic": "cmd/sync",
+			"description": "Server pushes the full authoritative key list (retained message).",
+			"payload": {
+				"type": "object",
+				"properties": {
+					"keys": {
+						"type": "array",
+						"required": true,
+						"items": {
+							"type": "object",
+							"properties": {
+								"uid": { "type": "string", "required": true },
+								"username": { "type": "string", "required": false }
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

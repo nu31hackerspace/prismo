@@ -1,6 +1,7 @@
 import mqtt from 'mqtt';
 import { test, expect } from './fixtures';
 import { loginUser, createDevice, navigateToDevice, generateMqttCredentials } from './helpers';
+import { deviceTopic, SUBTOPICS, type ScanPayload } from 'mqtt-contract';
 
 test('machine mode page shows turn on/off toggle, not trigger success', async ({ page }) => {
 	await loginUser(page);
@@ -87,8 +88,12 @@ test('mqtt scan with machine_active false turns machine off via sse', async ({ p
 	await new Promise<void>((resolve, reject) => {
 		deviceClient.once('connect', () => {
 			deviceClient.publish(
-				`prismo/${mqttUser.trim()}/scan`,
-				JSON.stringify({ uid: scannedUid, allowed: true, machine_active: false }),
+				deviceTopic(mqttUser.trim(), SUBTOPICS.scan),
+				JSON.stringify({
+					uid: scannedUid,
+					allowed: true,
+					machine_active: false
+				} satisfies ScanPayload),
 				{ qos: 1 },
 				(err: Error | undefined) => {
 					deviceClient.end();
@@ -127,8 +132,12 @@ test('mqtt scan with machine_active updates toggle button via sse', async ({ pag
 	await new Promise<void>((resolve, reject) => {
 		deviceClient.once('connect', () => {
 			deviceClient.publish(
-				`prismo/${mqttUser.trim()}/scan`,
-				JSON.stringify({ uid: scannedUid, allowed: true, machine_active: true }),
+				deviceTopic(mqttUser.trim(), SUBTOPICS.scan),
+				JSON.stringify({
+					uid: scannedUid,
+					allowed: true,
+					machine_active: true
+				} satisfies ScanPayload),
 				{ qos: 1 },
 				(err: Error | undefined) => {
 					deviceClient.end();

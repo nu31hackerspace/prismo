@@ -1,6 +1,6 @@
 {
 	"name": "Prismo Web",
-	"dockerComposeFile": "../docker-compose.dev.yml",
+	"dockerComposeFile": "../../docker-compose.dev.yml",
 	"service": "app",
 	"workspaceFolder": "/app",
 	"forwardPorts": [3000, 24678],

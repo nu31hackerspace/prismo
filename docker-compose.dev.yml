@@ -57,10 +57,10 @@ services:
       - '3000:3000'
       - '24678:24678'
     volumes:
-      - ../web:/app
+      - ./web:/app
       - app-node-modules:/app/node_modules
-      - ../web/mosquitto/mqtt.js:/mqtt/mqtt.js:ro
-      - ../web/mosquitto/package.json:/mqtt/package.json:ro
+      - ./mosquitto/mqtt.js:/mqtt/mqtt.js:ro
+      - ./mosquitto/package.json:/mqtt/package.json:ro
     depends_on:
       mongo:
         condition: service_healthy
@@ -95,8 +95,8 @@ services:
       mqtt:
         condition: service_healthy
     volumes:
-      - ./worker/worker.py:/worker/worker.py:ro
-      - ./worker/build.sh:/worker/build.sh:ro
+      - ./web/worker/worker.py:/worker/worker.py:ro
+      - ./web/worker/build.sh:/worker/build.sh:ro
     environment:
       - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
       - MQTT_URL=mqtt://admin:admin@mqtt:1883

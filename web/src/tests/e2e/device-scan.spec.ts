@@ -1,6 +1,7 @@
 import mqtt from 'mqtt';
 import { test, expect } from './fixtures';
 import { loginUser, createDevice, navigateToDevice, generateMqttCredentials } from './helpers';
+import { deviceTopic, SUBTOPICS, type ScanPayload } from 'mqtt-contract';
 
 test('scan event: denied NFC scan appears in history and last-unauthorized panel', async ({
 	page
@@ -25,8 +26,8 @@ test('scan event: denied NFC scan appears in history and last-unauthorized panel
 	await new Promise<void>((resolve, reject) => {
 		deviceClient.once('connect', () => {
 			deviceClient.publish(
-				`prismo/${mqttUser.trim()}/scan`,
-				JSON.stringify({ uid: scannedUid, allowed: false }),
+				deviceTopic(mqttUser.trim(), SUBTOPICS.scan),
+				JSON.stringify({ uid: scannedUid, allowed: false } satisfies ScanPayload),
 				{ qos: 1 },
 				(err: Error | undefined) => {
 					deviceClient.end();

@@ -1,6 +1,6 @@
 ## Quick Start (Dev Container)
 
-The fastest way to get the full stack running locally. Everything runs in Docker — no local Node.js, MongoDB, or MQTT setup needed.
+The fastest way to get the full stack running locally. Everything runs in Docker — no local Node.js, MongoDB, or MQTT setup needed. Run all commands from the repository root.
 
 ### Start
 
@@ -179,11 +179,7 @@ socat TCP-LISTEN:11883,fork,reuseaddr TCP:192.168.64.2:1883
 
 ## Running E2E Tests Locally
 
-E2E tests use Playwright and require MongoDB (replica set) and Mosquitto MQTT broker.
-
-### Using the CI compose file
-
-The simplest way — spins up a fresh, isolated test environment:
+E2E tests use Playwright and require MongoDB (replica set) and Mosquitto MQTT broker. Run these commands from the repository root:
 
 ```bash
 # Start test infrastructure

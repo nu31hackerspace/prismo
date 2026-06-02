@@ -1,6 +1,7 @@
 import mqtt from 'mqtt';
 import { env } from '$env/dynamic/private';
 import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol } from '$lib/server/db';
+import { TOPIC_PREFIX, SCAN_WILDCARD, STATUS_WILDCARD, type ScanPayload } from 'mqtt-contract';
 
 let initialized = false;
 
@@ -21,11 +22,11 @@ export function initializeScanListener(): void {
 
 	client.on('connect', () => {
 		console.log('[scan-listener] connected, subscribing to topics');
-		client.subscribe(['prismo/+/scan', 'prismo/+/status'], { qos: 1 }, (err) => {
+		client.subscribe([SCAN_WILDCARD, STATUS_WILDCARD], { qos: 1 }, (err) => {
 			if (err) {
 				console.error('[scan-listener] subscribe error:', err);
 			} else {
-				console.log('[scan-listener] subscribed to prismo/+/scan and prismo/+/status');
+				console.log(`[scan-listener] subscribed to ${SCAN_WILDCARD} and ${STATUS_WILDCARD}`);
 			}
 		});
 	});
@@ -53,13 +54,13 @@ async function handleScanMessage(topic: string, raw: Buffer): Promise<void> {
 
 	// topic format: prismo/{deviceSlug}/scan
 	const parts = topic.split('/');
-	if (parts.length !== 3 || parts[0] !== 'prismo' || parts[2] !== 'scan') {
+	if (parts.length !== 3 || parts[0] !== TOPIC_PREFIX || parts[2] !== 'scan') {
 		console.warn(`[scan-listener] unexpected topic format, ignoring: ${topic}`);
 		return;
 	}
 	const deviceSlug = parts[1];
 
-	let payload: { uid: string; allowed: boolean; machine_active?: boolean };
+	let payload: ScanPayload;
 	try {
 		payload = JSON.parse(raw.toString());
 	} catch {
