@@ -8,7 +8,7 @@
 	import DeviceHistory from './DeviceHistory.svelte';
 	import DeviceDangerZone from './DeviceDangerZone.svelte';
 
-	const ONLINE_THRESHOLD_MS = 15_000;
+	const ONLINE_THRESHOLD_MS = 10_000;
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
@@ -38,9 +38,12 @@
 		source.onmessage = (e) => {
 			const event = JSON.parse(e.data);
 			historyItems = [event, ...historyItems].slice(0, 50);
-			if (event.action === 'scan' && event.allowed === false) {
+			if (event.action === 'scan' && event.keyId && event.username == null) {
 				if (!lastUnauth || new Date(event.createdAt) > new Date(lastUnauth.createdAt)) {
-					lastUnauth = { keyId: event.keyId, createdAt: new Date(event.createdAt) };
+					lastUnauth = {
+						keyId: event.keyId,
+						createdAt: new Date(event.createdAt)
+					};
 				}
 			}
 		};
@@ -72,34 +75,36 @@
 	}
 </script>
 
-<!-- Header -->
+<svelte:head>
+	<title>{data.device.name} — Prismo</title>
+</svelte:head>
+
 <header
-	class="fixed top-0 right-0 left-0 z-50 border-b border-separator-secondary bg-background-primary/80 backdrop-blur-lg"
+	class="sticky top-14 z-30 border-b border-separator-secondary bg-background-primary/80 backdrop-blur-lg md:top-0"
 >
-	<nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-		<div class="flex items-center gap-3">
+	<nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+		<div class="flex min-w-0 items-center gap-3">
 			<a
-				href="/"
+				href="/devices"
 				class="flex items-center gap-1 text-label-secondary transition-colors hover:text-label-primary"
+				aria-label="Back to devices"
 			>
 				<Icon icon="mdi:arrow-left" class="h-5 w-5" />
-				<span class="font-display text-sm font-bold">Back</span>
 			</a>
-			<span class="text-separator-secondary">/</span>
-			<span class="font-display text-xl font-bold tracking-tight text-label-primary">
+			<span class="truncate font-display text-xl font-bold tracking-tight text-label-primary">
 				{data.device.name}
 			</span>
 			<Badge label={isOnline ? 'Online' : 'Offline'} variant={isOnline ? 'success' : 'error'} />
 		</div>
 		<span
-			class="rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-1 font-mono text-xs text-label-tertiary"
+			class="hidden rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-1 font-mono text-xs text-label-tertiary sm:inline"
 		>
 			{data.device.deviceSlug}
 		</span>
 	</nav>
 </header>
 
-<main class="mx-auto max-w-6xl px-6 pt-32 pb-20">
+<main class="mx-auto max-w-6xl px-6 pt-8 pb-20">
 	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
 		<!-- Left column -->
 		<div class="flex flex-col gap-6">
@@ -122,8 +127,8 @@
 						<input type="hidden" name="keyId" value={lastUnauth.keyId} />
 						<input
 							type="text"
-							name="username"
-							placeholder="Username"
+							name="name"
+							placeholder="Name (e.g. Alice)"
 							required
 							class="flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary"
 						/>
@@ -151,13 +156,14 @@
 						No keys allowed yet. Add a key from the unauthorized scan panel.
 					</p>
 				{:else}
-					<ul class="space-y-2">
-						{#each data.keys as key}
-							<li
-								class="flex items-center justify-between rounded-xl border border-separator-secondary bg-background-primary px-4 py-3"
+					<div data-section="allowed-keys" class="grid grid-cols-1 gap-2">
+						{#each data.keys as key (key.keyId)}
+							<div
+								data-allowed-key-id={key.keyId}
+								class="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-separator-secondary bg-background-primary px-4 py-3"
 							>
-								<div>
-									<div class="text-sm font-semibold text-label-primary">{key.username}</div>
+								<div class="min-w-0">
+									<div class="text-sm font-semibold text-label-primary">{key.name}</div>
 									<div class="font-mono text-xs break-all text-label-tertiary">{key.keyId}</div>
 								</div>
 								<form method="POST" action="?/removeKey" use:enhance>
@@ -169,9 +175,9 @@
 										label="Remove"
 									/>
 								</form>
-							</li>
+							</div>
 						{/each}
-					</ul>
+					</div>
 				{/if}
 			</div>
 
