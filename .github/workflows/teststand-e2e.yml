@@ -54,7 +54,9 @@ jobs:
         run: bash firmware/tests/real_hardware/run_tests.sh
 
       - name: Start WiFi access point (wlan0)
-        run: sudo bash firmware/tests/real_hardware/start-ap.sh
+        # No outer sudo: start-ap.sh sudo's its own nmcli/rfkill calls, which the
+        # runner is allowed to do passwordlessly (sudoers.d/prismo-runner).
+        run: bash firmware/tests/real_hardware/start-ap.sh
 
       - name: Start production stack
         working-directory: blackbox-e2e

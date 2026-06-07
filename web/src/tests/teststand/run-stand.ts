@@ -40,7 +40,8 @@ const apScript = path.join(repoRoot, 'firmware/tests/real_hardware/start-ap.sh')
 
 async function hotspotUp(): Promise<void> {
 	console.log(`\n▶ Starting WiFi hotspot "${config.wifiSsid}" on ${config.wifiIface}…`);
-	await run('sudo', ['bash', apScript]);
+	// No outer sudo — start-ap.sh sudo's its own privileged nmcli/rfkill calls.
+	await run('bash', [apScript]);
 	console.log(`  Device MQTT target: mqtt://${config.deviceMqttHost}:${config.deviceMqttPort}`);
 }
 
