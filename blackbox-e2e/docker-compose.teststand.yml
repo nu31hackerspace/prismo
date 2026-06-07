@@ -1,0 +1,16 @@
+# Test-stand overlay for the hardware-in-the-loop e2e run.
+#
+# Layer on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.teststand.yml up -d
+#
+# Difference from the local blackbox stack: Google OAuth is NOT mocked here.
+# The test seeds a session directly (its one allowed DB shortcut) and drives the
+# genuine production auth path, so we turn TEST_MODE off. ORIGIN tracks the host
+# the browser actually uses (defaults to the published port 13000).
+
+services:
+  app:
+    environment:
+      # Empty string is falsy in google-auth.ts → real OAuth client.
+      - TEST_MODE=
+      - ORIGIN=${TESTSTAND_ORIGIN:-http://localhost:13000}
