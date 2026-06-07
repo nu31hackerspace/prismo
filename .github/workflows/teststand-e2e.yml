@@ -61,7 +61,9 @@ jobs:
       - name: Start production stack
         working-directory: blackbox-e2e
         run: |
-          docker compose $COMPOSE_FILES up --build -d
+          # Only the app + its deps (mongo, mongo-init, mqtt). The worker isn't
+          # needed (firmware is provisioned via mpremote) and its image is multi-GB.
+          docker compose $COMPOSE_FILES up --build -d app
           echo "Waiting for the app to become healthy…"
           for i in $(seq 1 60); do
             status=$(docker compose $COMPOSE_FILES ps app --format '{{.Health}}' 2>/dev/null || true)

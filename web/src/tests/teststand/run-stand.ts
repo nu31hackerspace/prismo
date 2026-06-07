@@ -52,7 +52,9 @@ async function hotspotDown(): Promise<void> {
 
 async function infraUp(): Promise<void> {
 	console.log('\n▶ Starting production stack (Mongo / MQTT / web)…');
-	await run('docker', [...composeArgs, 'up', '--build', '-d'], {
+	// Only app + its deps (mongo, mongo-init, mqtt); the worker isn't needed and
+	// its image is multi-GB.
+	await run('docker', [...composeArgs, 'up', '--build', '-d', 'app'], {
 		cwd: composeDir,
 		timeoutMs: 600_000
 	});
