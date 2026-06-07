@@ -45,6 +45,10 @@ export const config = {
 	serialPort: envStr('TESTSTAND_SERIAL_PORT', '/dev/ttyESP32C3'),
 	mpremoteBin: envStr('TESTSTAND_MPREMOTE_BIN', 'mpremote'),
 	deviceMode: envStr('TESTSTAND_DEVICE_MODE', 'door'),
+	// Skip the boot animation/sounds on the stand: the animation otherwise trips
+	// the MicroPython task watchdog on boot (observed WDT reset before WiFi).
+	quickStart: envStr('TESTSTAND_QUICK_START', 'true') === 'true',
+	muteBuzzer: envStr('TESTSTAND_MUTE_BUZZER', 'true') === 'true',
 	// Optional one-time base-firmware (re)flash before injecting config.
 	// Requires a manual power-cycle afterwards (ESP32-C3 USB-JTAG quirk), so
 	// it is OFF by default — the per-run path only injects config + soft-resets.
@@ -57,9 +61,10 @@ export const config = {
 	gpioChip: envStr('TESTSTAND_GPIO_CHIP', 'gpiochip4'),
 	gpioLine: envStr('TESTSTAND_GPIO_LINE', '17'),
 	gpioGetBin: envStr('TESTSTAND_GPIOGET_BIN', 'gpioget'),
-	// Raw logical level (0/1) that means "success signal active". Relay shorts
-	// the pull-up to GND while the device drives GPIO 2 HIGH, so active == LOW.
-	gpioActiveLevel: Number(envStr('TESTSTAND_GPIO_ACTIVE_LEVEL', '0')),
+	// Raw logical level (0/1) that means "success signal active". The relay ties
+	// the contact to 3.3V, so success drives the Pi line HIGH; idle reads LOW
+	// (confirmed on the stand: idle gpioget = "inactive").
+	gpioActiveLevel: Number(envStr('TESTSTAND_GPIO_ACTIVE_LEVEL', '1')),
 
 	// ── Timing ────────────────────────────────────────────────────────────
 	// Time allowed for the device to boot, join WiFi, connect MQTT and appear

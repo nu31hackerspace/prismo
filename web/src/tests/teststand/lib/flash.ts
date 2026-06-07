@@ -41,7 +41,11 @@ function configDevSource(p: DeviceProvision): string {
 			`MQTT_URL  = ${pyStr(`mqtt://${p.mqttHost}:${p.mqttPort}`)}`,
 			`MQTT_USER = ${pyStr(p.mqttUser)}`,
 			`MQTT_PASS = ${pyStr(p.mqttPass)}`,
-			`DEVICE_MODE = ${pyStr(p.mode)}`
+			`DEVICE_MODE = ${pyStr(p.mode)}`,
+			// Skip boot animation/sounds — the animation trips the boot WDT, and a
+			// silent board is preferable on an automated stand.
+			`QUICK_START = ${config.quickStart ? 'True' : 'False'}`,
+			`MUTE_BUZZER = ${config.muteBuzzer ? 'True' : 'False'}`
 		].join('\n') + '\n'
 	);
 }
