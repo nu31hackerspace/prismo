@@ -26,15 +26,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Tool sanity check
         run: |
-          node --version
-          npm --version
-          docker --version
-          mpremote --version
-          esptool version || esptool.py version
-          gpioget --version || gpioget -h || true
-          ls -l "$ESP32_PORT"
+          echo "node:     $(node --version 2>&1 || echo MISSING)"
+          echo "npm:      $(npm --version 2>&1 || echo MISSING)"
+          echo "docker:   $(docker --version 2>&1 || echo MISSING)"
+          echo "mpremote: $(mpremote --version 2>&1 || echo MISSING)"
+          echo "esptool:  $(esptool version 2>&1 || esptool.py version 2>&1 || echo MISSING)"
+          echo "gpioget:  $(gpioget --version 2>&1 || gpioget -h 2>&1 | head -1 || echo MISSING)"
+          ls -l "$ESP32_PORT" || echo "device $ESP32_PORT MISSING"
 
       - name: Install web dependencies
         working-directory: web
