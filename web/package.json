@@ -11,9 +11,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check .",
-		"format": "prettier --write .",
-		"teststand:run": "tsx src/tests/teststand/run-stand.ts",
-		"teststand:test": "playwright test --config playwright.teststand.config.ts"
+		"format": "prettier --write ."
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.59.1",
