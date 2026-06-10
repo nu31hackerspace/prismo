@@ -1,20 +1,49 @@
 name: Test-stand black-box e2e
 
-# Hardware-in-the-loop end-to-end run on the self-hosted Raspberry Pi test stand:
-# brings up the production stack, drives the web UI, flashes the connected
-# ESP32-C3, and asserts the physical success pin via the Pi's GPIO.
 on:
   workflow_dispatch:
   push:
     branches: [add_black_box_e2e]
 
-# Only one hardware run at a time — the stand has a single device + relay.
-concurrency:
-  group: teststand-hardware
-  cancel-in-progress: false
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: nu31hackerspace/prismo-web-admin
+  WORKER_IMAGE_NAME: nu31hackerspace/prismo-worker
 
 jobs:
-  teststand-e2e:
+  build-test-images:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Web Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: web/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test-${{ github.sha }}
+      - name: Build Worker Image (arm64 for Pi)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: web/worker/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }}:test-${{ github.sha }}
+
+  e2e:
+    needs: build-test-images
     runs-on: [test-stand]
     timeout-minutes: 30
 
@@ -50,8 +79,11 @@ jobs:
           sudo npx playwright install-deps chromium || true
           npx playwright install chromium
 
-      - name: Flash Prismo app onto the device
-        run: bash firmware/tests/real_hardware/run_tests.sh
+      - name: Set up .env with Image Tags
+        run: |
+          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> blackbox-e2e/.env
+          echo "WORKER_IMAGE_NAME=${{ env.WORKER_IMAGE_NAME }}" >> blackbox-e2e/.env
+          echo "IMAGE_TAG=test-${{ github.sha }}" >> blackbox-e2e/.env
 
       - name: Start WiFi access point (wlan0)
         # No outer sudo: start-ap.sh sudo's its own nmcli/rfkill calls, which the
@@ -61,9 +93,8 @@ jobs:
       - name: Start production stack
         working-directory: blackbox-e2e
         run: |
-          # Only the app + its deps (mongo, mongo-init, mqtt). The worker isn't
-          # needed (firmware is provisioned via mpremote) and its image is multi-GB.
-          docker compose $COMPOSE_FILES up --build -d app
+          docker compose $COMPOSE_FILES pull app worker
+          docker compose $COMPOSE_FILES up -d
           echo "Waiting for the app to become healthy…"
           for i in $(seq 1 60); do
             status=$(docker compose $COMPOSE_FILES ps app --format '{{.Health}}' 2>/dev/null || true)

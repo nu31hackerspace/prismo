@@ -10,7 +10,11 @@
 
 services:
   app:
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-nu31hackerspace/prismo-web-admin}:${IMAGE_TAG:-latest}
     environment:
       # Empty string is falsy in google-auth.ts → real OAuth client.
       - TEST_MODE=
       - ORIGIN=${TESTSTAND_ORIGIN:-http://localhost:13000}
+
+  worker:
+    image: ${REGISTRY:-ghcr.io}/${WORKER_IMAGE_NAME:-nu31hackerspace/prismo-worker}:${IMAGE_TAG:-latest}
