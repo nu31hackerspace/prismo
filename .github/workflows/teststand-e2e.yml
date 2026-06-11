@@ -61,7 +61,16 @@ jobs:
 
     steps:
       - name: Free up disk space on runner
-        run: docker image prune -f || true
+        # Each run pulls a ~6GB uniquely-tagged worker image; tagged images are
+        # never "dangling", so plain `docker image prune` leaves them and the
+        # Pi's SD card fills up after a few runs (observed: ENOSPC killed a job).
+        # Drop test images from other commits but keep base images (mongo, mqtt)
+        # cached for speed.
+        run: |
+          docker images --format '{{.Repository}}:{{.Tag}}' \
+            | grep ':test-' | grep -v ':test-${{ github.sha }}' \
+            | xargs -r docker rmi || true
+          docker image prune -f || true
 
       - uses: actions/checkout@v4
 
