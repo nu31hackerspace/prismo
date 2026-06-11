@@ -98,6 +98,7 @@ jobs:
       - name: Start production stack
         working-directory: blackbox-e2e
         run: |
+          docker compose $COMPOSE_FILES build mqtt
           docker compose $COMPOSE_FILES pull app worker
           docker compose $COMPOSE_FILES up --no-build -d
           echo "Waiting for the app to become healthy…"
