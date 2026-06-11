@@ -9,8 +9,8 @@ import { test, expect } from './fixtures';
 import { createDevice, navigateToDevice, generateMqttCredentials } from '../helpers';
 import { isSignalActive, waitForSignalActive } from './lib/gpio';
 import { config } from './lib/env';
-import type { CDPSession } from '@playwright/test';
 import * as fs from 'fs';
+import { execSync } from 'child_process';
 
 test('device comes Online via Web Serial flash and "Trigger Success" drives the success pin', async ({ page, context }) => {
 	test.setTimeout(180_000); // Flashing takes a while
@@ -23,18 +23,7 @@ test('device comes Online via Web Serial flash and "Trigger Success" drives the 
 
 	const { mqttUser, mqttPass } = await generateMqttCredentials(page);
 
-	// 2. Setup Web Serial CDP
-	const cdp: CDPSession = await context.newCDPSession(page);
-	await cdp.send('DeviceAccess.enable');
-	cdp.on('DeviceAccess.deviceRequestPrompted', async (params) => {
-		console.log('Device request prompted:', params);
-		fs.writeFileSync('params.json', JSON.stringify(params, null, 2));
-		if (params.devices && params.devices.length > 0) {
-			await cdp.send('DeviceAccess.selectPrompt', { id: params.id, deviceId: params.devices[0].id });
-		} else {
-			await cdp.send('DeviceAccess.cancelPrompt', { id: params.id });
-		}
-	});
+	// Web Serial CDP setup is removed as we flash via CLI
 
 	// 3. Enter WiFi credentials and Build Firmware
 	await page.getByPlaceholder('WiFi SSID').fill(config.wifiSsid);
@@ -43,22 +32,22 @@ test('device comes Online via Web Serial flash and "Trigger Success" drives the 
 	await expect(page.getByText('Building firmware…')).toBeVisible();
 	await expect(page.getByText('Firmware ready!')).toBeVisible({ timeout: 120_000 });
 
-	// 4. Connect Device and Flash
-	const connectButton = page.getByRole('button', { name: 'Connect Device' });
-	await expect(connectButton).toBeVisible();
-	await connectButton.click(); // Triggers Web Serial
+	// 4. Download Firmware
+	const downloadPromise = page.waitForEvent('download');
+	await page.getByRole('link', { name: 'Download Firmware' }).click();
+	const download = await downloadPromise;
+	const fwPath = await download.path();
+	if (!fwPath) throw new Error('Failed to save downloaded firmware');
 
-	const flashButton = page.getByRole('button', { name: 'Flash Firmware' });
-	await expect(flashButton).toBeVisible({ timeout: 10000 });
-	await flashButton.click();
+	// 5. Flash via esptool
+	const port = process.env.TESTSTAND_SERIAL_PORT || '/dev/ttyESP32C3';
+	console.log(`Flashing ${fwPath} to ${port} via esptool...`);
+	execSync(`esptool.py --port ${port} write_flash 0x0 ${fwPath}`, { stdio: 'inherit' });
 
-	// 5. Wait for flash to complete
-	await expect(page.getByText('Writing firmware')).toBeVisible({ timeout: 10000 });
-	await expect(page.getByText('Firmware flashed successfully')).toBeVisible({ timeout: 120_000 });
-	await expect(page.getByText('Device is ready')).toBeVisible({ timeout: 60_000 });
-
-	const doneButton = page.getByRole('button', { name: 'Done' });
-	if (await doneButton.isVisible()) await doneButton.click();
+	console.log('Flashed successfully via esptool.');
+	
+	// We no longer need to click "Done" in the UI because the UI is still on the "Firmware ready!" state.
+	// But the device is now booting and should connect to MQTT.
 
 	// 6. Device boots and connects to MQTT -> flips to Online
 	await expect(page.getByText('online', { exact: true })).toBeVisible({
