@@ -12,7 +12,7 @@ env:
 
 jobs:
   build-test-images:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
@@ -31,6 +31,7 @@ jobs:
         with:
           context: .
           file: web/Dockerfile
+          platforms: linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test-${{ github.sha }}
       - name: Build Worker Image (arm64 for Pi)
@@ -94,7 +95,7 @@ jobs:
         working-directory: blackbox-e2e
         run: |
           docker compose $COMPOSE_FILES pull app worker
-          docker compose $COMPOSE_FILES up -d
+          docker compose $COMPOSE_FILES up --no-build -d
           echo "Waiting for the app to become healthy…"
           for i in $(seq 1 60); do
             status=$(docker compose $COMPOSE_FILES ps app --format '{{.Health}}' 2>/dev/null || true)
