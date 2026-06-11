@@ -16,6 +16,15 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      matrix:
+        include:
+          - name: web
+            file: web/Dockerfile
+            image: nu31hackerspace/prismo-web-admin
+          - name: worker
+            file: web/worker/Dockerfile
+            image: nu31hackerspace/prismo-worker
     steps:
       - uses: actions/checkout@v4
       - name: Log in to registry
@@ -26,22 +35,19 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Build Web Image
+      - name: Build ${{ matrix.name }} image (arm64 for Pi)
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: web/Dockerfile
+          file: ${{ matrix.file }}
           platforms: linux/arm64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test-${{ github.sha }}
-      - name: Build Worker Image (arm64 for Pi)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: web/worker/Dockerfile
-          platforms: linux/arm64
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }}:test-${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ matrix.image }}:test-${{ github.sha }}
+          # Registry layer cache: the worker image's ESP-IDF/MicroPython layers
+          # take ~8 min to build but only change when the Dockerfile does, so
+          # repeat runs that only touch test/firmware code rebuild in seconds.
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache,mode=max
 
   e2e:
     needs: build-test-images
@@ -112,7 +118,8 @@ jobs:
 
       - name: Run hardware e2e suite
         working-directory: blackbox-e2e
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" npm run teststand:test
+        # Headless (playwright.teststand.config.ts sets headless: true) — no xvfb needed.
+        run: npm run teststand:test
 
       - name: Capture diagnostics on failure
         if: failure()
@@ -120,14 +127,18 @@ jobs:
         run: |
           echo "--- app logs ---"
           (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 80 app) || true
+          echo "--- worker logs ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 40 worker) || true
           echo "--- gpio read ---"
           gpioget -c gpiochip4 17 || true
           echo "--- mpremote devs ---"
           mpremote devs || true
           echo "--- wlan0 ---"
           ip -4 addr show wlan0 || true
-          echo "--- params.json ---"
-          cat blackbox-e2e/params.json || true
+          echo "--- AP clients (dnsmasq leases) ---"
+          cat /var/lib/NetworkManager/dnsmasq-wlan0.leases || true
+          echo "--- device health.log (soft-resets the board) ---"
+          timeout 30 mpremote connect $ESP32_PORT exec "print(open('health.log').read())" || true
 
       - name: Upload Playwright report
         if: always()

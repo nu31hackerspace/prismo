@@ -18,3 +18,9 @@ services:
 
   worker:
     image: ${REGISTRY:-ghcr.io}/${WORKER_IMAGE_NAME:-nu31hackerspace/prismo-worker}:${IMAGE_TAG:-latest}
+    environment:
+      # The worker bakes MQTT_URL into the firmware it builds (same role as
+      # PUBLIC_MQTT_URL in docker-stack.yml), so it must be the broker address
+      # as the *device* reaches it — the AP's gateway IP, not the docker-network
+      # hostname `mqtt` from the base compose file.
+      - MQTT_URL=mqtt://${TESTSTAND_MQTT_HOST:-192.168.10.1}:${TESTSTAND_MQTT_PORT:-1883}

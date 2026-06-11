@@ -34,6 +34,10 @@ def get_mqtt_config():
         return None
     scheme, rest = MQTT_URL.split('://', 1)
     ssl = scheme in ('mqtts', 'ssl')
+    # Drop any userinfo (mqtt://user:pass@host:port) — credentials come from
+    # MQTT_USER/MQTT_PASS, and "user:pass" would otherwise be parsed as host:port.
+    if '@' in rest:
+        rest = rest.rsplit('@', 1)[1]
     host_port = rest.split(':', 1)
     host = host_port[0]
     port = int(host_port[1]) if len(host_port) > 1 else (8883 if ssl else 1883)
