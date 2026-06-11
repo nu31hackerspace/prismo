@@ -26,7 +26,7 @@ export default defineConfig({
 	timeout: 180_000,
 	use: {
 		baseURL: standConfig.baseUrl,
-		headless: false,
+		headless: true,
 		video: 'retain-on-failure',
 		trace: 'retain-on-failure'
 	},
