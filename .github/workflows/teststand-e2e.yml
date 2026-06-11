@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Free up disk space on runner
-        run: docker system prune -af --volumes || true
+        run: docker image prune -f || true
 
       - uses: actions/checkout@v4
 
@@ -72,6 +72,7 @@ jobs:
           echo "esptool:  $(esptool version 2>&1 || esptool.py version 2>&1 || echo MISSING)"
           echo "gpioget:  $(gpioget --version 2>&1 || gpioget -h 2>&1 | head -1 || echo MISSING)"
           ls -l "$ESP32_PORT" || echo "device $ESP32_PORT MISSING"
+          groups
 
       - name: Install dependencies
         working-directory: blackbox-e2e
