@@ -26,13 +26,19 @@ export default defineConfig({
 	timeout: 180_000,
 	use: {
 		baseURL: standConfig.baseUrl,
+		headless: false,
 		video: 'retain-on-failure',
 		trace: 'retain-on-failure'
 	},
 	projects: [
 		{
 			name: 'chromium',
-			use: { ...devices['Desktop Chrome'] }
+			use: {
+				...devices['Desktop Chrome'],
+				launchOptions: {
+					args: ['--no-sandbox', '--disable-setuid-sandbox']
+				}
+			}
 		}
 	]
 });

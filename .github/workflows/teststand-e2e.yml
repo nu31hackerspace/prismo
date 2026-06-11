@@ -74,9 +74,10 @@ jobs:
         working-directory: blackbox-e2e
         run: npm ci
 
-      - name: Install Playwright browser
+      - name: Install Playwright browser and xvfb
         working-directory: blackbox-e2e
         run: |
+          sudo apt-get update && sudo apt-get install -y xvfb
           sudo npx playwright install-deps chromium || true
           npx playwright install chromium
 
@@ -107,7 +108,7 @@ jobs:
 
       - name: Run hardware e2e suite
         working-directory: blackbox-e2e
-        run: npm run teststand:test
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" npm run teststand:test
 
       - name: Capture diagnostics on failure
         if: failure()
