@@ -45,7 +45,7 @@ jobs:
 
   e2e:
     needs: build-test-images
-    runs-on: [test-stand]
+    runs-on: [self-hosted, test-stand]
     timeout-minutes: 30
 
     env:
@@ -54,6 +54,9 @@ jobs:
       COMPOSE_FILES: -f docker-compose.yml -f docker-compose.teststand.yml
 
     steps:
+      - name: Free up disk space on runner
+        run: docker system prune -af --volumes || true
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
