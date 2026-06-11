@@ -10,6 +10,7 @@ import { createDevice, navigateToDevice, generateMqttCredentials } from '../help
 import { isSignalActive, waitForSignalActive } from './lib/gpio';
 import { config } from './lib/env';
 import type { CDPSession } from '@playwright/test';
+import * as fs from 'fs';
 
 test('device comes Online via Web Serial flash and "Trigger Success" drives the success pin', async ({ page, context }) => {
 	test.setTimeout(180_000); // Flashing takes a while
@@ -27,6 +28,7 @@ test('device comes Online via Web Serial flash and "Trigger Success" drives the 
 	await cdp.send('DeviceAccess.enable');
 	cdp.on('DeviceAccess.deviceRequestPrompted', async (params) => {
 		console.log('Device request prompted:', params);
+		fs.writeFileSync('params.json', JSON.stringify(params, null, 2));
 		if (params.devices && params.devices.length > 0) {
 			await cdp.send('DeviceAccess.selectPrompt', { id: params.id, deviceId: params.devices[0].id });
 		} else {

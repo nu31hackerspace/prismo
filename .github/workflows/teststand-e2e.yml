@@ -73,6 +73,7 @@ jobs:
           echo "gpioget:  $(gpioget --version 2>&1 || gpioget -h 2>&1 | head -1 || echo MISSING)"
           ls -l "$ESP32_PORT" || echo "device $ESP32_PORT MISSING"
           groups
+          id
 
       - name: Install dependencies
         working-directory: blackbox-e2e
@@ -125,6 +126,8 @@ jobs:
           mpremote devs || true
           echo "--- wlan0 ---"
           ip -4 addr show wlan0 || true
+          echo "--- params.json ---"
+          cat blackbox-e2e/params.json || true
 
       - name: Upload Playwright report
         if: always()
