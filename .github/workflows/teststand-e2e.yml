@@ -77,11 +77,9 @@ jobs:
         working-directory: blackbox-e2e
         run: npm ci
 
-      - name: Install Playwright browser and xvfb
+      - name: Install Playwright browser
         working-directory: blackbox-e2e
         run: |
-          sudo apt-get update && sudo apt-get install -y xvfb
-          sudo npx playwright install-deps chromium || true
           npx playwright install chromium
 
       - name: Set up .env with Image Tags
