@@ -61,16 +61,11 @@ jobs:
 
     steps:
       - name: Free up disk space on runner
-        # Each run pulls a ~6GB uniquely-tagged worker image; tagged images are
-        # never "dangling", so plain `docker image prune` leaves them and the
-        # Pi's SD card fills up after a few runs (observed: ENOSPC killed a job).
-        # Drop test images from other commits but keep base images (mongo, mqtt)
-        # cached for speed.
-        run: |
-          docker images --format '{{.Repository}}:{{.Tag}}' \
-            | grep ':test-' | grep -v ':test-${{ github.sha }}' \
-            | xargs -r docker rmi || true
-          docker image prune -f || true
+        # Only dangling images here. Old test-<sha> images are removed in Tear
+        # down instead — deleting them *before* the pull would also delete the
+        # ~6GB of ESP-IDF layers the new worker image shares with them, forcing
+        # a full re-pull (observed: 33 min) instead of a small delta.
+        run: docker image prune -f || true
 
       - uses: actions/checkout@v4
 
@@ -163,3 +158,10 @@ jobs:
         run: |
           (cd blackbox-e2e && docker compose $COMPOSE_FILES down -v) || true
           sudo nmcli connection down prismo-ap || true
+          # Drop test images from other commits, keeping this run's images so
+          # the next pull reuses their shared layers. Tagged images are never
+          # "dangling", so without this the Pi's SD card fills up (~6GB/run,
+          # observed ENOSPC mid-job).
+          docker images --format '{{.Repository}}:{{.Tag}}' \
+            | grep ':test-' | grep -v ':test-${{ github.sha }}' \
+            | xargs -r docker rmi || true
