@@ -140,7 +140,7 @@ jobs:
           echo "--- wlan0 ---"
           ip -4 addr show wlan0 || true
           echo "--- AP clients (dnsmasq leases) ---"
-          cat /var/lib/NetworkManager/dnsmasq-wlan0.leases || true
+          sudo -n cat /var/lib/NetworkManager/dnsmasq-wlan0.leases || true
           echo "--- device health.log (soft-resets the board) ---"
           timeout 30 mpremote connect $ESP32_PORT exec "print(open('health.log').read())" || true
 

@@ -12,7 +12,9 @@ import { config } from './lib/env';
 import { execSync } from 'child_process';
 
 test('device comes Online after firmware download + esptool flash and "Trigger Success" drives the success pin', async ({ page }) => {
-	test.setTimeout(180_000); // Flashing takes a while
+	// Firmware build on the Pi worker (up to 10 min, see worker BUILD_TIMEOUT)
+	// + esptool flash + boot/online wait.
+	test.setTimeout(780_000);
 
 	// 1. Create a door-mode device
 	const deviceName = `Stand Device ${Date.now()}`;
@@ -28,7 +30,9 @@ test('device comes Online after firmware download + esptool flash and "Trigger S
 	await page.getByPlaceholder('WiFi Password').fill(config.wifiPass);
 	await page.getByRole('button', { name: 'Build Firmware' }).click();
 	await expect(page.getByText('Building firmware…')).toBeVisible();
-	await expect(page.getByText('Firmware ready!')).toBeVisible({ timeout: 120_000 });
+	// Matches the worker's BUILD_TIMEOUT (600s) — an arm64 in-container
+	// MicroPython build on the Pi regularly exceeds 2 min.
+	await expect(page.getByText('Firmware ready!')).toBeVisible({ timeout: 600_000 });
 
 	// 4. Download Firmware
 	const downloadPromise = page.waitForEvent('download');
