@@ -37,12 +37,18 @@ echo "[*] Creating AP profile $AP_NAME (SSID=$SSID)..."
 sudo nmcli con add type wifi ifname "$IFACE" con-name "$AP_NAME" \
     autoconnect no ssid "$SSID"
 
+# Force WPA2 (RSN/CCMP): without an explicit proto NetworkManager brings the AP
+# up as WPA1/TKIP, which the ESP32-C3 refuses to join (ESP-IDF default authmode
+# threshold is WPA2 — wlan.status() returns 211 NO_AP_FOUND_IN_AUTHMODE_THRESHOLD).
 sudo nmcli con modify "$AP_NAME" \
     802-11-wireless.mode ap \
     802-11-wireless.band bg \
     ipv4.method shared \
     ipv4.addresses "$AP_IP" \
     wifi-sec.key-mgmt wpa-psk \
+    wifi-sec.proto rsn \
+    wifi-sec.pairwise ccmp \
+    wifi-sec.group ccmp \
     wifi-sec.psk "$PSK"
 
 echo "[*] Bringing AP up..."

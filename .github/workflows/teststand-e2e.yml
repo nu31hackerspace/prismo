@@ -1,0 +1,173 @@
+name: Test-stand black-box e2e
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [add_black_box_e2e]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: nu31hackerspace/prismo-web-admin
+  WORKER_IMAGE_NAME: nu31hackerspace/prismo-worker
+
+jobs:
+  build-test-images:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - name: web
+            file: web/Dockerfile
+            image: nu31hackerspace/prismo-web-admin
+          - name: worker
+            file: web/worker/Dockerfile
+            image: nu31hackerspace/prismo-worker
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build ${{ matrix.name }} image (arm64 for Pi)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ matrix.image }}:test-${{ github.sha }}
+          # Registry layer cache: the worker image's ESP-IDF/MicroPython layers
+          # take ~8 min to build but only change when the Dockerfile does, so
+          # repeat runs that only touch test/firmware code rebuild in seconds.
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache,mode=max
+
+  e2e:
+    needs: build-test-images
+    runs-on: [self-hosted, test-stand]
+    timeout-minutes: 60
+
+    env:
+      ESP32_PORT: /dev/ttyESP32C3
+      TESTSTAND_SERIAL_PORT: /dev/ttyESP32C3
+      COMPOSE_FILES: -f docker-compose.yml -f docker-compose.teststand.yml
+
+    steps:
+      - name: Free up disk space on runner
+        # Only dangling images here. Old test-<sha> images are removed in Tear
+        # down instead — deleting them *before* the pull would also delete the
+        # ~6GB of ESP-IDF layers the new worker image shares with them, forcing
+        # a full re-pull (observed: 33 min) instead of a small delta.
+        run: docker image prune -f || true
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tool sanity check
+        run: |
+          echo "node:     $(node --version 2>&1 || echo MISSING)"
+          echo "npm:      $(npm --version 2>&1 || echo MISSING)"
+          echo "docker:   $(docker --version 2>&1 || echo MISSING)"
+          echo "mpremote: $(mpremote --version 2>&1 || echo MISSING)"
+          echo "esptool:  $(esptool version 2>&1 || esptool.py version 2>&1 || echo MISSING)"
+          echo "gpioget:  $(gpioget --version 2>&1 || gpioget -h 2>&1 | head -1 || echo MISSING)"
+          ls -l "$ESP32_PORT" || echo "device $ESP32_PORT MISSING"
+          groups
+          id
+
+      - name: Install dependencies
+        working-directory: blackbox-e2e
+        run: npm ci
+
+      - name: Install Playwright browser
+        working-directory: blackbox-e2e
+        run: |
+          npx playwright install chromium
+
+      - name: Set up .env with Image Tags
+        run: |
+          echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> blackbox-e2e/.env
+          echo "WORKER_IMAGE_NAME=${{ env.WORKER_IMAGE_NAME }}" >> blackbox-e2e/.env
+          echo "IMAGE_TAG=test-${{ github.sha }}" >> blackbox-e2e/.env
+          echo "COMMIT_SHA=${{ github.sha }}" >> blackbox-e2e/.env
+
+      - name: Start WiFi access point (wlan0)
+        # No outer sudo: start-ap.sh sudo's its own nmcli/rfkill calls, which the
+        # runner is allowed to do passwordlessly (sudoers.d/prismo-runner).
+        run: bash firmware/tests/real_hardware/start-ap.sh
+
+      - name: Start production stack
+        working-directory: blackbox-e2e
+        run: |
+          docker compose $COMPOSE_FILES build mqtt
+          docker compose $COMPOSE_FILES pull app worker
+          docker compose $COMPOSE_FILES up --no-build -d
+          echo "Waiting for the app to become healthy…"
+          for i in $(seq 1 60); do
+            status=$(docker compose $COMPOSE_FILES ps app --format '{{.Health}}' 2>/dev/null || true)
+            if [ "$status" = "healthy" ]; then echo "App healthy."; exit 0; fi
+            sleep 3
+          done
+          echo "App did not become healthy:"; docker compose $COMPOSE_FILES logs --tail 60 app
+          exit 1
+
+      - name: Run hardware e2e suite
+        working-directory: blackbox-e2e
+        # Headless (playwright.teststand.config.ts sets headless: true) — no xvfb needed.
+        run: npm run teststand:test
+
+      - name: Capture diagnostics
+        # Run on success and failure — we want maximum logs either way.
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "--- app logs ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs app) || true
+          echo "--- worker logs ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs worker) || true
+          echo "--- gpio read ---"
+          gpioget -c gpiochip4 17 || true
+          echo "--- mpremote devs ---"
+          mpremote devs || true
+          echo "--- wlan0 ---"
+          ip -4 addr show wlan0 || true
+          echo "--- AP clients (dnsmasq leases) ---"
+          sudo -n cat /var/lib/NetworkManager/dnsmasq-wlan0.leases || true
+          echo "--- device health.log (soft-resets the board) ---"
+          timeout 30 mpremote connect $ESP32_PORT exec "print(open('health.log').read())" || true
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          # Report (embeds video+trace) plus the raw test-results (.webm / trace
+          # zips) so videos are kept and grabbable on both pass and fail.
+          path: |
+            blackbox-e2e/playwright-report/
+            blackbox-e2e/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Tear down
+        if: always()
+        run: |
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES down -v) || true
+          sudo nmcli connection down prismo-ap || true
+          # Drop test images from other commits, keeping this run's images so
+          # the next pull reuses their shared layers. Tagged images are never
+          # "dangling", so without this the Pi's SD card fills up (~6GB/run,
+          # observed ENOSPC mid-job).
+          docker images --format '{{.Repository}}:{{.Tag}}' \
+            | grep ':test-' | grep -v ':test-${{ github.sha }}' \
+            | xargs -r docker rmi || true

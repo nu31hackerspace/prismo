@@ -1,0 +1,98 @@
+# Black-box end-to-end test environment.
+#
+# Unlike docker-compose.dev.yml (which runs `vite dev` with the source bind-mounted),
+# this brings the stack up the way it runs in production: the web app is the image
+# built from web/Dockerfile (`node build`, NODE_ENV=production) — the exact artifact
+# that gets deployed. Infrastructure (Mongo replica set, Mosquitto, worker) mirrors
+# docker-stack.yml.
+#
+# The only production deviation is TEST_MODE=1, which swaps the real Google OAuth
+# client for the in-app mock (see web/src/lib/server/google-auth.ts) so "Sign In"
+# works without real Google credentials. Everything else is the production build.
+#
+# Mongo (27017) and MQTT (1883) are published to the host so the black-box test
+# runner can reset the database and publish device messages.
+
+services:
+  mongo:
+    image: mongo:8
+    ports:
+      - '27017:27017'
+    command: --replSet rs0
+    healthcheck:
+      test: mongosh --eval "db.runCommand({ping:1})" --quiet
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  mongo-init:
+    image: mongo:8
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: 'no'
+    entrypoint: >
+      mongosh --host mongo --eval
+      "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
+
+  mqtt:
+    build: ../mosquitto
+    image: prismo-mqtt:blackbox
+    ports:
+      - '1883:1883'
+    environment:
+      - MQTT_ADMIN_USER=admin
+      - MQTT_ADMIN_PASSWORD=admin
+    healthcheck:
+      test: mosquitto_sub -h localhost -p 1883 -u admin -P admin -t '$$SYS/#' -C 1 -W 2
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: ..
+      dockerfile: web/Dockerfile
+    image: prismo-web-admin:blackbox
+    ports:
+      - '13000:3000'
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+      mqtt:
+        condition: service_healthy
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - MQTT_URL=mqtt://admin:admin@mqtt:1883
+      - SESSION_SECRET=blackbox-secret-not-for-production
+      - ORIGIN=http://localhost:3000
+      - USERNAME=admin
+      - PASSWORD=admin
+      - GOOGLE_CLIENT_ID=unused
+      - GOOGLE_CLIENT_SECRET=unused
+      # Mock Google OAuth so the test runner can sign in without real credentials.
+      - TEST_MODE=1
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  worker:
+    # Use the published production worker image rather than building the multi-GB
+    # ESP-IDF / MicroPython image locally (matches docker-compose.dev.yml).
+    image: ghcr.io/nu31hackerspace/prismo-worker:latest
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+      mqtt:
+        condition: service_healthy
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - MQTT_URL=mqtt://admin:admin@mqtt:1883
+    restart: on-failure
