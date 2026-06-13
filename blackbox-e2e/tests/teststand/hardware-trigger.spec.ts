@@ -43,7 +43,10 @@ test('device comes Online after firmware download + esptool flash and "Trigger S
 
 	// 5. Flash via esptool
 	console.log(`Flashing ${fwPath} to ${config.serialPort} via esptool...`);
-	execSync(`${config.esptoolBin} --port ${config.serialPort} write-flash 0x0 ${fwPath}`, {
+	execSync(`${config.esptoolBin} --chip esp32c3 --port ${config.serialPort} erase_flash`, {
+		stdio: 'inherit'
+	});
+	execSync(`${config.esptoolBin} --chip esp32c3 --port ${config.serialPort} --baud 460800 write_flash 0x0 ${fwPath}`, {
 		stdio: 'inherit'
 	});
 

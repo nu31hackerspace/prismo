@@ -11,9 +11,6 @@ import gridfs
 MONGODB_URL = os.environ['MONGODB_URL']
 
 _mqtt_url = os.environ.get('MQTT_URL', 'mqtt://localhost:1883')
-# The deployed worker image is tagged with the commit it was built from, and the
-# firmware source is baked into that image — so COMMIT_SHA identifies the firmware.
-_git_commit = os.environ.get('COMMIT_SHA', 'unknown')
 CONFIG_PATH = '/firmware/src/config.py'
 FIRMWARE_OUTPUT = '/opt/micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin'
 POLL_INTERVAL = 5   # seconds between polls when queue is empty
@@ -62,7 +59,7 @@ def heartbeat_loop(job_id, stop: threading.Event):
             log.warning("Heartbeat failed for job %s: %s", job_id, e)
 
 
-def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str, mode: str = 'door') -> bytes:
+def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str, mode: str = 'door', commit_sha: str = 'unknown') -> bytes:
     config = CONFIG_TEMPLATE \
         .replace('{{WIFI_SSID}}', ssid) \
         .replace('{{WIFI_PASS}}', password) \
@@ -70,7 +67,7 @@ def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str, mod
         .replace('{{MQTT_USER}}', mqtt_user) \
         .replace('{{MQTT_PASS}}', mqtt_pass) \
         .replace('{{DEVICE_MODE}}', mode) \
-        .replace('{{GIT_COMMIT}}', _git_commit)
+        .replace('{{GIT_COMMIT}}', commit_sha)
 
     with open(CONFIG_PATH, 'w') as f:
         f.write(config)
@@ -141,9 +138,10 @@ def process_job(job: dict):
         mqtt_user = payload['mqttUser']
         mqtt_pass = payload['mqttPass']
         mode = payload.get('mode', 'door')
+        commit_sha = payload.get('commitSha', 'unknown')
         owner_id = str(job['ownerId'])
 
-        firmware = build_firmware(ssid, password, mqtt_user, mqtt_pass, mode)
+        firmware = build_firmware(ssid, password, mqtt_user, mqtt_pass, mode, commit_sha)
 
         file_id = store_file(db, firmware, owner_id)
         complete_job(db, job['_id'], file_id)

@@ -1,6 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { workerJobsCol, devicesCol, ObjectId } from '$lib/server/db';
+import { env } from '$env/dynamic/private';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) throw error(401, 'Unauthorized');
@@ -16,7 +17,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		status: 'pending',
 		attemptCount: 0,
 		maxAttemptCount: 3,
-		inputPayload: { ssid, password, mqttUser, mqttPass, mode: deviceMode },
+		inputPayload: { ssid, password, mqttUser, mqttPass, mode: deviceMode, commitSha: env.COMMIT_SHA ?? 'unknown' },
 		createdAt: new Date(),
 		updatedAt: new Date()
 	});
