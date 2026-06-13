@@ -33,9 +33,9 @@ class MockReader:
     callback = None
 
     @staticmethod
-    def subscribe(cb, mqtt_manager=None):
+    def subscribe(callback, tick_callback):
         print("MockReader: subscribe() called. Capturing callback function.")
-        MockReader.callback = cb
+        MockReader.callback = callback
 
 
 class MockReaderModule:

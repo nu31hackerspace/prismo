@@ -2,8 +2,7 @@ name: Test-stand black-box e2e
 
 on:
   workflow_dispatch:
-  push:
-    branches: [add_black_box_e2e]
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
