@@ -1,0 +1,104 @@
+name: PCB PR preview
+
+on:
+  pull_request:
+    paths:
+      - 'hardware/main/**'
+      - '.github/workflows/pcb-pr-preview.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Render head PCB
+        uses: INTI-CMNB/KiBot@v2_dk9
+        with:
+          config: hardware/main/kibot.yaml
+          dir: hardware/main/kibot_output_head
+          board: hardware/main/pcb.kicad_pcb
+          schema: hardware/main/pcb.kicad_sch
+
+      - name: Stash head render
+        run: |
+          mkdir -p /tmp/renders
+          cp hardware/main/kibot_output_head/render/*.png /tmp/renders/bottom_head.png
+
+      - name: Check out base PCB files
+        run: |
+          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.sha }}
+          git checkout ${{ github.event.pull_request.base.sha }} -- hardware/main/
+
+      - name: Render base PCB
+        uses: INTI-CMNB/KiBot@v2_dk9
+        with:
+          config: hardware/main/kibot.yaml
+          dir: hardware/main/kibot_output_base
+          board: hardware/main/pcb.kicad_pcb
+          schema: hardware/main/pcb.kicad_sch
+
+      - name: Stash base render
+        run: cp hardware/main/kibot_output_base/render/*.png /tmp/renders/bottom_base.png
+
+      - name: Publish renders to preview branch
+        id: publish
+        env:
+          PR_NUM: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          BRANCH=pcb-pr-previews
+          TARGET=$(mktemp -d)
+          cd "$TARGET"
+          git init -q -b "$BRANCH"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          if git fetch --depth=1 origin "$BRANCH" 2>/dev/null; then
+            git reset --hard "origin/${BRANCH}"
+          fi
+          DEST="pr-${PR_NUM}/${HEAD_SHA}"
+          mkdir -p "$DEST"
+          cp /tmp/renders/bottom_base.png "${DEST}/bottom_base.png"
+          cp /tmp/renders/bottom_head.png "${DEST}/bottom_head.png"
+          git add "$DEST"
+          git commit -q -m "PCB preview for PR #${PR_NUM} @ ${HEAD_SHA}"
+          git push -q origin "$BRANCH"
+          echo "base_url=https://raw.githubusercontent.com/${REPO}/${BRANCH}/${DEST}/bottom_base.png" >> "$GITHUB_OUTPUT"
+          echo "head_url=https://raw.githubusercontent.com/${REPO}/${BRANCH}/${DEST}/bottom_head.png" >> "$GITHUB_OUTPUT"
+
+      - name: Find previous preview comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- pcb-preview-bot -->'
+
+      - name: Post or update preview comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- pcb-preview-bot -->
+            ## PCB bottom-side preview
+
+            Base (`${{ github.event.pull_request.base.ref }}` @ `${{ github.event.pull_request.base.sha }}`) vs this PR (`${{ github.event.pull_request.head.sha }}`).
+
+            | Base | This PR |
+            |---|---|
+            | <img src="${{ steps.publish.outputs.base_url }}" width="450"/> | <img src="${{ steps.publish.outputs.head_url }}" width="450"/> |

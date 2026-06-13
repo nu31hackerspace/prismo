@@ -25,7 +25,7 @@ class WiFiManager:
         health_log.write_info("Connecting to WiFi", ssid=ssid, password=password)
         wlan_sta.connect(ssid, password)
 
-        max_wait = 10
+        max_wait = 15
         while max_wait > 0:
             health_log.write_warn("Try to connect attempt")
             if wlan_sta.isconnected():

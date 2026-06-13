@@ -2,7 +2,7 @@ import time
 import uhashlib
 import ubinascii
 import utime
-from machine import SPI, Pin, WDT
+from machine import SPI, Pin
 from src import config
 from src import health_log
 from libs.PN532 import PN532
@@ -13,10 +13,7 @@ from libs.PN532 import PN532
 # False = PN532 init failed
 reader_ok = None
 
-def subscribe(callback, mqtt_manager=None):
-    if mqtt_manager:
-        mqtt_manager.maintain()
-
+def subscribe(callback, tick_callback=None):
     global reader_ok
     health_log.write_info("Starting Prismo Reader (SPI)")
 
@@ -59,13 +56,11 @@ def subscribe(callback, mqtt_manager=None):
             time.sleep(1)
 
     health_log.write_info("Waiting for RFID/NFC card")
-    wdt = WDT(timeout=8000)
     _last_log_ms = utime.ticks_ms()
     while True:
         uid = nfc.read_passive_target(timeout=500)
-        wdt.feed()
-        if mqtt_manager:
-            mqtt_manager.maintain()
+        if tick_callback:
+            tick_callback()
 
         if uid is not None:
              uid_str = "".join("{:02x}".format(i) for i in uid)

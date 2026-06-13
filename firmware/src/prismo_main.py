@@ -1,3 +1,4 @@
+from machine import WDT
 from src import wifi_manager
 from src import reader
 from src import reader_ui
@@ -93,4 +94,10 @@ if mqtt_cfg:
 health_log.write_info("Start reader")
 ui.reset()
 ui.ready_to_read()
-reader.subscribe(on_key_read, mqtt)
+
+wdt = WDT(timeout=30000)
+def on_tick():
+    wdt.feed()
+    mqtt.maintain()
+
+reader.subscribe(callback=on_key_read, tick_callback=on_tick)
