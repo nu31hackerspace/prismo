@@ -17,7 +17,14 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		status: 'pending',
 		attemptCount: 0,
 		maxAttemptCount: 3,
-		inputPayload: { ssid, password, mqttUser, mqttPass, mode: deviceMode, commitSha: env.COMMIT_SHA ?? 'unknown' },
+		inputPayload: {
+			ssid,
+			password,
+			mqttUser,
+			mqttPass,
+			mode: deviceMode,
+			commitSha: env.COMMIT_SHA ?? 'unknown'
+		},
 		createdAt: new Date(),
 		updatedAt: new Date()
 	});
