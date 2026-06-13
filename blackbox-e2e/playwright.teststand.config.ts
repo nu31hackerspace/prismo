@@ -27,8 +27,9 @@ export default defineConfig({
 	use: {
 		baseURL: standConfig.baseUrl,
 		headless: true,
-		video: 'retain-on-failure',
-		trace: 'retain-on-failure'
+		// Keep video + trace for every run (pass or fail) for max diagnostics.
+		video: 'on',
+		trace: 'on'
 	},
 	projects: [
 		{

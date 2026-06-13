@@ -126,14 +126,15 @@ jobs:
         # Headless (playwright.teststand.config.ts sets headless: true) — no xvfb needed.
         run: npm run teststand:test
 
-      - name: Capture diagnostics on failure
-        if: failure()
+      - name: Capture diagnostics
+        # Run on success and failure — we want maximum logs either way.
+        if: always()
         continue-on-error: true
         run: |
           echo "--- app logs ---"
-          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 80 app) || true
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs app) || true
           echo "--- worker logs ---"
-          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 40 worker) || true
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs worker) || true
           echo "--- gpio read ---"
           gpioget -c gpiochip4 17 || true
           echo "--- mpremote devs ---"
@@ -150,7 +151,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: blackbox-e2e/playwright-report/
+          # Report (embeds video+trace) plus the raw test-results (.webm / trace
+          # zips) so videos are kept and grabbable on both pass and fail.
+          path: |
+            blackbox-e2e/playwright-report/
+            blackbox-e2e/test-results/
           if-no-files-found: ignore
           retention-days: 7
 
