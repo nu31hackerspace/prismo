@@ -24,3 +24,5 @@ services:
       # as the *device* reaches it — the AP's gateway IP, not the docker-network
       # hostname `mqtt` from the base compose file.
       - MQTT_URL=mqtt://${TESTSTAND_MQTT_HOST:-192.168.10.1}:${TESTSTAND_MQTT_PORT:-1883}
+      # Baked into the firmware so the device's boot log identifies the build.
+      - COMMIT_SHA=${COMMIT_SHA:-dev}

@@ -138,6 +138,20 @@ def _get_firmware_label():
         return "unknown"
 
 
+def get_git_commit():
+    """Source commit the firmware was built from.
+
+    The worker substitutes config.GIT_COMMIT at build time; locally it can be
+    set in config_dev.py. Falls back to "dev" when left as the template.
+    Imported lazily to avoid a circular import (config imports health_log).
+    """
+    try:
+        from src import config
+        return config.get_git_commit()
+    except Exception:
+        return "unknown"
+
+
 # ------------------------------------------------------------------ #
 # Optional MQTT log forwarder                                          #
 # Set via set_mqtt_publisher() after MQTT connects to avoid circular  #
@@ -182,6 +196,7 @@ def collect():
         "log_version":       LOG_VERSION,
         "device_id":         device_id,
         "firmware":          _get_firmware_label(),
+        "git_commit":        get_git_commit(),
         "uptime_s":          uptime_ms // 1000,
         "timestamp_ms":      uptime_ms,
         "reset_cause":       reset_cause,

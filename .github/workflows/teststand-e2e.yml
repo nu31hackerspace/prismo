@@ -99,6 +99,7 @@ jobs:
           echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> blackbox-e2e/.env
           echo "WORKER_IMAGE_NAME=${{ env.WORKER_IMAGE_NAME }}" >> blackbox-e2e/.env
           echo "IMAGE_TAG=test-${{ github.sha }}" >> blackbox-e2e/.env
+          echo "COMMIT_SHA=${{ github.sha }}" >> blackbox-e2e/.env
 
       - name: Start WiFi access point (wlan0)
         # No outer sudo: start-ap.sh sudo's its own nmcli/rfkill calls, which the

@@ -1,7 +1,7 @@
 import gc
 from src import health_log
 
-health_log.write_info("Booting Prismo")
+health_log.write_info("Booting Prismo", git_commit=health_log.get_git_commit())
 from src import config
 from src import color
 from src import buzzer

@@ -9,7 +9,10 @@ class WiFiManager:
 
     def connect(self, on_attempt=None, on_complete=None):
         if not config.has_wifi():
-            health_log.write_error("No WiFi configured")
+            # Surface the raw baked value so we can tell apart an empty
+            # substitution ("") from an un-substituted template
+            # ("{{WIFI_SSID}}") when the device reports no WiFi.
+            health_log.write_error("No WiFi configured", raw_ssid=repr(config.WIFI_SSID))
             return
 
         gc.collect()

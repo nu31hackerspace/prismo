@@ -6,6 +6,10 @@ MQTT_USER = "{{MQTT_USER}}"
 MQTT_PASS = "{{MQTT_PASS}}"
 DEVICE_MODE = "{{DEVICE_MODE}}"
 
+# Source commit the firmware was built from — replaced by the worker before
+# build. For local dev set GIT_COMMIT in config_dev.py.
+GIT_COMMIT = "{{GIT_COMMIT}}"
+
 DEVICE_MODE_DOOR = "door"
 DEVICE_MODE_MACHINE = "machine"
 
@@ -27,6 +31,11 @@ def get_wifi():
 def has_wifi():
     ssid, _ = get_wifi()
     return ssid is not None
+
+def get_git_commit():
+    if GIT_COMMIT and not GIT_COMMIT.startswith("{{"):
+        return GIT_COMMIT
+    return "dev"
 
 def get_mqtt_config():
     """Returns (host, port, user, password, ssl) or None if not configured."""

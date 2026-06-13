@@ -11,6 +11,9 @@ import gridfs
 MONGODB_URL = os.environ['MONGODB_URL']
 
 _mqtt_url = os.environ.get('MQTT_URL', 'mqtt://localhost:1883')
+# The deployed worker image is tagged with the commit it was built from, and the
+# firmware source is baked into that image — so COMMIT_SHA identifies the firmware.
+_git_commit = os.environ.get('COMMIT_SHA', 'unknown')
 CONFIG_PATH = '/firmware/src/config.py'
 FIRMWARE_OUTPUT = '/opt/micropython/ports/esp32/build-ESP32_GENERIC_C3/firmware.bin'
 POLL_INTERVAL = 5   # seconds between polls when queue is empty
@@ -66,7 +69,8 @@ def build_firmware(ssid: str, password: str, mqtt_user: str, mqtt_pass: str, mod
         .replace('{{MQTT_URL}}', _mqtt_url) \
         .replace('{{MQTT_USER}}', mqtt_user) \
         .replace('{{MQTT_PASS}}', mqtt_pass) \
-        .replace('{{DEVICE_MODE}}', mode)
+        .replace('{{DEVICE_MODE}}', mode) \
+        .replace('{{GIT_COMMIT}}', _git_commit)
 
     with open(CONFIG_PATH, 'w') as f:
         f.write(config)
