@@ -34,6 +34,7 @@ services:
     environment:
       - MONGODB_URL=${MONGODB_URL}
       - MQTT_URL=${PUBLIC_MQTT_URL}
+      - COMMIT_SHA=${COMMIT_SHA}
     networks:
       - infra_mongo-rs-net
       - infra_mqtt-net
