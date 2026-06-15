@@ -12,7 +12,7 @@ Each sub-project has its own `AGENTS.md` with detailed instructions:
 
 - `firmware/` — MicroPython code for ESP32-C3; compiled into a single `.bin` file → [firmware/AGENTS.md](firmware/AGENTS.md)
 - `web/` — SvelteKit landing page + flasher UI (Web Serial API) → [web/AGENTS.md](web/AGENTS.md)
-- `hardware/` — KiCad PCB design, Gerber files, STEP models, 3MF enclosure files → [hardware/AGENTS.md](hardware/AGENTS.md)
+- `hardware/` — KiCad PCB design, Gerber files, STEP models, 3MF enclosure files 
 
 ## CI/CD
 
