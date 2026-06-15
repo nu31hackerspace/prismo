@@ -4,8 +4,15 @@ ESP32-C3 firmware for the Prismo NFC reader project.
 
 ## Usage
 
-1. **Flash the device ** Flash device the web flasher
-2. **Done** — The device reboots, connects to your WiFi, and ready to user
+Most users never build the firmware by hand — the web flasher writes a pre-built
+binary to the board over USB from the browser. See the **Quick start** in the
+[root README](../README.md) for the end-to-end flow.
+
+1. **Flash the device** using the web flasher (Chrome/Edge, via Web Serial).
+2. **Done** — the device reboots, connects to your WiFi, and is ready to use.
+
+The rest of this document covers building and flashing the firmware from source,
+which you only need for firmware development.
 
 ## Project Structure
 
@@ -78,25 +85,6 @@ mpremote cp src/config_dev.py :src/config_dev.py + reset
 
 ---
 
-## Linting
-
-Install [ruff](https://docs.astral.sh/ruff/) and run it from the `firmware/` directory:
-
-```bash
-pip install ruff
-ruff check .
-```
-
-To auto-fix safe issues:
-
-```bash
-ruff check --fix .
-```
-
-The CI pipeline runs this check on every pull request that touches `firmware/`.
-
----
-
 ## Development
 
 Erase board
@@ -140,6 +128,24 @@ For start the app run the following into mpremote process
 import src.prismo_main
 ```
 
+## Linting
+
+Install [ruff](https://docs.astral.sh/ruff/) and run it from the `firmware/` directory:
+
+```bash
+pip install ruff
+ruff check .
+```
+
+To auto-fix safe issues:
+
+```bash
+ruff check --fix .
+```
+
+The CI pipeline runs this check on every pull request that touches `firmware/`.
+
+---
 ### Helpful commands
 
 Show the connected usb devices (first column is a path to usb port)
@@ -172,4 +178,4 @@ Connect your ESP32-C3 via USB, then:
 ./flash.sh /dev/ttyUSB0            # Linux
 ```
 
-That's it. The script erases flash and writes the complete firmware. The manual reboot of board requeire
+That's it. The script erases flash and writes the complete firmware. A manual reboot of the board is required afterwards.

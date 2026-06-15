@@ -1,14 +1,55 @@
-# Prismo – a simple access module
+# Prismo – a simple NFC access controller
 
-⚠️⚠️⚠️ The project is in extrime alpha stage, so any APIs, contracts, philosophy, arhitecture may change in any time.
-Use the current version of the project at your own risk.
+Prismo is an open-source NFC access controller you can build yourself for ~500 UAH or ~10 USD.
+Tap a card to unlock a door or power on a machine — fully self-hosted, MIT-licensed.
 
-Prismo is a simple device that lets you control access to a door or machine using an NFC/RFID card.
+[![Firmware CI](https://github.com/nu31hackerspace/prismo/actions/workflows/firmware-check.yml/badge.svg)](https://github.com/nu31hackerspace/prismo/actions/workflows/firmware-check.yml)
+[![Hardware-in-the-loop E2E](https://github.com/nu31hackerspace/prismo/actions/workflows/teststand-e2e.yml/badge.svg)](https://github.com/nu31hackerspace/prismo/actions/workflows/teststand-e2e.yml)
+[![Tested on real ESP32-C3](https://img.shields.io/badge/tested%20on-real%20ESP32--C3-success)](.github/workflows/teststand-e2e.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/nu31hackerspace/prismo?sort=semver)](https://github.com/nu31hackerspace/prismo/releases)
+
+<!-- HERO IMAGE — replace with a clean, well-lit photo or render of the assembled device. -->
+<!-- ![Assembled Prismo NFC reader](docs/media/hero.jpg) -->
+
+<!-- DEMO GIF — ~5s: card tap → LED turns green → relay clicks / door opens. Autoplays in GitHub. -->
+<!-- ![Prismo card-tap demo](docs/media/demo.gif) -->
 
 You can use it, for example, to:
 
-- Open a door only with a valid card
-- Turn on a machine only for authorized users
+- Open a door
+- Turn on a machine
+- Control whatever you want with an NFC card/key
+
+## Features
+
+- 🟢 **Tap-to-unlock** — present an NFC/RFID card, get instant LED + buzzer feedback and a relay action.
+- 🔓 **Build it yourself for ~$10** — off-the-shelf ESP32-C3 + PN532, single-layer PCB.
+- 🛠️ **DIY-friendly PCB** — single-layer, etchable at home; a great first soldering project.
+- 🏠 **Self-hosted + MQTT** — integrates with Home Assistant or your own backend. No cloud lock-in.
+- ⚡ **One-click flashing** — flash a pre-built firmware from your browser, no toolchain required.
+- 🤖 **Tested on real hardware** — every change runs on a physical ESP32-C3 on a Raspberry Pi CI rig.
+
+## What you need
+
+| Item | Notes |
+| --- | --- |
+| ESP32-C3 Super Mini | The brains. ~$3. |
+| PN532 NFC module | Reads the cards (powered from 3.3 V). |
+| Prismo PCB + components | See the [Bill of Materials](hardware/README.md#bom-file). |
+| A USB-C cable + a Chrome/Edge browser | For flashing over Web Serial. |
+| 2.4 GHz WiFi | The ESP32-C3 is 2.4 GHz only. |
+
+## Quick start
+
+> Full build instructions live in [`hardware/README.md`](hardware/README.md) (PCB + assembly)
+> and [`firmware/README.md`](firmware/README.md) (firmware).
+
+1. **Build the board** — etch/order the [single-layer PCB](hardware/README.md), solder the
+   components, and connect the PN532 and RGB LED.
+2. **Flash it** — open the web flasher in Chrome/Edge and click flash. No toolchain needed.
+3. **Connect it** — the device boots, joins your 2.4 GHz WiFi, and announces itself over MQTT.
+4. **Add your card** — register the card's UID in the web app; tap to unlock.
 
 ## Why are we making Prismo?
 
@@ -47,14 +88,14 @@ Before building more features, we wrote down what we want from this project.
 
 The repository is a monorepo. That means all components of the project live in one place.
 
-- `firmware/` – the software that runs on the Prismo device.This folder has its own README.md.
-- `hardware/` – the hardware design files, such as KiCad schematics and PCB layout.
-- `web-flasher/` - the simple web app to flash the board with the firmware. This app is containerized and can be run locally or on a remote machine.
+- `firmware/` – the software that runs on the Prismo device. This folder has its own README.md.
+- `hardware/` – the hardware design files, such as KiCad schematics and PCB layout. This folder has its own README.md.
+- `web/` – the web app used to manage devices, register cards, and flash the board with firmware. This app is containerized and can be run locally or on a remote machine.
 
 ## Project CI
 
-The projec use github action as CI, the Ci build the '\*.bin' file for the firmware.
+The project uses GitHub Actions for CI. Every change is built, linted, and — for the firmware — tested on **real ESP32-C3 hardware** running on a Raspberry Pi rig before it lands on `main`. The CI also builds the firmware `*.bin` that the web flasher serves.
 
-## The project stage
+## License
 
-⚠️⚠️⚠️ The project is in a pre-release stage, so any APIs or contracts may change in the future. Use the current version of the project at your own risk.
+Prismo is released under the [MIT License](LICENSE).
