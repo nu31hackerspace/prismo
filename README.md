@@ -1,3 +1,5 @@
+![PCB](docs/media/pcb.png)
+
 # Prismo – a simple NFC access controller
 
 Prismo is an open-source NFC access controller you can build yourself for ~500 UAH or ~10 USD.
@@ -28,7 +30,11 @@ You can use it, for example, to:
 - 🛠️ **DIY-friendly PCB** — single-layer, etchable at home; a great first soldering project.
 - 🏠 **Self-hosted + MQTT** — integrates with Home Assistant or your own backend. No cloud lock-in.
 - ⚡ **One-click flashing** — flash a pre-built firmware from your browser, no toolchain required.
-- 🤖 **Tested on real hardware** — every change runs on a physical ESP32-C3 on a Raspberry Pi CI rig.
+
+## How we test our solution
+
+Every changes **Tested on real hardware** — every change runs using a physical Prismo device.
+We have a test stand what allow us to verify every change and make sure everything works as expected. For more info read the [ReadMe from blackbox-e2e](/blackbox-e2e/README.md).
 
 ## What you need
 
