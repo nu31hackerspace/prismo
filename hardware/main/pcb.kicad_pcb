@@ -699,16 +699,16 @@
 				)
 			)
 		)
-		(property "Value" "1000"
-			(at -2.48 0 90)
-			(layer "F.SilkS")
-			(hide yes)
+		(property "Value" "1K"
+			(at 4.11 0 90)
+			(layer "B.SilkS")
 			(uuid "cde41df8-509b-4ef4-9483-23e9e0e0bb4d")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Datasheet" "~"
@@ -3812,16 +3812,16 @@
 				)
 			)
 		)
-		(property "Value" "1000"
-			(at -2.48 0 90)
-			(layer "F.SilkS")
-			(hide yes)
+		(property "Value" "1K"
+			(at 4.11 0 90)
+			(layer "B.SilkS")
 			(uuid "d482cabe-f018-4aa4-a16c-ffaa4737419d")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Datasheet" "~"
@@ -3915,16 +3915,16 @@
 				)
 			)
 		)
-		(property "Value" "1000"
-			(at -2.48 0 90)
-			(layer "F.SilkS")
-			(hide yes)
+		(property "Value" "1K"
+			(at 4.11 0 90)
+			(layer "B.SilkS")
 			(uuid "29c5ea6d-6ae6-4df5-8574-2d87b3f592f3")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Datasheet" "~"
