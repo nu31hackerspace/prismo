@@ -2716,15 +2716,16 @@
 				)
 			)
 		)
-		(property "Value" "100"
+		(property "Value" "1K"
 			(at 3.91 0 0)
-			(layer "F.SilkS")
+			(layer "B.SilkS")
 			(uuid "b2e855c4-e9dd-4f37-aaca-e4a2932efb05")
 			(effects
 				(font
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify mirror)
 			)
 		)
 		(property "Datasheet" "~"
@@ -4658,6 +4659,42 @@
 		)
 		(layer "Edge.Cuts")
 		(uuid "e0f0792f-a9d7-42cf-842d-fe5d3d2ff980")
+	)
+	(gr_text "+"
+		(at 121 89.3 0)
+		(layer "B.SilkS")
+		(uuid "17dbde74-e317-4bf6-9e1c-12813881ae31")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "+5V"
+		(at 143 91.1 0)
+		(layer "B.SilkS")
+		(uuid "3fff569e-2099-49d1-8865-68de7262fe32")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom mirror)
+		)
+	)
+	(gr_text "GND"
+		(at 142.7 93.6 0)
+		(layer "B.SilkS")
+		(uuid "771e7aa1-d1d6-45ed-9acc-5ebe9978ba93")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom mirror)
+		)
 	)
 	(segment
 		(start 105.495 45.7)
