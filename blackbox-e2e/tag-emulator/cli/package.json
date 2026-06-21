@@ -1,0 +1,22 @@
+{
+  "name": "tag-emulator-cli",
+  "version": "1.0.0",
+  "description": "CLI to control the PN532 tag emulator",
+  "main": "dist/index.js",
+  "bin": {
+    "tag-emulator": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "commander": "^11.0.0",
+    "serialport": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  }
+}
