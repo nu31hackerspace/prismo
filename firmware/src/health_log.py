@@ -160,7 +160,6 @@ def get_git_commit():
 
 _mqtt_publisher = None
 
-
 def set_mqtt_publisher(fn):
     """Register a callable(entry_dict) that forwards log entries to MQTT."""
     global _mqtt_publisher
@@ -266,13 +265,6 @@ def write_event(level, msg, **kwargs):
             f.write(json.dumps(entry) + "\n")
     except Exception as e:
         print("[health_log] write_event error:", e)
-
-    if _mqtt_publisher is not None:
-        try:
-            _mqtt_publisher(entry)
-        except Exception:
-            pass
-
 
 # Convenience shorthands
 def write_info(msg, **kw):  write_event("INFO",  msg, **kw)
