@@ -20,6 +20,11 @@ MUTE_BUZZER=False
 # command handling. Door scanning stays on the local cached allowlist.
 ENABLE_MQTT=True
 
+# Boot connection attempts before the device gives up and runs offline. Safe
+# mode does not reconnect afterwards — it stays offline until the next reboot.
+WIFI_CONNECT_ATTEMPTS=10
+MQTT_CONNECT_ATTEMPTS=10
+
 # Local dev overrides (gitignored)
 try:
     from src.config_dev import *

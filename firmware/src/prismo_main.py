@@ -4,6 +4,7 @@ from src import reader
 from src import reader_ui
 from src import config
 from src import health_log
+from src import state
 from src.mqtt_client import PrismoMQTT
 from src import color
 
@@ -73,29 +74,36 @@ def on_sync_keys(keys):
         health_log.write_warn("sync_keys failed", error=str(e))
 
 wifi_manager = wifi_manager.WiFiManager()
-wifi_manager.connect(
+wifi_ok = wifi_manager.connect(
     on_attempt=color.wifi_connecting_pulse,
     on_complete=color.turn_off_all,
 )
 
+mqtt_ok = False
 mqtt_cfg = config.get_mqtt_config() if config.ENABLE_MQTT else None
-if mqtt_cfg:
+if wifi_ok and mqtt_cfg:
     host, port, user, passwd, use_ssl = mqtt_cfg
-    # Register publisher and handlers before connect so they survive a failed
-    # initial attempt and are in place when maintain() reconnects later.
-    color.mqtt_connecting_pulse()
-    try:
-        mqtt.connect(host, port, user, passwd, use_ssl)
-        mqtt.subscribe_commands(on_add_key, on_remove_key, on_trigger, on_sync_keys)
-    except Exception as e:
-        health_log.write_warn("Initial MQTT connect failed, will retry", error=str(e))
+    for attempt in range(config.MQTT_CONNECT_ATTEMPTS):
+        color.mqtt_connecting_pulse()
+        try:
+            mqtt.connect(host, port, user, passwd, use_ssl)
+            mqtt.subscribe_commands(on_add_key, on_remove_key, on_trigger, on_sync_keys)
+            mqtt_ok = True
+            break
+        except Exception as e:
+            health_log.write_warn("MQTT connect attempt failed", attempt=attempt + 1, error=str(e))
     color.turn_off_all()
 
-health_log.write_info("Start reader")
+# Safe mode: the connection is established (or not) here at boot. Once running,
+# the device never reconnects on its own — a drop just flips the flag and the
+# idle light to offline until the next reboot.
+state.set_connected(mqtt_ok)
+
+health_log.write_info("Start reader", connected=mqtt_ok)
 ui.reset()
 ui.ready_to_read()
 
-wdt = WDT(timeout=30000)
+wdt = WDT(timeout=10000)
 def on_tick():
     wdt.feed()
     if config.ENABLE_MQTT:

@@ -2,41 +2,28 @@ import ujson
 import utime
 import network
 import socket
-from umqtt.robust import MQTTClient as _RobustClient
+from umqtt.simple import MQTTClient as _SimpleClient
+from src import health_log
+from src.mqtt_contract import (
+    device_topic, SUBTOPIC_SCAN, SUBTOPIC_STATUS, SUBTOPIC_CMD_ADD_KEY, SUBTOPIC_CMD_REMOVE_KEY, SUBTOPIC_CMD_TRIGGER,
+    SUBTOPIC_CMD_SYNC,
+)
 
 # Hard ceiling on any single blocking socket operation (connect, CONNACK read,
 # publish, ping). Keeps a poor link from stalling the shared loop for long;
 # well under the 30 s watchdog so a slow op can never freeze the door reader.
 _SOCKET_TIMEOUT_S = 3
-from src import health_log
-from src.mqtt_contract import (
-    device_topic, SUBTOPIC_SCAN, SUBTOPIC_STATUS, SUBTOPIC_LOGS,
-    SUBTOPIC_CMD_ADD_KEY, SUBTOPIC_CMD_REMOVE_KEY, SUBTOPIC_CMD_TRIGGER,
-    SUBTOPIC_CMD_SYNC,
-)
 
-class _RobustPrismoMQTT(_RobustClient):
-    """umqtt.robust subclass with bounded reconnect for WDT-safe operation."""
 
-    def delay(self, i):
-        pass
-
-    def log(self, in_reconnect, e):
-        label = "reconnect" if in_reconnect else "operation"
-        health_log.write_warn("MQTT robust {}".format(label), error=str(e))
-
-    def reconnect(self):
-        try:
-            return super(_RobustClient, self).connect(False)
-        except OSError as e:
-            self.log(True, e)
-            raise
+class _PrismoMQTTClient(_SimpleClient):
+    """umqtt.simple subclass: non-blocking message check with bounded socket IO.
+    No auto-reconnect — a failed op surfaces so the caller can mark the device
+    offline instead of silently blocking on a hidden reconnect."""
 
     def safe_check_msg(self):
-        """Non-blocking message check that never triggers reconnect loops."""
         self.sock.setblocking(False)
         try:
-            return super(_RobustClient, self).wait_msg()
+            return super().wait_msg()
         except OSError as e:
             if e.args[0] == 11:  # EAGAIN — no data ready
                 return None
@@ -83,11 +70,6 @@ class PrismoMQTT:
         self._HEARTBEAT_INTERVAL_MS = 5_000
         self._last_heartbeat_ms = None
 
-        self._RECONNECT_BACKOFF_MIN_MS = 5_000
-        self._RECONNECT_BACKOFF_MAX_MS = 120_000
-        self._reconnect_backoff_ms = self._RECONNECT_BACKOFF_MIN_MS
-        self._last_reconnect_attempt_ms = None
-
         self._PING_INTERVAL_MS = 30_000
         self._last_ping_ms = None
 
@@ -108,7 +90,7 @@ class PrismoMQTT:
 
     def _new_client(self):
         """Build a client and connect with every blocking step time-bounded."""
-        c = _RobustPrismoMQTT(self._user, self._server_host(), port=self._port, user=self._user, password=self._password, ssl=self._use_ssl, keepalive=60)
+        c = _PrismoMQTTClient(self._user, self._server_host(), port=self._port, user=self._user, password=self._password, ssl=self._use_ssl, keepalive=60)
         c.set_callback(self._on_message)
         try:
             c.connect(timeout=_SOCKET_TIMEOUT_S)
@@ -130,8 +112,6 @@ class PrismoMQTT:
 
         c = self._new_client()
         self._client = c
-        self._reconnect_backoff_ms = self._RECONNECT_BACKOFF_MIN_MS
-        self._last_reconnect_attempt_ms = None
         self._last_ping_ms = utime.ticks_ms()
         self._consecutive_failures = 0
         health_log.write_info("MQTT connected", host=self._host, user=self._user)
@@ -175,13 +155,6 @@ class PrismoMQTT:
             health_log.write_info("MQTT subscribed to command topics", user=self._user)
         else:
             health_log.write_error("MQTT client or user not initialized", client=str(self._client), user=self._user)
-
-    def _subscribe_commands_internal(self):
-        if self._client and self._user and (self._on_add_key is not None or self._on_remove_key is not None or self._on_trigger is not None):
-            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_ADD_KEY))
-            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_REMOVE_KEY))
-            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_TRIGGER))
-            self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_SYNC))
 
     def publish_heartbeat(self):
         if self._client is None or self._user is None:
@@ -250,52 +223,41 @@ class PrismoMQTT:
             self._consecutive_failures += 1
             self._mark_disconnected()
 
+    def _lose(self, reason):
+        """Tear down the link and flag the device offline. Safe mode never
+        reconnects on its own — the device stays offline until the next reboot."""
+        self._mark_disconnected()
+        from src import state
+        state.set_connected(False, reason=reason)
+
     def maintain(self):
-        if self._client is not None:
-            self.check_msg()
-
-            if self._client is not None:
-                now = utime.ticks_ms()
-                if self._last_ping_ms is None or utime.ticks_diff(now, self._last_ping_ms) >= self._PING_INTERVAL_MS:
-                    self._do_ping()
-
-            if self._client is not None:
-                now = utime.ticks_ms()
-                if self._last_heartbeat_ms is None or utime.ticks_diff(now, self._last_heartbeat_ms) >= self._HEARTBEAT_INTERVAL_MS:
-                    self.publish_heartbeat()
-
-            if self._client is not None and self._consecutive_failures >= self._MAX_CONSECUTIVE_FAILURES:
-                health_log.write_warn("MQTT too many consecutive failures, forcing reconnect", failures=self._consecutive_failures)
-                self._mark_disconnected()
-            return
-
-        if self._host is None or self._user is None:
+        # Safe mode: once offline, do nothing. No background reconnect, so the
+        # reader loop is never blocked by a connect attempt on a poor link.
+        if self._client is None:
             return
 
         if not _wifi_connected():
+            self._lose("wifi")
             return
 
-        now = utime.ticks_ms()
-        if self._last_reconnect_attempt_ms is not None:
-            elapsed = utime.ticks_diff(now, self._last_reconnect_attempt_ms)
-            if elapsed < self._reconnect_backoff_ms:
-                return
+        self.check_msg()
 
-        self._last_reconnect_attempt_ms = now
-        health_log.write_info("MQTT reconnecting", host=self._host, backoff_s=self._reconnect_backoff_ms // 1000)
-        try:
-            c = self._new_client()
-            self._client = c
-            self._consecutive_failures = 0
-            self._last_ping_ms = utime.ticks_ms()
-            self._last_heartbeat_ms = None  # send heartbeat immediately on next maintain()
-            self._subscribe_commands_internal()
-            health_log.write_info("MQTT reconnected", host=self._host, pending_logs=len(self._pending_logs))
-            self._reconnect_backoff_ms = self._RECONNECT_BACKOFF_MIN_MS
-        except Exception as e:
-            next_backoff = min(self._reconnect_backoff_ms * 2, self._RECONNECT_BACKOFF_MAX_MS)
-            health_log.write_warn("MQTT reconnect failed", error=str(e), next_retry_s=next_backoff // 1000)
-            self._reconnect_backoff_ms = next_backoff
+        if self._client is not None:
+            now = utime.ticks_ms()
+            if self._last_ping_ms is None or utime.ticks_diff(now, self._last_ping_ms) >= self._PING_INTERVAL_MS:
+                self._do_ping()
+
+        if self._client is not None:
+            now = utime.ticks_ms()
+            if self._last_heartbeat_ms is None or utime.ticks_diff(now, self._last_heartbeat_ms) >= self._HEARTBEAT_INTERVAL_MS:
+                self.publish_heartbeat()
+
+        if self._client is not None and self._consecutive_failures >= self._MAX_CONSECUTIVE_FAILURES:
+            health_log.write_warn("MQTT too many consecutive failures", failures=self._consecutive_failures)
+            self._mark_disconnected()
+
+        if self._client is None:
+            self._lose("mqtt")
 
     def ping(self):
         self._do_ping()
