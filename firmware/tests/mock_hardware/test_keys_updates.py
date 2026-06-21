@@ -53,6 +53,10 @@ class TestE2EScan(unittest.TestCase):
         except Exception:
             pass
 
+        # The allowlist is cached in RAM and survives across tests in this
+        # process; drop it so each test reloads from the freshly cleared file.
+        config._allowed_uids = None
+
         self.pin_events = []
 
         class MockPin:

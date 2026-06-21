@@ -16,7 +16,6 @@ def on_new_config_callback():
 
 def on_key_read(uid):
     allowed = config.is_user_allowed(uid)
-    health_log.write_info("Key scanned", uid=uid, allowed=allowed)
     if allowed:
         if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE:
             ui.machine_toggle(uid)
@@ -24,6 +23,8 @@ def on_key_read(uid):
             ui.success()
     else:
         ui.error()
+
+    health_log.write_info("Key scanned", uid=uid, allowed=allowed)
     machine_active = ui.machine_active if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE else None
     mqtt.publish_scan(uid, allowed, machine_active=machine_active)
 
@@ -77,12 +78,11 @@ wifi_manager.connect(
     on_complete=color.turn_off_all,
 )
 
-mqtt_cfg = config.get_mqtt_config()
+mqtt_cfg = config.get_mqtt_config() if config.ENABLE_MQTT else None
 if mqtt_cfg:
     host, port, user, passwd, use_ssl = mqtt_cfg
     # Register publisher and handlers before connect so they survive a failed
     # initial attempt and are in place when maintain() reconnects later.
-    health_log.set_mqtt_publisher(mqtt.publish_log)
     color.mqtt_connecting_pulse()
     try:
         mqtt.connect(host, port, user, passwd, use_ssl)
@@ -98,6 +98,7 @@ ui.ready_to_read()
 wdt = WDT(timeout=30000)
 def on_tick():
     wdt.feed()
-    mqtt.maintain()
+    if config.ENABLE_MQTT:
+        mqtt.maintain()
 
 reader.subscribe(callback=on_key_read, tick_callback=on_tick)

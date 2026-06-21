@@ -1,7 +1,13 @@
 import ujson
 import utime
 import network
+import socket
 from umqtt.robust import MQTTClient as _RobustClient
+
+# Hard ceiling on any single blocking socket operation (connect, CONNACK read,
+# publish, ping). Keeps a poor link from stalling the shared loop for long;
+# well under the 30 s watchdog so a slow op can never freeze the door reader.
+_SOCKET_TIMEOUT_S = 3
 from src import health_log
 from src.mqtt_contract import (
     device_topic, SUBTOPIC_SCAN, SUBTOPIC_STATUS, SUBTOPIC_LOGS,
@@ -35,6 +41,13 @@ class _RobustPrismoMQTT(_RobustClient):
             if e.args[0] == 11:  # EAGAIN — no data ready
                 return None
             raise
+        finally:
+            # Restore bounded-blocking mode so later publishes/pings get a
+            # timeout instead of failing instantly with EAGAIN.
+            try:
+                self.sock.settimeout(_SOCKET_TIMEOUT_S)
+            except Exception:
+                pass
 
 def _wifi_connected():
     try:
@@ -53,6 +66,8 @@ class PrismoMQTT:
         self._port = None
         self._password = None
         self._use_ssl = False
+        # Cached broker IP so repeated reconnects skip a blocking DNS lookup.
+        self._resolved_host = None
 
         self._on_add_key = None
         self._on_remove_key = None
@@ -61,6 +76,9 @@ class PrismoMQTT:
 
         self._pending_logs = []
         self._MAX_PENDING = 50
+        # Cap how many buffered logs go out per maintain() so flushing a full
+        # backlog can't monopolise the loop on a slow link.
+        self._FLUSH_BATCH = 5
 
         self._HEARTBEAT_INTERVAL_MS = 5_000
         self._last_heartbeat_ms = None
@@ -76,6 +94,33 @@ class PrismoMQTT:
         self._consecutive_failures = 0
         self._MAX_CONSECUTIVE_FAILURES = 3
 
+    def _server_host(self):
+        """Broker address to dial: a cached IP when possible to avoid repeated
+        DNS, but the hostname for TLS so SNI/cert validation still works."""
+        if self._use_ssl:
+            return self._host
+        if self._resolved_host is None:
+            try:
+                self._resolved_host = socket.getaddrinfo(self._host, self._port)[0][-1][0]
+            except Exception:
+                self._resolved_host = None
+        return self._resolved_host or self._host
+
+    def _new_client(self):
+        """Build a client and connect with every blocking step time-bounded."""
+        c = _RobustPrismoMQTT(self._user, self._server_host(), port=self._port, user=self._user, password=self._password, ssl=self._use_ssl, keepalive=60)
+        c.set_callback(self._on_message)
+        try:
+            c.connect(timeout=_SOCKET_TIMEOUT_S)
+        except TypeError:
+            # Older umqtt without a connect timeout kwarg.
+            c.connect()
+        try:
+            c.sock.settimeout(_SOCKET_TIMEOUT_S)
+        except Exception:
+            pass
+        return c
+
     def connect(self, host, port, user, password, use_ssl=False):
         self._user = user
         self._host = host
@@ -83,9 +128,7 @@ class PrismoMQTT:
         self._password = password
         self._use_ssl = use_ssl
 
-        c = _RobustPrismoMQTT(self._user, self._host, port=self._port, user=self._user, password=self._password, ssl=self._use_ssl, keepalive=60)
-        c.set_callback(self._on_message)
-        c.connect()
+        c = self._new_client()
         self._client = c
         self._reconnect_backoff_ms = self._RECONNECT_BACKOFF_MIN_MS
         self._last_reconnect_attempt_ms = None
@@ -154,6 +197,7 @@ class PrismoMQTT:
             self._mark_disconnected()
 
     def publish_scan(self, uid, allowed, machine_active=None):
+        health_log.write_info("MQTT publish_scan call client ", client = self._client, user = self._user)
         if self._client is None or self._user is None:
             return
         topic = device_topic(self._user, SUBTOPIC_SCAN)
@@ -164,43 +208,11 @@ class PrismoMQTT:
         try:
             self._client.publish(topic, payload)
             self._consecutive_failures = 0
+            health_log.write_info("MQTT publish_scan publish")
         except Exception as e:
             health_log.write_warn("MQTT publish_scan failed", error=str(e))
             self._consecutive_failures += 1
             self._mark_disconnected()
-
-    def publish_log(self, entry):
-        if self._client is None or self._user is None:
-            if len(self._pending_logs) < self._MAX_PENDING:
-                self._pending_logs.append(entry)
-            return
-        try:
-            self._client.publish(device_topic(self._user, SUBTOPIC_LOGS), ujson.dumps(entry))
-            self._consecutive_failures = 0
-        except Exception:
-            if len(self._pending_logs) < self._MAX_PENDING:
-                self._pending_logs.append(entry)
-            self._consecutive_failures += 1
-            self._mark_disconnected()
-
-    def _flush_pending(self):
-        if not self._pending_logs or self._client is None or self._user is None:
-            return
-        topic = device_topic(self._user, SUBTOPIC_LOGS)
-        remaining = list(self._pending_logs)
-        sent = 0
-        while remaining:
-            entry = remaining[0]
-            try:
-                self._client.publish(topic, ujson.dumps(entry))
-                remaining.pop(0)
-                sent += 1
-            except Exception:
-                self._mark_disconnected()
-                break
-        self._pending_logs = remaining
-        if sent:
-            health_log.write_info("MQTT flushed buffered logs", count=sent, still_pending=len(self._pending_logs))
 
     def _mark_disconnected(self):
         if self._client is not None:
@@ -272,9 +284,7 @@ class PrismoMQTT:
         self._last_reconnect_attempt_ms = now
         health_log.write_info("MQTT reconnecting", host=self._host, backoff_s=self._reconnect_backoff_ms // 1000)
         try:
-            c = _RobustPrismoMQTT(self._user, self._host, port=self._port, user=self._user, password=self._password, ssl=self._use_ssl, keepalive=60)
-            c.set_callback(self._on_message)
-            c.connect()
+            c = self._new_client()
             self._client = c
             self._consecutive_failures = 0
             self._last_ping_ms = utime.ticks_ms()
@@ -282,7 +292,6 @@ class PrismoMQTT:
             self._subscribe_commands_internal()
             health_log.write_info("MQTT reconnected", host=self._host, pending_logs=len(self._pending_logs))
             self._reconnect_backoff_ms = self._RECONNECT_BACKOFF_MIN_MS
-            self._flush_pending()
         except Exception as e:
             next_backoff = min(self._reconnect_backoff_ms * 2, self._RECONNECT_BACKOFF_MAX_MS)
             health_log.write_warn("MQTT reconnect failed", error=str(e), next_retry_s=next_backoff // 1000)
