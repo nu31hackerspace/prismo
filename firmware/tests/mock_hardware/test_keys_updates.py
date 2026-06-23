@@ -45,6 +45,24 @@ class MockReaderModule:
 sys.modules['src.reader'] = MockReaderModule
 
 
+# prismo_main arms a hardware watchdog (machine.WDT) at import time and only
+# feeds it from the reader's tick_callback. Since MockReader never drives that
+# callback, the real watchdog would reset the device ~10s into the test run and
+# break the mpremote session. Swap in a no-op WDT before prismo_main imports it.
+import machine
+
+
+class MockWDT:
+    def __init__(self, timeout=0):
+        pass
+
+    def feed(self):
+        pass
+
+
+machine.WDT = MockWDT
+
+
 class TestE2EScan(unittest.TestCase):
     def setUp(self):
         print("\n >>> Setting up test environment...")
@@ -52,6 +70,10 @@ class TestE2EScan(unittest.TestCase):
             os.remove(config.RUN_TIME_CONFIG_FILE)
         except Exception:
             pass
+
+        # The allowlist is cached in RAM and survives across tests in this
+        # process; drop it so each test reloads from the freshly cleared file.
+        config._allowed_uids = None
 
         self.pin_events = []
 
