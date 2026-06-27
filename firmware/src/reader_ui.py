@@ -2,7 +2,11 @@ import utime
 from src import config
 from src import color
 from src import buzzer
+from src import state
 from machine import Pin
+
+COLOR_READY_ONLINE = 0x0000FF
+COLOR_READY_OFFLINE = 0xFF0000
 
 class ReaderUI:
     def __init__(self):
@@ -23,7 +27,7 @@ class ReaderUI:
         self.error_pin.off()
 
     def ready_to_read(self):
-        color.set_sub_light_color(0x800080)
+        color.set_sub_light_color(COLOR_READY_ONLINE if state.is_connected else COLOR_READY_OFFLINE)
         buzzer.turn_off()
 
     def success(self):

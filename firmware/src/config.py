@@ -16,6 +16,14 @@ DEVICE_MODE_MACHINE = "machine"
 DEBUG=False
 QUICK_START=False
 MUTE_BUZZER=False
+# When False the device runs fully offline: no MQTT connect, maintain, or
+# command handling. Door scanning stays on the local cached allowlist.
+ENABLE_MQTT=True
+
+# Boot connection attempts before the device gives up and runs offline. Safe
+# mode does not reconnect afterwards — it stays offline until the next reboot.
+WIFI_CONNECT_ATTEMPTS=10
+MQTT_CONNECT_ATTEMPTS=10
 
 # Local dev overrides (gitignored)
 try:
@@ -81,13 +89,20 @@ PIN_BUZZER = 7
 
 import json
 
+# In-RAM allowlist so the scan path never reads or parses flash. None means
+# "not loaded yet"; it is populated lazily on first lookup and kept in sync by
+# the add/delete/set mutators below.
+_allowed_uids = None
+
+def _ensure_allowlist():
+    global _allowed_uids
+    if _allowed_uids is None:
+        cfg = load_config() or {}
+        _allowed_uids = set(u.get('uid') for u in cfg.get('allowed_users', []) if u.get('uid'))
+    return _allowed_uids
+
 def is_user_allowed(uid):
-    cfg = load_config() or {}
-    users = cfg.get('allowed_users', [])
-    for user in users:
-        if user.get('uid') == uid:
-            return True
-    return False
+    return uid in _ensure_allowlist()
 
 def add_uid(uid):
     health_log.write_info('add_uid ', uid=uid)
@@ -100,6 +115,7 @@ def add_uid(uid):
     cfg['allowed_users'] = users
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
+    _ensure_allowlist().add(uid)
 
 def delete_uid(uid):
     health_log.write_info('delete_uid ', uid=uid)
@@ -111,17 +127,20 @@ def delete_uid(uid):
     cfg['allowed_users'] = new_users
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
+    _ensure_allowlist().discard(uid)
 
 
 def set_uids(keys):
     """Replace the entire allowed_users list.
     keys — list of dicts with at least a 'uid' field, e.g. [{'uid': 'abc', 'username': 'Alice'}]
     """
+    global _allowed_uids
     health_log.write_info('set_uids', count=len(keys))
     cfg = load_config() or {}
     cfg['allowed_users'] = [{'uid': k['uid'], 'username': k.get('username', '')} for k in keys if k.get('uid')]
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
+    _allowed_uids = set(u['uid'] for u in cfg['allowed_users'])
 
 def load_config():
     try:
