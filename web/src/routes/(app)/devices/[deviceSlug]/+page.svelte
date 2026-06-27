@@ -226,15 +226,6 @@
 							/>
 						</form>
 					{/if}
-					<form method="POST" action="?/triggerAction" use:enhance>
-						<input type="hidden" name="action" value="error" />
-						<MainButton
-							icon="mdi:alert-circle-outline"
-							label="Trigger Error"
-							buttonStyle="secondary"
-							size="M"
-						/>
-					</form>
 					<form method="POST" action="?/syncKeys" use:enhance>
 						<MainButton icon="mdi:sync" label="Force Sync Keys" buttonStyle="ghost" size="M" />
 					</form>
