@@ -11,12 +11,10 @@ COLOR_READY_OFFLINE = 0xFF0000
 class ReaderUI:
     def __init__(self):
         self.success_pin = Pin(config.PIN_OUTPUT_SUCESS, Pin.OUT)
-        self.error_pin = Pin(config.PIN_OUTPUT_ERROR, Pin.OUT)
         self.machine_active = False
         self.active_uid = None
 
         self.success_pin.off()
-        self.error_pin.off()
 
     def show_configuration_save(self):
         color.set_sub_light_color(0x00FF00)
@@ -24,7 +22,6 @@ class ReaderUI:
 
     def reset(self):
         self.success_pin.off()
-        self.error_pin.off()
 
     def ready_to_read(self):
         color.set_sub_light_color(COLOR_READY_ONLINE if state.is_connected else COLOR_READY_OFFLINE)
@@ -40,12 +37,10 @@ class ReaderUI:
         self.ready_to_read()
 
     def error(self):
-        self.error_pin.on()
         color.set_sub_light_color(0xFF0000)
         buzzer.play_error_sound()
 
         utime.sleep_ms(config.ERROR_SIGNAL_DURATION)
-        self.error_pin.off()
 
         self.ready_to_read()
 
