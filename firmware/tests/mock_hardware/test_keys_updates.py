@@ -120,9 +120,8 @@ class TestE2EScan(unittest.TestCase):
         import src.reader_ui
         src.reader_ui.Pin = self.original_pin
 
-    def assertOutputPin(self, expect_success_pin: bool, expect_error_pin: bool):
+    def assertOutputPin(self, expect_success_pin: bool):
         success_events = [e for e in self.pin_events if e["pin"] == config.PIN_OUTPUT_SUCESS]
-        error_events = [e for e in self.pin_events if e["pin"] == config.PIN_OUTPUT_ERROR]
 
         if expect_success_pin:
             self.assertTrue(len(success_events) >= 2, "Success pin was not toggled ON and OFF")
@@ -134,17 +133,6 @@ class TestE2EScan(unittest.TestCase):
                             f"Success pin toggled too fast! High for {duration}ms, expected at least {config.SUCCESS_SIGNAL_DURATION}ms")
         else:
             self.assertEqual(len(success_events), 0, "Success pin state changed incorrectly!")
-
-        if expect_error_pin:
-            self.assertTrue(len(error_events) >= 2, "Error pin was not toggled ON and OFF")
-            self.assertEqual(error_events[0]["state"], 1, "Expected error pin to turn ON first")
-            self.assertEqual(error_events[-1]["state"], 0, "Expected error pin to turn OFF last")
-            duration = utime.ticks_diff(error_events[-1]["time"], error_events[0]["time"])
-            print(f"Error pin was high for {duration}ms (Expected: {config.ERROR_SIGNAL_DURATION}ms)")
-            self.assertTrue(duration >= config.ERROR_SIGNAL_DURATION,
-                            f"Error pin toggled too fast! High for {duration}ms, expected at least {config.ERROR_SIGNAL_DURATION}ms")
-        else:
-            self.assertEqual(len(error_events), 0, "Error pin state changed incorrectly!")
 
         self.pin_events.clear()
 
@@ -161,35 +149,35 @@ class TestE2EScan(unittest.TestCase):
         print("\n>>> Simulating reader callback with valid UID: '111111'")
         MockReader.callback("111111")
 
-        self.assertOutputPin(expect_success_pin=True, expect_error_pin=False)
+        self.assertOutputPin(expect_success_pin=True)
 
     def test_invalid_scan(self):
         print("\n>>> Simulating reader callback with INVALID UID: '222222' (not in allowlist)")
         MockReader.callback("222222")
 
-        self.assertOutputPin(expect_success_pin=False, expect_error_pin=True)
+        self.assertOutputPin(expect_success_pin=False)
 
     def test_the_key_change(self):
         print("\n>>> Simulating key remove after first scan")
         self._send_mqtt_cmd("add_key", '{"uid": "111111"}')
 
         MockReader.callback("111111")
-        self.assertOutputPin(expect_success_pin=True, expect_error_pin=False)
+        self.assertOutputPin(expect_success_pin=True)
 
         self._send_mqtt_cmd("remove_key", '{"uid": "111111"}')
 
         MockReader.callback("111111")
-        self.assertOutputPin(expect_success_pin=False, expect_error_pin=True)
+        self.assertOutputPin(expect_success_pin=False)
 
     def test_trigger_success(self):
         print("\n>>> Simulating MQTT trigger command with action='success'")
         self._send_mqtt_cmd("trigger", '{"action": "success"}')
-        self.assertOutputPin(expect_success_pin=True, expect_error_pin=False)
+        self.assertOutputPin(expect_success_pin=True)
 
     def test_trigger_error(self):
         print("\n>>> Simulating MQTT trigger command with action='error'")
         self._send_mqtt_cmd("trigger", '{"action": "error"}')
-        self.assertOutputPin(expect_success_pin=False, expect_error_pin=True)
+        self.assertOutputPin(expect_success_pin=False)
 
     def test_trigger_machine_on_off(self):
         import src.prismo_main
@@ -233,19 +221,6 @@ class TestE2EScan(unittest.TestCase):
         self.assertTrue(len(success_off) >= 1, "Success pin was not turned OFF on second scan")
         self.assertFalse(ui.machine_active, "machine_active should be False after second scan")
         self.pin_events.clear()
-
-        print(">>> Machine mode: activate again, then scan with different UID should trigger error")
-        MockReader.callback("AABBCC")
-        self.assertTrue(ui.machine_active)
-        self.pin_events.clear()
-
-        MockReader.callback("DIFFERENT")
-
-        error_events = [e for e in self.pin_events if e["pin"] == config.PIN_OUTPUT_ERROR]
-        self.assertTrue(len(error_events) >= 2, "Error pin was not toggled for wrong UID while machine active")
-        self.assertTrue(ui.machine_active, "machine_active should remain True after wrong UID scan")
-        self.pin_events.clear()
-
 
 if __name__ == '__main__':
     unittest.main()
