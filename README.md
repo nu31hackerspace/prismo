@@ -1,6 +1,8 @@
-![PCB](docs/media/pcb.png)
-
 # Prismo – a simple NFC access controller
+
+![Prismo-preview-gift](docs/media/prismo-preview.gif)
+
+![PCB](docs/media/pcb.png)
 
 Prismo is an open-source NFC access controller you can build yourself for ~500 UAH or ~10 USD.
 Tap a card to unlock a door or power on a machine — fully self-hosted, MIT-licensed.
