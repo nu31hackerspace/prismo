@@ -3,9 +3,8 @@
 | Demo | PCB |
 | --- | --- |
 | ![Prismo-preview-gift](docs/media/prismo-preview.gif) | ![PCB](docs/media/pcb.png) |
-| Row 2, Col 1 | Row 2, Col 2 |
 
-Prismo is an open-source NFC access controller you can build yourself for ~500 UAH or ~10 USD.
+Prismo is an open-source NFC access controller that you can build yourself for ~500 UAH (~10 USD).
 Tap a card to unlock a door or power on a machine — fully self-hosted, MIT-licensed.
 
 [![Firmware CI](https://github.com/nu31hackerspace/prismo/actions/workflows/firmware-check.yml/badge.svg)](https://github.com/nu31hackerspace/prismo/actions/workflows/firmware-check.yml)
@@ -36,8 +35,8 @@ You can use it, for example, to:
 
 ## How we test our solution
 
-Every changes **Tested on real hardware** — every change runs using a physical Prismo device.
-We have a test stand what allow us to verify every change and make sure everything works as expected. For more info read the [ReadMe from blackbox-e2e](/blackbox-e2e/README.md).
+Every change **Tested on real hardware** — every change runs using a physical Prismo device.
+We have a test stand that allows us to verify every change and make sure everything works as expected. For more info read the [ReadMe from blackbox-e2e](/blackbox-e2e/README.md).
 
 ## What you need
 
@@ -56,7 +55,7 @@ We have a test stand what allow us to verify every change and make sure everythi
 
 1. **Build the board** — etch/order the [single-layer PCB](hardware/README.md), solder the
    components, and connect the PN532 and RGB LED.
-2. **Flash it** — open the web flasher in Chrome/Edge and click flash. No toolchain needed.
+2. **Flash it** — open the web flasher in Chrome and click Flash. No toolchain needed.
 3. **Connect it** — the device boots, joins your 2.4 GHz WiFi, and announces itself over MQTT.
 4. **Add your card** — register the card's UID in the web app; tap to unlock.
 
