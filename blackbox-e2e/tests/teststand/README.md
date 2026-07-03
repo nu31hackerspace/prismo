@@ -20,47 +20,42 @@ to the Raspberry Pi, and asserts on the **physical** success output pin.
 
 ## What it does
 
+There is a single spec, `device-lifecycle.spec.ts`, that runs the whole
+journey against the real device (one firmware build + flash, shared by every
+phase):
+
 1. **Seed auth** — inserts a user + session into Mongo and mints the session
    cookie (the _only_ black-box exception, to skip Google OAuth). See
    `lib/seed-auth.ts`.
-2. **Create device** through the UI and **Generate Token** (real MQTT creds).
-3. **Provision the device** (`lib/flash.ts`) — writes `src/config_dev.py` with
-   this run's WiFi + MQTT credentials over `mpremote` and soft-resets the board.
-4. Assert the UI shows **Online** (driven by real MQTT heartbeats).
-5. Click **Trigger Success** → MQTT `cmd/trigger` → firmware drives GPIO 2 HIGH →
-   relay closes → Pi reads the line active (`lib/gpio.ts`).
-
-## Reconnection specs
-
-Three additional specs (`reconnect-*.spec.ts`) verify the firmware's runtime
-reconnection. They run **after** `hardware-trigger.spec.ts` (alphabetical order,
-`workers: 1`), which matters: that spec flashes the PR's firmware build, and the
-reconnect specs re-provision it via the fast `config_dev.py` injection path. If
-`hardware-trigger` fails before flashing, the reconnect specs run against stale
-firmware — the `uptime_s` heartbeat guard turns that into a clear assertion
-message instead of a confusing timeout.
-
-| Spec                              | Proves                                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `reconnect-wifi-loss.spec.ts`     | AP outage → device reconnects WiFi+MQTT on its own, without rebooting, and command topics work again                |
-| `reconnect-offline-boot.spec.ts`  | Device boots with no AP (NFC runs offline), then makes its **first** connection when the AP appears                 |
-| `reconnect-broker-outage.spec.ts` | Broker container restart (WiFi stays up) → MQTT-only reconnect path                                                 |
+2. **Create device** through the UI, **Generate Token** (real MQTT creds), set
+   the WiFi credentials, **Build Firmware** on the Pi worker, **Download** it.
+3. **Flash** the ESP32-C3 with `esptool` (erase + write the downloaded binary).
+4. Assert the UI shows **Online** (real MQTT heartbeats) and that **Trigger
+   Success** → MQTT `cmd/trigger` → firmware drives GPIO 2 HIGH → relay closes
+   → Pi reads the line active (`lib/gpio.ts`).
+5. **WiFi AP outage** — switch the Pi hotspot off then on; assert the device
+   flips Offline then reconnects to Online **without rebooting**, and the
+   trigger still drives the pin.
+6. **Broker outage** — stop then start the MQTT container (WiFi stays up); same
+   Offline → reconnect → trigger assertions (the MQTT-only recovery path).
+7. **Boot with no AP** — switch the hotspot off, reset the board, confirm it
+   boots Offline (NFC runs on the local allowlist), then switch the hotspot on
+   and assert the device makes its **first** connection and the trigger works.
 
 Mechanics: the AP is toggled with `sudo nmcli connection down/up prismo-ap`
 (`lib/wifi.ts`; requires passwordless sudo — the CI runner has it, locally use
-`sudo -E npm run teststand:run`). "No reboot" is proven by the `uptime_s` field
-in the device's status heartbeat staying monotonic across the outage
-(`lib/status-watcher.ts` subscribes on the broker's docker-published port,
-which a wlan0 outage does not affect).
+`sudo -E npm run teststand:run`). "Without rebooting" is proven by the
+`uptime_s` field in the device's status heartbeat staying monotonic across the
+outage (`lib/status-watcher.ts` subscribes on the broker's docker-published
+port, which a wlan0 outage does not affect). Each phase is a Playwright
+`test.step`, so the HTML report shows which phase failed.
 
 ## One-time stand setup
 
 - Wire the relay per [`test-stand/README.md`](../../README.md).
 - Create the `/dev/ttyESP32C3` udev symlink (see that README).
-- Put the **Prismo app on the device**. CI does this each run by reusing
-  `firmware/tests/real_hardware/run_tests.sh` (flash stock MicroPython + upload
-  source); per-run provisioning then only injects `src/config_dev.py` and
-  soft-resets. The `connectivity` and `wlan0` AP come from
+- The spec flashes the full firmware image it built (erase + `write_flash 0x0`),
+  so no firmware needs to be pre-loaded on the board. The `wlan0` AP comes from
   `firmware/tests/real_hardware/start-ap.sh` (SSID `PrismoTest`, `192.168.10.1`).
 - The runner must reach GitHub over a link **other than `wlan0`** (e.g. Ethernet),
   since `wlan0` is turned into the AP.

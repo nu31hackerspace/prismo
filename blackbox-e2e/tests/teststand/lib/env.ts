@@ -45,15 +45,6 @@ export const config = {
 	serialPort: envStr('TESTSTAND_SERIAL_PORT', '/dev/ttyESP32C3'),
 	mpremoteBin: envStr('TESTSTAND_MPREMOTE_BIN', 'mpremote'),
 	deviceMode: envStr('TESTSTAND_DEVICE_MODE', 'door'),
-	// Skip the boot animation/sounds on the stand: the animation otherwise trips
-	// the MicroPython task watchdog on boot (observed WDT reset before WiFi).
-	quickStart: envStr('TESTSTAND_QUICK_START', 'true') === 'true',
-	muteBuzzer: envStr('TESTSTAND_MUTE_BUZZER', 'true') === 'true',
-	// Optional one-time base-firmware (re)flash before injecting config.
-	// Requires a manual power-cycle afterwards (ESP32-C3 USB-JTAG quirk), so
-	// it is OFF by default — the per-run path only injects config + soft-resets.
-	flashBaseFirmware: envStr('TESTSTAND_FLASH_BASE', 'false') === 'true',
-	firmwareBin: envStr('TESTSTAND_FIRMWARE_BIN', ''),
 	esptoolBin: envStr('TESTSTAND_ESPTOOL_BIN', 'esptool'),
 
 	// ── Pi GPIO that reads the relay-isolated success channel ─────────────
