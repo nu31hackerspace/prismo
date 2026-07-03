@@ -4,18 +4,18 @@ from src import config
 from src import health_log
 import utime
 
-# Runtime reconnect tuning. Module-level defaults, copied to instance
-# attributes in __init__ so unit tests can shrink them per instance.
-_ATTEMPT_TIMEOUT_MS = 15_000   # association + DHCP window per async attempt
-_BACKOFF_START_MS = 5_000
-_BACKOFF_CAP_MS = 60_000       # retry forever, capped
-_RADIO_RESET_AFTER = 4         # failed attempts before toggling wlan.active()
-_RADIO_SETTLE_MS = 1_000
-
 _STAT_CONNECTING = getattr(network, "STAT_CONNECTING", 1001)
 
 
 class WiFiManager:
+    # Runtime reconnect tuning. Class-level so unit tests can shrink them per
+    # instance by plain attribute assignment.
+    _attempt_timeout_ms = 15_000   # association + DHCP window per async attempt
+    _backoff_start_ms = 5_000
+    _backoff_cap_ms = 60_000       # retry forever, capped
+    _radio_reset_after = 4         # failed attempts before toggling wlan.active()
+    _radio_settle_ms = 1_000
+
     def __init__(self):
         health_log.write_info("init wifi manager")
         self._wlan = None
@@ -27,12 +27,7 @@ class WiFiManager:
         self._was_connected = False
         self._next_attempt_ms = None
         self._radio_reset_pending = False
-        self._attempt_timeout_ms = _ATTEMPT_TIMEOUT_MS
-        self._backoff_start_ms = _BACKOFF_START_MS
-        self._backoff_ms = _BACKOFF_START_MS
-        self._backoff_cap_ms = _BACKOFF_CAP_MS
-        self._radio_reset_after = _RADIO_RESET_AFTER
-        self._radio_settle_ms = _RADIO_SETTLE_MS
+        self._backoff_ms = self._backoff_start_ms
 
     def _ensure_wlan(self):
         if self._wlan is None:
@@ -47,6 +42,14 @@ class WiFiManager:
             return self._wlan.status()
         except Exception:
             return None
+
+    def _abort_attempt(self):
+        """Cancel any in-flight IDF association so the next connect() call
+        cannot collide with it ("Wifi Internal Error")."""
+        try:
+            self._wlan.disconnect()
+        except Exception:
+            pass
 
     def is_connected(self):
         return self._wlan is not None and self._wlan.isconnected()
@@ -88,8 +91,7 @@ class WiFiManager:
             return True
 
         # Leave _connecting=True with its start timestamp: the attempt kicked
-        # off above may still be running inside the IDF WiFi task, and calling
-        # connect() on top of it raises "Wifi Internal Error". maintain()
+        # off above may still be running inside the IDF WiFi task. maintain()
         # waits out the attempt window before retrying.
         health_log.write_error("WiFi connect failed", ssid=ssid)
         return False
@@ -129,11 +131,17 @@ class WiFiManager:
             st = self._status_safe()
             if elapsed < self._attempt_timeout_ms and st in (_STAT_CONNECTING, None):
                 return False  # attempt still in flight — let the IDF work
-            # Terminal status (e.g. NO_AP_FOUND / handshake failure) or the
-            # attempt window expired: count the failure and back off.
+            if st in (_STAT_CONNECTING, None):
+                # Window expired but the IDF is still trying: cancel it, or the
+                # next connect() would land on top of the live attempt.
+                self._abort_attempt()
             self._connecting = False
             self._failures += 1
-            health_log.write_warn("WiFi reconnect attempt failed", failures=self._failures, status=st)
+            # First failure and every power of two afterwards: enough evidence
+            # for diagnosis without churning the rotating flash log during a
+            # weeks-long outage.
+            if self._failures & (self._failures - 1) == 0:
+                health_log.write_warn("WiFi reconnect attempt failed", failures=self._failures, status=st)
             self._schedule_backoff(now)
             if self._failures % self._radio_reset_after == 0:
                 self._radio_reset_pending = True
@@ -154,12 +162,12 @@ class WiFiManager:
                 self._wlan.active(True)
                 self._wlan.config(txpower=8.5)
             ssid, password = config.get_wifi()
-            health_log.write_info("WiFi reconnect attempt", failures=self._failures)
-            self._wlan.connect(ssid, password)  # async: returns immediately
+            self._wlan.connect(ssid, password)
             self._connecting = True
             self._attempt_started_ms = now
         except Exception as e:  # e.g. "Wifi Internal Error" mid-attempt
             health_log.write_warn("WiFi reconnect error", error=str(e))
+            self._abort_attempt()
             self._connecting = False
             self._schedule_backoff(now)
         return False

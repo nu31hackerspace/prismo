@@ -49,8 +49,12 @@ _RESET_LABELS = {
     5: "HARD",
 }
 
-# Uptime reference – captured at module import (== boot time)
-_boot_ticks_ms = utime.ticks_ms()
+# Uptime accumulator. utime.ticks_ms() wraps (~12 days on this port) and
+# ticks_diff is only valid for deltas under half that, so uptime is summed
+# across calls instead of diffed against boot once. Every log write, health
+# snapshot and heartbeat advances it, keeping successive diffs tiny.
+_uptime_last_ticks_ms = utime.ticks_ms()
+_uptime_ms = 0
 
 # GC run counter – incremented by gc_collect() below
 _gc_runs = 0
@@ -67,10 +71,18 @@ def gc_collect():
     _gc_runs += 1
 
 
+def _uptime_now_ms():
+    global _uptime_last_ticks_ms, _uptime_ms
+    now = utime.ticks_ms()
+    _uptime_ms += utime.ticks_diff(now, _uptime_last_ticks_ms)
+    _uptime_last_ticks_ms = now
+    return _uptime_ms
+
+
 def uptime_s():
     """Seconds since boot. Sent in the MQTT heartbeat so the server (and the
     e2e tests) can tell a runtime reconnect apart from a reboot."""
-    return utime.ticks_diff(utime.ticks_ms(), _boot_ticks_ms) // 1000
+    return _uptime_now_ms() // 1000
 
 
 def _file_size(path):
@@ -187,7 +199,7 @@ def collect():
     reset_cause = machine.reset_cause()
     heap_free   = gc.mem_free()
     heap_alloc  = gc.mem_alloc()
-    uptime_ms   = utime.ticks_diff(utime.ticks_ms(), _boot_ticks_ms)
+    uptime_ms   = _uptime_now_ms()
     device_id   = ubinascii.hexlify(machine.unique_id()).decode().upper()[-6:]
 
     nfc_ok = None
@@ -248,7 +260,7 @@ def write_event(level, msg, **kwargs):
         health_log.write_event("WARN",  "PN532 retry", attempt=3)
         health_log.write_event("ERROR", "WiFi connect failed", ssid=ssid)
     """
-    uptime_ms = utime.ticks_diff(utime.ticks_ms(), _boot_ticks_ms)
+    uptime_ms = _uptime_now_ms()
     device_id = ubinascii.hexlify(machine.unique_id()).decode().upper()[-6:]
 
     entry = {

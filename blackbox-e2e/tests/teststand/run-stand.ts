@@ -47,7 +47,7 @@ async function hotspotUp(): Promise<void> {
 
 async function hotspotDown(): Promise<void> {
 	console.log('\n▶ Stopping WiFi hotspot…');
-	await run('sudo', ['nmcli', 'connection', 'down', 'prismo-ap'], { check: false });
+	await run('sudo', ['nmcli', 'connection', 'down', config.apProfileName], { check: false });
 }
 
 async function infraUp(): Promise<void> {

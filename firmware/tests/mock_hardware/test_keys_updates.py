@@ -103,10 +103,10 @@ class TestE2EScan(unittest.TestCase):
         print(">>> Booting full app flow...")
         import src.prismo_main
 
-        # prismo_main skips subscribe_commands when MQTT doesn't connect,
-        # so wire up the callbacks manually for the test.
+        # prismo_main skips MQTT configuration with placeholder creds, so wire
+        # up the command callbacks manually for the test.
         src.prismo_main.mqtt._user = "test_user"
-        src.prismo_main.mqtt.subscribe_commands(
+        src.prismo_main.mqtt.set_command_callbacks(
             src.prismo_main.on_add_key,
             src.prismo_main.on_remove_key,
             src.prismo_main.on_trigger,

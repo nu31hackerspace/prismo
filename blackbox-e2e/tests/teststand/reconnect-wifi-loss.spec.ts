@@ -13,47 +13,31 @@
  * the fast config_dev.py injection path — no firmware rebuild.
  */
 import { test, expect } from './fixtures';
-import { createDevice, navigateToDevice, generateMqttCredentials } from '../helpers';
-import { waitForSignalActive, waitForSignalInactive } from './lib/gpio';
-import { provisionDevice } from './lib/flash';
 import { apDown, apUp, ensureApUp } from './lib/wifi';
-import { watchDeviceStatus, type StatusWatcher } from './lib/status-watcher';
+import {
+	createDeviceWithWatcher,
+	provisionBoard,
+	firstHeartbeat,
+	expectNoReboot,
+	expectTriggerReachesPin,
+	type DeviceUnderTest
+} from './lib/reconnect-helpers';
 import { config } from './lib/env';
 
 test('device reconnects WiFi+MQTT after an AP outage without rebooting', async ({ page }) => {
 	test.setTimeout(420_000);
-	let watcher: StatusWatcher | undefined;
+	let device: DeviceUnderTest | undefined;
 	try {
-		// 1. Fresh device + MQTT credentials via the UI, watcher armed before
-		//    the device boots so no heartbeat is missed.
-		const deviceName = `Reconnect WiFi ${Date.now()}`;
-		await createDevice(page, deviceName, 'door');
-		await navigateToDevice(page, deviceName);
-		const creds = await generateMqttCredentials(page);
-		watcher = await watchDeviceStatus(creds);
-
-		// 2. Provision the board over USB serial and wait for Online.
-		const tProvision = Date.now();
-		await provisionDevice({
-			wifiSsid: config.wifiSsid,
-			wifiPass: config.wifiPass,
-			mqttHost: config.deviceMqttHost,
-			mqttPort: config.deviceMqttPort,
-			mqttUser: creds.mqttUser,
-			mqttPass: creds.mqttPass,
-			mode: 'door'
-		});
+		// 1. Fresh device + creds via the UI (watcher armed before the device
+		//    boots), provision over USB serial, wait for Online.
+		device = await createDeviceWithWatcher(page, 'Reconnect WiFi');
+		const tProvision = await provisionBoard(device.creds);
 		await expect(page.getByText('Online', { exact: true })).toBeVisible({
 			timeout: config.onlineTimeoutMs
 		});
-		const before = await watcher.waitForSample(tProvision, 15_000);
-		expect(
-			before.uptimeS,
-			'heartbeat has no uptime_s — is the stand running pre-reconnection firmware? ' +
-				'(hardware-trigger.spec.ts must flash this PR build first)'
-		).toBeGreaterThan(0);
+		const before = await firstHeartbeat(device.watcher, tProvision);
 
-		// 3. Kill the AP: heartbeats stop, the badge flips Offline (~10-15s).
+		// 2. Kill the AP: heartbeats stop, the badge flips Offline (~10-15s).
 		await apDown();
 		await expect(page.getByText('Offline', { exact: true })).toBeVisible({
 			timeout: config.offlineTimeoutMs
@@ -61,31 +45,18 @@ test('device reconnects WiFi+MQTT after an AP outage without rebooting', async (
 		// Let the firmware cycle at least one failed attempt + backoff.
 		await page.waitForTimeout(10_000);
 
-		// 4. Restore the AP. From here on the device is NOT touched over serial —
+		// 3. Restore the AP. From here on the device is NOT touched over serial —
 		//    coming back Online is the firmware's own doing.
 		await apUp();
 		await expect(page.getByText('Online', { exact: true })).toBeVisible({
 			timeout: config.reconnectTimeoutMs
 		});
 
-		// 5. No-reboot proof: uptime tracked wall-clock across the outage.
-		const after = await watcher.waitForSample(Date.now(), 20_000);
-		const wallDeltaS = (after.receivedAt - before.receivedAt) / 1000;
-		expect(
-			after.uptimeS,
-			'uptime_s reset across the outage — the device rebooted instead of reconnecting'
-		).toBeGreaterThan(before.uptimeS! + wallDeltaS - 15);
-
-		// 6. Re-subscription proof: cmd/trigger still reaches the device.
-		expect(await waitForSignalInactive(10_000)).toBe(true);
-		await page.getByRole('button', { name: 'Trigger Success' }).click();
-		expect(
-			await waitForSignalActive(),
-			'success pin did not fire — command topics were not re-subscribed after reconnect'
-		).toBe(true);
-		await waitForSignalInactive(10_000); // don't leak a held pin into the next spec
+		// 4. Same boot across the outage, and cmd/trigger still reaches the pin.
+		await expectNoReboot(device.watcher, before);
+		await expectTriggerReachesPin(page);
 	} finally {
 		await ensureApUp(); // never leave the stand without its hotspot
-		await watcher?.close();
+		await device?.watcher.close();
 	}
 });

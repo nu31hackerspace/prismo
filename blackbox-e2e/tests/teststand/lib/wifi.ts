@@ -24,16 +24,22 @@ export async function apDown(): Promise<void> {
 
 /**
  * Bring the AP back. `connection down` keeps the profile, so `connection up`
- * is the fast path; fall back to the full start-ap.sh (idempotent — it
- * recreates the profile) if the profile has gone missing.
+ * is the fast path; on any failure (missing profile, stuck interface) fall
+ * back to the full start-ap.sh, which is idempotent and recreates the
+ * profile. If that fails too, the error propagates — a stand without its
+ * hotspot must fail loudly, not silently.
  */
 export async function apUp(): Promise<void> {
-	const res = await run(
-		'sudo',
-		['nmcli', 'connection', 'up', config.apProfileName, 'ifname', config.wifiIface],
-		{ check: false }
-	);
-	if (/error|unknown connection/i.test(res.stderr)) {
+	try {
+		await run('sudo', [
+			'nmcli',
+			'connection',
+			'up',
+			config.apProfileName,
+			'ifname',
+			config.wifiIface
+		]);
+	} catch {
 		await run('bash', [path.resolve(repoRoot, config.startApScript)]);
 	}
 }

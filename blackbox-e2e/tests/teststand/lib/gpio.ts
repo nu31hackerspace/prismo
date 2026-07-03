@@ -28,6 +28,19 @@ export async function isSignalActive(): Promise<boolean> {
 	return (await readLevel()) === config.gpioActiveLevel;
 }
 
+async function waitForSignal(
+	active: boolean,
+	timeoutMs: number,
+	pollMs: number
+): Promise<boolean> {
+	const deadline = Date.now() + timeoutMs;
+	do {
+		if ((await isSignalActive()) === active) return true;
+		await new Promise((r) => setTimeout(r, pollMs));
+	} while (Date.now() < deadline);
+	return false;
+}
+
 /**
  * Polls the success line until it reads active, or the timeout elapses.
  * Returns true if the signal was observed.
@@ -36,12 +49,7 @@ export async function waitForSignalActive(
 	timeoutMs: number = config.signalTimeoutMs,
 	pollMs = 100
 ): Promise<boolean> {
-	const deadline = Date.now() + timeoutMs;
-	do {
-		if (await isSignalActive()) return true;
-		await new Promise((r) => setTimeout(r, pollMs));
-	} while (Date.now() < deadline);
-	return false;
+	return waitForSignal(true, timeoutMs, pollMs);
 }
 
 /**
@@ -53,10 +61,5 @@ export async function waitForSignalInactive(
 	timeoutMs: number = config.signalTimeoutMs,
 	pollMs = 100
 ): Promise<boolean> {
-	const deadline = Date.now() + timeoutMs;
-	do {
-		if (!(await isSignalActive())) return true;
-		await new Promise((r) => setTimeout(r, pollMs));
-	} while (Date.now() < deadline);
-	return false;
+	return waitForSignal(false, timeoutMs, pollMs);
 }

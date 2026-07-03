@@ -59,6 +59,9 @@ class FakeWLAN:
         self.connect_calls.append((ssid, password))
         self.status_value = wifi_manager._STAT_CONNECTING
 
+    def disconnect(self):
+        self.status_value = None
+
     def ifconfig(self):
         return ("192.0.2.10", "255.255.255.0", "192.0.2.1", "192.0.2.1")
 
@@ -254,13 +257,7 @@ class TestMQTTReconnect(unittest.TestCase):
         m.maintain()
         self.assertEqual(len(FakeMQTTClient.instances), 1)
         c = FakeMQTTClient.instances[0]
-        expected = [
-            "prismo/test_user/cmd/add_key",
-            "prismo/test_user/cmd/remove_key",
-            "prismo/test_user/cmd/trigger",
-            "prismo/test_user/cmd/sync",
-        ]
-        self.assertEqual(c.subscriptions, expected)
+        self.assertEqual(c.subscriptions, ["prismo/test_user/cmd/#"])
         self.assertEqual(len(c.published), 1)
         topic, payload = c.published[0]
         self.assertEqual(topic, "prismo/test_user/status")

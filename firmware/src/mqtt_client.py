@@ -11,13 +11,10 @@ from src.mqtt_contract import (
 )
 
 # Hard ceiling on any single blocking socket operation (connect, CONNACK read,
-# publish, ping). Keeps a poor link from stalling the shared loop for long;
-# well under the 15 s watchdog so a slow op can never freeze the door reader.
+# publish, ping). Keeps a poor link from stalling the shared loop for long. A
+# full _establish() is a handful of these ops, so its worst case stays under
+# the 20 s watchdog.
 _SOCKET_TIMEOUT_S = 3
-
-# Runtime reconnect backoff (maintain() retries forever, capped).
-_RECONNECT_START_MS = 5_000
-_RECONNECT_CAP_MS = 30_000
 
 
 class _PrismoMQTTClient(_SimpleClient):
@@ -51,6 +48,12 @@ def _wifi_connected():
 
 class PrismoMQTT:
     """Contract handler class for MQTT communications, maintaining connection info, callbacks and logs."""
+
+    # Runtime reconnect backoff (maintain() retries forever, capped).
+    # Class-level so unit tests can shrink them per instance.
+    _reconnect_start_ms = 5_000
+    _reconnect_cap_ms = 30_000
+
     def __init__(self):
         self._client = None
         self._user = None
@@ -81,9 +84,8 @@ class PrismoMQTT:
         self._consecutive_failures = 0
         self._MAX_CONSECUTIVE_FAILURES = 3
 
-        self._reconnect_start_ms = _RECONNECT_START_MS
-        self._reconnect_cap_ms = _RECONNECT_CAP_MS
-        self._reconnect_backoff_ms = _RECONNECT_START_MS
+        self._reconnect_backoff_ms = self._reconnect_start_ms
+        self._reconnect_failures = 0
         self._next_reconnect_ms = None
         self._reconnects = 0
 
@@ -187,17 +189,11 @@ class PrismoMQTT:
         if not (self._client and self._user):
             health_log.write_error("MQTT client or user not initialized", client=str(self._client), user=self._user)
             return
-        self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_ADD_KEY))
-        self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_REMOVE_KEY))
-        self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_TRIGGER))
-        self._client.subscribe(device_topic(self._user, SUBTOPIC_CMD_SYNC))
+        # One wildcard covers every cmd/* topic (_on_message dispatches by the
+        # exact topic), so (re)connecting waits for a single SUBACK instead of
+        # four — that keeps _establish()'s blocking budget under the watchdog.
+        self._client.subscribe(device_topic(self._user, "cmd/#"))
         health_log.write_info("MQTT subscribed to command topics", user=self._user)
-
-    def subscribe_commands(self, on_add_key, on_remove_key, on_trigger, on_sync_keys=None):
-        """Back-compat wrapper: store callbacks and subscribe if connected."""
-        self.set_command_callbacks(on_add_key, on_remove_key, on_trigger, on_sync_keys)
-        if self._client:
-            self._subscribe_topics()
 
     def publish_heartbeat(self):
         if self._client is None or self._user is None:
@@ -278,21 +274,26 @@ class PrismoMQTT:
         attempt blocks the loop for a few seconds at most (bounded socket ops),
         and backoff keeps such ticks rare."""
         if not _wifi_connected():
-            # No link: don't burn attempts. Reset the timer so the first
+            # No link: don't burn attempts. Reset the timers so the first
             # attempt fires immediately once WiFi is back.
             self._next_reconnect_ms = None
             self._reconnect_backoff_ms = self._reconnect_start_ms
+            self._reconnect_failures = 0
             return
         now = utime.ticks_ms()
         if self._next_reconnect_ms is not None and utime.ticks_diff(now, self._next_reconnect_ms) < 0:
             return
         try:
-            health_log.write_info("MQTT reconnect attempt")
             self._establish()
             self._next_reconnect_ms = None
             self._reconnect_backoff_ms = self._reconnect_start_ms
+            self._reconnect_failures = 0
         except Exception as e:
-            health_log.write_warn("MQTT reconnect failed", error=str(e))
+            self._reconnect_failures += 1
+            # First failure and every power of two afterwards — evidence
+            # without churning the rotating flash log during a long outage.
+            if self._reconnect_failures & (self._reconnect_failures - 1) == 0:
+                health_log.write_warn("MQTT reconnect failed", failures=self._reconnect_failures, error=str(e))
             self._resolved_host = None  # broker IP may have changed; re-resolve
             self._next_reconnect_ms = utime.ticks_add(now, self._reconnect_backoff_ms)
             self._reconnect_backoff_ms = min(self._reconnect_backoff_ms * 2, self._reconnect_cap_ms)

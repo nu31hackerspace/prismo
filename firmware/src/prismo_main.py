@@ -105,11 +105,13 @@ health_log.write_info("Start reader", connected=mqtt_ok)
 ui.reset()
 ui.ready_to_read()
 
-# 15s: must cover the worst single tick — a trigger-success hold (5s) plus a
-# bounded MQTT op (3s), or one reconnect attempt (a few 3s-bounded socket
-# steps). A pathological TLS reconnect can still trip it; the resulting reboot
-# lands in the proven boot connect path, which is an acceptable last resort.
-wdt = WDT(timeout=15000)
+# 20s: must cover the worst gap between feeds. Two known near-worst cases:
+# a cmd/trigger success (5s hold + 3s-bounded publish) followed in the same
+# reader iteration by a card scan (another 5s hold + 3s publish + 1s pause)
+# ≈ 17.5s; and an MQTT reconnect attempt (DNS + a few 3s-bounded socket ops)
+# ≈ 15-18s. A pathological TLS reconnect can still trip it; that reboot lands
+# in the proven boot connect path, which is an acceptable last resort.
+wdt = WDT(timeout=20000)
 _last_led_connected = state.is_connected
 def on_tick():
     global _last_led_connected
