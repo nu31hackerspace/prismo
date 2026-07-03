@@ -1,9 +1,9 @@
 """Shared device connection state.
 
 `is_connected` is True only while the MQTT link (and therefore WiFi) is up. The
-reader UI uses it to colour the idle sub-light, and the MQTT layer flips it to
-False the instant a connection is lost. In safe mode the device never reconnects
-on its own — it stays offline until the next reboot.
+reader UI uses it to colour the idle sub-light. The MQTT layer flips it both
+ways at runtime: False the instant a connection is lost, True again when the
+tick-driven maintenance re-establishes the link.
 """
 
 from src import health_log

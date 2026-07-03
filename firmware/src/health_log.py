@@ -67,6 +67,12 @@ def gc_collect():
     _gc_runs += 1
 
 
+def uptime_s():
+    """Seconds since boot. Sent in the MQTT heartbeat so the server (and the
+    e2e tests) can tell a runtime reconnect apart from a reboot."""
+    return utime.ticks_diff(utime.ticks_ms(), _boot_ticks_ms) // 1000
+
+
 def _file_size(path):
     try:
         return os.stat(path)[6]

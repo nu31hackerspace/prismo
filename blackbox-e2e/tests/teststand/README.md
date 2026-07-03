@@ -30,6 +30,29 @@ to the Raspberry Pi, and asserts on the **physical** success output pin.
 5. Click **Trigger Success** → MQTT `cmd/trigger` → firmware drives GPIO 2 HIGH →
    relay closes → Pi reads the line active (`lib/gpio.ts`).
 
+## Reconnection specs
+
+Three additional specs (`reconnect-*.spec.ts`) verify the firmware's runtime
+reconnection. They run **after** `hardware-trigger.spec.ts` (alphabetical order,
+`workers: 1`), which matters: that spec flashes the PR's firmware build, and the
+reconnect specs re-provision it via the fast `config_dev.py` injection path. If
+`hardware-trigger` fails before flashing, the reconnect specs run against stale
+firmware — the `uptime_s` heartbeat guard turns that into a clear assertion
+message instead of a confusing timeout.
+
+| Spec                              | Proves                                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `reconnect-wifi-loss.spec.ts`     | AP outage → device reconnects WiFi+MQTT on its own, without rebooting, and command topics work again                |
+| `reconnect-offline-boot.spec.ts`  | Device boots with no AP (NFC runs offline), then makes its **first** connection when the AP appears                 |
+| `reconnect-broker-outage.spec.ts` | Broker container restart (WiFi stays up) → MQTT-only reconnect path                                                 |
+
+Mechanics: the AP is toggled with `sudo nmcli connection down/up prismo-ap`
+(`lib/wifi.ts`; requires passwordless sudo — the CI runner has it, locally use
+`sudo -E npm run teststand:run`). "No reboot" is proven by the `uptime_s` field
+in the device's status heartbeat staying monotonic across the outage
+(`lib/status-watcher.ts` subscribes on the broker's docker-published port,
+which a wlan0 outage does not affect).
+
 ## One-time stand setup
 
 - Wire the relay per [`test-stand/README.md`](../../README.md).
@@ -75,6 +98,12 @@ All knobs live in `lib/env.ts`, overridable via env vars. Common ones:
 | `TESTSTAND_GPIO_CHIP`   | `gpiochip4`                          | libgpiod chip for the success line   |
 | `TESTSTAND_GPIO_LINE`   | `17`                                 | BCM line wired to the relay          |
 | `SESSION_SECRET`        | `blackbox-secret-not-for-production` | Must match the running app           |
+| `TESTSTAND_LOCAL_MQTT_URL` | `mqtt://localhost:1883`           | Broker as the _test host_ reaches it |
+| `TESTSTAND_AP_PROFILE`  | `prismo-ap`                          | NetworkManager hotspot profile name  |
+| `TESTSTAND_MQTT_CONTAINER` | `blackbox-e2e-mqtt-1`             | Broker container (broker-outage spec) |
+| `TESTSTAND_OFFLINE_TIMEOUT_MS` | `30000`                       | Wait for the Offline badge after an outage |
+| `TESTSTAND_RECONNECT_TIMEOUT_MS` | `120000`                    | Wait for Online after restoring AP/broker |
+| `TESTSTAND_BOOT_OFFLINE_GRACE_MS` | `25000`                    | Boot-with-no-AP settling time        |
 
 > The hotspot must be **2.4 GHz** — the ESP32-C3 has no 5 GHz radio. On
 > dual-band adapters force the band if `nmcli` picks 5 GHz.

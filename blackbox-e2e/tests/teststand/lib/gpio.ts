@@ -43,3 +43,20 @@ export async function waitForSignalActive(
 	} while (Date.now() < deadline);
 	return false;
 }
+
+/**
+ * Polls the success line until it reads inactive, or the timeout elapses.
+ * The firmware holds the pin for SUCCESS_SIGNAL_DURATION (5s) after a trigger,
+ * so specs wait this out before asserting a clean "pin idle" precondition.
+ */
+export async function waitForSignalInactive(
+	timeoutMs: number = config.signalTimeoutMs,
+	pollMs = 100
+): Promise<boolean> {
+	const deadline = Date.now() + timeoutMs;
+	do {
+		if (!(await isSignalActive())) return true;
+		await new Promise((r) => setTimeout(r, pollMs));
+	} while (Date.now() < deadline);
+	return false;
+}

@@ -20,8 +20,8 @@ MUTE_BUZZER=False
 # command handling. Door scanning stays on the local cached allowlist.
 ENABLE_MQTT=True
 
-# Boot connection attempts before the device gives up and runs offline. Safe
-# mode does not reconnect afterwards — it stays offline until the next reboot.
+# Boot connection attempts before the device starts offline. Runtime
+# maintenance then keeps retrying WiFi and MQTT forever with capped backoff.
 WIFI_CONNECT_ATTEMPTS=10
 MQTT_CONNECT_ATTEMPTS=10
 

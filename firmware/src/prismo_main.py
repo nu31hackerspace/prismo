@@ -81,32 +81,47 @@ wifi_ok = wifi_manager.connect(
 
 mqtt_ok = False
 mqtt_cfg = config.get_mqtt_config() if config.ENABLE_MQTT else None
+if mqtt_cfg:
+    # Configure unconditionally: even if WiFi is down at boot, maintain() can
+    # establish the first connection once the network appears.
+    mqtt.configure(*mqtt_cfg)
+    mqtt.set_command_callbacks(on_add_key, on_remove_key, on_trigger, on_sync_keys)
 if wifi_ok and mqtt_cfg:
-    host, port, user, passwd, use_ssl = mqtt_cfg
     for attempt in range(config.MQTT_CONNECT_ATTEMPTS):
         color.mqtt_connecting_pulse()
         try:
-            mqtt.connect(host, port, user, passwd, use_ssl)
-            mqtt.subscribe_commands(on_add_key, on_remove_key, on_trigger, on_sync_keys)
+            mqtt.connect_now()
             mqtt_ok = True
             break
         except Exception as e:
             health_log.write_warn("MQTT connect attempt failed", attempt=attempt + 1, error=str(e))
     color.turn_off_all()
 
-# Safe mode: the connection is established (or not) here at boot. Once running,
-# the device never reconnects on its own — a drop just flips the flag and the
-# idle light to offline until the next reboot.
-state.set_connected(mqtt_ok)
+# Boot ends here with the connection up or not; either way the tick-driven
+# maintenance below keeps retrying WiFi and MQTT forever with capped backoff.
+# state.is_connected is owned by the MQTT layer from now on.
 
 health_log.write_info("Start reader", connected=mqtt_ok)
 ui.reset()
 ui.ready_to_read()
 
-wdt = WDT(timeout=10000)
+# 15s: must cover the worst single tick — a trigger-success hold (5s) plus a
+# bounded MQTT op (3s), or one reconnect attempt (a few 3s-bounded socket
+# steps). A pathological TLS reconnect can still trip it; the resulting reboot
+# lands in the proven boot connect path, which is an acceptable last resort.
+wdt = WDT(timeout=15000)
+_last_led_connected = state.is_connected
 def on_tick():
-    wdt.feed()
+    global _last_led_connected
+    wdt.feed()  # feed first so a slow reconnect attempt gets the full window
+    wifi_manager.maintain()
     if config.ENABLE_MQTT:
         mqtt.maintain()
+    if state.is_connected != _last_led_connected:
+        _last_led_connected = state.is_connected
+        # Refresh the idle light (blue online / red offline), but never fight
+        # the machine-mode latch color.
+        if not (config.DEVICE_MODE == config.DEVICE_MODE_MACHINE and ui.machine_active):
+            ui.ready_to_read()
 
 reader.subscribe(callback=on_key_read, tick_callback=on_tick)

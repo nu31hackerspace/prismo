@@ -28,7 +28,17 @@ firmware/
 └── libs/              # Third-party libraries (frozen as libs.* package)
 ```
 
-## Developer Feature Flags
+## Connectivity
+
+At boot the device tries WiFi then MQTT with bounded attempts and LED feedback
+(`wifi_manager.connect()`, `mqtt.connect_now()`). Once the NFC reader loop is
+running, connectivity is maintained from the loop's tick callback: WiFi loss
+triggers asynchronous reassociation attempts (the ESP-IDF WiFi task does the
+work in the background) and MQTT reconnects with capped exponential backoff,
+resubscribing the command topics each time. Retries continue forever — the
+NFC reader keeps scanning against the local allowlist throughout, and a single
+tick is never blocked for more than a few seconds (bounded socket timeouts,
+well under the watchdog).
 
 `src/config.py` contains compile-time flags for development. Set them before flashing or running via `mpremote`.
 

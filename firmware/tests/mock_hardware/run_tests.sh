@@ -11,7 +11,10 @@ set -euo pipefail
 
 FIRMWARE="$(cd "$(dirname "$0")/../.." && pwd)"
 MICROPYTHON_BIN="${FIRMWARE}/ESP32_GENERIC_C3-20251209-v1.27.0.bin"
-TEST_FILE_LIST=("${FIRMWARE}/tests/mock_hardware/test_keys_updates.py")
+TEST_FILE_LIST=(
+    "${FIRMWARE}/tests/mock_hardware/test_keys_updates.py"
+    "${FIRMWARE}/tests/mock_hardware/test_reconnect.py"
+)
 
 # ---------------------------------------------------------------------------
 # esptool detection: prefer `esptool`, fall back to `esptool.py`

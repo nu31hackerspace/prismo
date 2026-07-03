@@ -27,6 +27,7 @@ export type ScanPayload = {
 
 export type StatusPayload = {
 	online: boolean;
+	uptime_s?: number;
 };
 
 export type LogsLevel = 'INFO' | 'WARN' | 'ERROR';
