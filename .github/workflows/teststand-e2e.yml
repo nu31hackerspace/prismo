@@ -56,6 +56,7 @@ jobs:
     env:
       ESP32_PORT: /dev/ttyESP32C3
       TESTSTAND_SERIAL_PORT: /dev/ttyESP32C3
+      TESTSTAND_EMULATOR_PORT: /dev/ttyTagEmulator
       COMPOSE_FILES: -f docker-compose.yml -f docker-compose.teststand.yml
 
     steps:
@@ -81,6 +82,7 @@ jobs:
           echo "esptool:  $(esptool version 2>&1 || esptool.py version 2>&1 || echo MISSING)"
           echo "gpioget:  $(gpioget --version 2>&1 || gpioget -h 2>&1 | head -1 || echo MISSING)"
           ls -l "$ESP32_PORT" || echo "device $ESP32_PORT MISSING"
+          ls -l "$TESTSTAND_EMULATOR_PORT" || echo "device $TESTSTAND_EMULATOR_PORT MISSING"
           groups
           id
 

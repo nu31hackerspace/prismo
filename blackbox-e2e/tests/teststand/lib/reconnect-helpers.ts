@@ -57,7 +57,8 @@ export async function expectReconnectCycle(
 	page: Page,
 	watcher: StatusWatcher,
 	cut: () => Promise<void>,
-	restore: () => Promise<void>
+	restore: () => Promise<void>,
+	whileDown?: () => Promise<void>
 ): Promise<void> {
 	const before = watcher.latest();
 	expect(before, 'no heartbeat captured before the outage').toBeDefined();
@@ -69,6 +70,9 @@ export async function expectReconnectCycle(
 	// Let the firmware run through at least one failed attempt + backoff before
 	// the link returns, so we exercise the retry loop rather than a lucky race.
 	await page.waitForTimeout(10_000);
+
+	// Extra assertions to run during the outage (e.g. the offline-allowlist scan).
+	if (whileDown) await whileDown();
 
 	await restore();
 	await expect(page.getByText('Online', { exact: true })).toBeVisible({
