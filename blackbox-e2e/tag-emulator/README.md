@@ -1,7 +1,17 @@
-# tmp-emulate-tag
+# tag-emulator
 
 Minimal standalone firmware that turns a PN532 into a **passive ISO14443-A tag
 emulator**.
+
+On the test stand this powers the real-NFC phases of the hardware e2e: the
+suite provisions this firmware onto the second ESP32-C3 (`/dev/ttyTagEmulator`)
+on every run and drives it over serial — see
+`../tests/teststand/lib/tag-emulator.ts`. The `cli/` subfolder is a standalone
+manual debugging tool; the suite does not use it.
+
+> **Do not persist `main.py` as the board's boot script** — its stdin-reader
+> thread breaks mpremote's raw REPL and locks you out (recover with
+> `esptool erase_flash`). The e2e provisioning runs it without saving.
 
 ## Is tag emulation possible with the PN532?
 

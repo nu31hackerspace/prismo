@@ -47,6 +47,12 @@ export const config = {
 	deviceMode: envStr('TESTSTAND_DEVICE_MODE', 'door'),
 	esptoolBin: envStr('TESTSTAND_ESPTOOL_BIN', 'esptool'),
 
+	// ── PN532 tag emulator (second ESP32-C3, see blackbox-e2e/tag-emulator) ─
+	emulatorPort: envStr('TESTSTAND_EMULATOR_PORT', '/dev/ttyTagEmulator'),
+	// One tag-emulation window. The reader completes a scan cycle in ~2s
+	// (500ms poll + 1s post-read sleep), so 10s guarantees several reads.
+	emulateSeconds: Number(envStr('TESTSTAND_EMULATE_SECONDS', '10')),
+
 	// ── Pi GPIO that reads the relay-isolated success channel ─────────────
 	// See test-stand/README.md: success fires → relay closes NO → Pi pin LOW.
 	gpioChip: envStr('TESTSTAND_GPIO_CHIP', 'gpiochip4'),
