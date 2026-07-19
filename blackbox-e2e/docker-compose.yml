@@ -17,7 +17,7 @@ services:
   mongo:
     image: mongo:8
     ports:
-      - '27017:27017'
+      - "27017:27017"
     command: --replSet rs0
     healthcheck:
       test: mongosh --eval "db.runCommand({ping:1})" --quiet
@@ -30,7 +30,7 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-    restart: 'no'
+    restart: "no"
     entrypoint: >
       mongosh --host mongo --eval
       "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
@@ -39,7 +39,7 @@ services:
     build: ../mosquitto
     image: prismo-mqtt:blackbox
     ports:
-      - '1883:1883'
+      - "1883:1883"
     environment:
       - MQTT_ADMIN_USER=admin
       - MQTT_ADMIN_PASSWORD=admin
@@ -55,7 +55,7 @@ services:
       dockerfile: web/Dockerfile
     image: prismo-web-admin:blackbox
     ports:
-      - '13000:3000'
+      - "13000:3000"
     depends_on:
       mongo:
         condition: service_healthy
@@ -75,7 +75,7 @@ services:
       # Mock Google OAuth so the test runner can sign in without real credentials.
       - TEST_MODE=1
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 5s
       timeout: 10s
       retries: 10

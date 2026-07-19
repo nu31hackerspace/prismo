@@ -1,0 +1,26 @@
+name: Blackbox e2e lint merge requset pipeline
+
+on:
+  pull_request:
+
+jobs:
+  blackbox-e2e-lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: blackbox-e2e/package-lock.json
+
+      - name: Install dependencies
+        working-directory: blackbox-e2e
+        run: npm ci
+
+      - name: Lint
+        working-directory: blackbox-e2e
+        run: npm run lint

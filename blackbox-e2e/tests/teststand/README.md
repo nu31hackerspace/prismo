@@ -100,25 +100,25 @@ TESTSTAND_MANAGE_HOTSPOT=false TESTSTAND_MANAGE_INFRA=false npm run teststand:te
 
 All knobs live in `lib/env.ts`, overridable via env vars. Common ones:
 
-| Env var                 | Default                              | Meaning                              |
-| ----------------------- | ------------------------------------ | ------------------------------------ |
-| `TESTSTAND_BASE_URL`    | `http://localhost:13000`             | Web app URL                          |
-| `TESTSTAND_WIFI_SSID`   | `PrismoTest`                         | Hotspot SSID the device joins        |
-| `TESTSTAND_WIFI_PASS`   | `prismotest123`                      | Hotspot password                     |
-| `TESTSTAND_WIFI_IFACE`  | `wlan0`                              | Pi WiFi interface for the hotspot    |
-| `TESTSTAND_MQTT_HOST`   | `192.168.10.1`                       | Broker IP as the _device_ reaches it |
-| `TESTSTAND_SERIAL_PORT` | `/dev/ttyESP32C3`                    | ESP32-C3 serial port                 |
-| `TESTSTAND_EMULATOR_PORT` | `/dev/ttyTagEmulator`              | PN532 tag-emulator serial port       |
-| `TESTSTAND_EMULATE_SECONDS` | `10`                             | One tag-emulation window             |
-| `TESTSTAND_GPIO_CHIP`   | `gpiochip4`                          | libgpiod chip for the success line   |
-| `TESTSTAND_GPIO_LINE`   | `17`                                 | BCM line wired to the relay          |
-| `SESSION_SECRET`        | `blackbox-secret-not-for-production` | Must match the running app           |
-| `TESTSTAND_LOCAL_MQTT_URL` | `mqtt://localhost:1883`           | Broker as the _test host_ reaches it |
-| `TESTSTAND_AP_PROFILE`  | `prismo-ap`                          | NetworkManager hotspot profile name  |
-| `TESTSTAND_MQTT_CONTAINER` | `blackbox-e2e-mqtt-1`             | Broker container (broker-outage spec) |
-| `TESTSTAND_OFFLINE_TIMEOUT_MS` | `30000`                       | Wait for the Offline badge after an outage |
-| `TESTSTAND_RECONNECT_TIMEOUT_MS` | `120000`                    | Wait for Online after restoring AP/broker |
-| `TESTSTAND_BOOT_OFFLINE_GRACE_MS` | `25000`                    | Boot-with-no-AP settling time        |
+| Env var                           | Default                              | Meaning                                    |
+| --------------------------------- | ------------------------------------ | ------------------------------------------ |
+| `TESTSTAND_BASE_URL`              | `http://localhost:13000`             | Web app URL                                |
+| `TESTSTAND_WIFI_SSID`             | `PrismoTest`                         | Hotspot SSID the device joins              |
+| `TESTSTAND_WIFI_PASS`             | `prismotest123`                      | Hotspot password                           |
+| `TESTSTAND_WIFI_IFACE`            | `wlan0`                              | Pi WiFi interface for the hotspot          |
+| `TESTSTAND_MQTT_HOST`             | `192.168.10.1`                       | Broker IP as the _device_ reaches it       |
+| `TESTSTAND_SERIAL_PORT`           | `/dev/ttyESP32C3`                    | ESP32-C3 serial port                       |
+| `TESTSTAND_EMULATOR_PORT`         | `/dev/ttyTagEmulator`                | PN532 tag-emulator serial port             |
+| `TESTSTAND_EMULATE_SECONDS`       | `10`                                 | One tag-emulation window                   |
+| `TESTSTAND_GPIO_CHIP`             | `gpiochip4`                          | libgpiod chip for the success line         |
+| `TESTSTAND_GPIO_LINE`             | `17`                                 | BCM line wired to the relay                |
+| `SESSION_SECRET`                  | `blackbox-secret-not-for-production` | Must match the running app                 |
+| `TESTSTAND_LOCAL_MQTT_URL`        | `mqtt://localhost:1883`              | Broker as the _test host_ reaches it       |
+| `TESTSTAND_AP_PROFILE`            | `prismo-ap`                          | NetworkManager hotspot profile name        |
+| `TESTSTAND_MQTT_CONTAINER`        | `blackbox-e2e-mqtt-1`                | Broker container (broker-outage spec)      |
+| `TESTSTAND_OFFLINE_TIMEOUT_MS`    | `30000`                              | Wait for the Offline badge after an outage |
+| `TESTSTAND_RECONNECT_TIMEOUT_MS`  | `120000`                             | Wait for Online after restoring AP/broker  |
+| `TESTSTAND_BOOT_OFFLINE_GRACE_MS` | `25000`                              | Boot-with-no-AP settling time              |
 
 > The hotspot must be **2.4 GHz** — the ESP32-C3 has no 5 GHz radio. On
 > dual-band adapters force the band if `nmcli` picks 5 GHz.

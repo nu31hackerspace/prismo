@@ -1,5 +1,5 @@
-import { defineConfig, devices } from '@playwright/test';
-import { config as standConfig } from './tests/teststand/lib/env';
+import { defineConfig, devices } from "@playwright/test";
+import { config as standConfig } from "./tests/teststand/lib/env";
 
 // NOTE: deliberately no dotenv here. Unlike playwright.config.ts, this suite is
 // configured explicitly via the orchestrator / shell env (see lib/env.ts), so a
@@ -15,31 +15,31 @@ import { config as standConfig } from './tests/teststand/lib/env';
  * its own against a live stack: `npm run teststand:test`.
  */
 export default defineConfig({
-	testDir: './tests/teststand',
-	testMatch: '**/*.spec.ts',
-	fullyParallel: false,
-	forbidOnly: !!process.env.CI,
-	retries: 0,
-	workers: 1,
-	reporter: [['list'], ['html', { open: 'never' }]],
-	// Hardware steps (flash + boot + GPIO) are slow; give each test room.
-	timeout: 180_000,
-	use: {
-		baseURL: standConfig.baseUrl,
-		headless: true,
-		// Keep video + trace for every run (pass or fail) for max diagnostics.
-		video: 'on',
-		trace: 'on'
-	},
-	projects: [
-		{
-			name: 'chromium',
-			use: {
-				...devices['Desktop Chrome'],
-				launchOptions: {
-					args: ['--no-sandbox', '--disable-setuid-sandbox']
-				}
-			}
-		}
-	]
+  testDir: "./tests/teststand",
+  testMatch: "**/*.spec.ts",
+  fullyParallel: false,
+  forbidOnly: !!process.env.CI,
+  retries: 0,
+  workers: 1,
+  reporter: [["list"], ["html", { open: "never" }]],
+  // Hardware steps (flash + boot + GPIO) are slow; give each test room.
+  timeout: 180_000,
+  use: {
+    baseURL: standConfig.baseUrl,
+    headless: true,
+    // Keep video + trace for every run (pass or fail) for max diagnostics.
+    video: "on",
+    trace: "on",
+  },
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: {
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        },
+      },
+    },
+  ],
 });

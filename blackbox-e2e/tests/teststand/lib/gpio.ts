@@ -6,39 +6,46 @@
  * v1 (`0` / `1`) and v2 (`"17"=active` / `inactive`), so we parse both. The
  * full command is overridable via TESTSTAND_GPIOGET_BIN for unusual setups.
  */
-import { config } from './env';
-import { run } from './exec';
+import { config } from "./env";
+import { run } from "./exec";
 
 /** Returns the raw logical level of the line: 0 (LOW) or 1 (HIGH). */
 export async function readLevel(): Promise<number> {
-	const { stdout } = await run(config.gpioGetBin, ['-c', config.gpioChip, config.gpioLine], {
-		timeoutMs: 5_000
-	});
-	const s = stdout.trim().toLowerCase();
-	// v2 textual form first ("inactive" contains "active", so test it first).
-	if (s.includes('inactive')) return 0;
-	if (s.includes('active')) return 1;
-	const m = s.match(/-?\d+/);
-	if (!m) throw new Error(`Could not parse gpioget output: ${JSON.stringify(stdout)}`);
-	return Number(m[0]) ? 1 : 0;
+  const { stdout } = await run(
+    config.gpioGetBin,
+    ["-c", config.gpioChip, config.gpioLine],
+    {
+      timeoutMs: 5_000,
+    },
+  );
+  const s = stdout.trim().toLowerCase();
+  // v2 textual form first ("inactive" contains "active", so test it first).
+  if (s.includes("inactive")) return 0;
+  if (s.includes("active")) return 1;
+  const m = s.match(/-?\d+/);
+  if (!m)
+    throw new Error(
+      `Could not parse gpioget output: ${JSON.stringify(stdout)}`,
+    );
+  return Number(m[0]) ? 1 : 0;
 }
 
 /** True when the line currently reads the "success signal active" level. */
 export async function isSignalActive(): Promise<boolean> {
-	return (await readLevel()) === config.gpioActiveLevel;
+  return (await readLevel()) === config.gpioActiveLevel;
 }
 
 async function waitForSignal(
-	active: boolean,
-	timeoutMs: number,
-	pollMs: number
+  active: boolean,
+  timeoutMs: number,
+  pollMs: number,
 ): Promise<boolean> {
-	const deadline = Date.now() + timeoutMs;
-	do {
-		if ((await isSignalActive()) === active) return true;
-		await new Promise((r) => setTimeout(r, pollMs));
-	} while (Date.now() < deadline);
-	return false;
+  const deadline = Date.now() + timeoutMs;
+  do {
+    if ((await isSignalActive()) === active) return true;
+    await new Promise((r) => setTimeout(r, pollMs));
+  } while (Date.now() < deadline);
+  return false;
 }
 
 /**
@@ -46,10 +53,10 @@ async function waitForSignal(
  * Returns true if the signal was observed.
  */
 export async function waitForSignalActive(
-	timeoutMs: number = config.signalTimeoutMs,
-	pollMs = 100
+  timeoutMs: number = config.signalTimeoutMs,
+  pollMs = 100,
 ): Promise<boolean> {
-	return waitForSignal(true, timeoutMs, pollMs);
+  return waitForSignal(true, timeoutMs, pollMs);
 }
 
 /**
@@ -58,10 +65,10 @@ export async function waitForSignalActive(
  * so specs wait this out before asserting a clean "pin idle" precondition.
  */
 export async function waitForSignalInactive(
-	timeoutMs: number = config.signalTimeoutMs,
-	pollMs = 100
+  timeoutMs: number = config.signalTimeoutMs,
+  pollMs = 100,
 ): Promise<boolean> {
-	return waitForSignal(false, timeoutMs, pollMs);
+  return waitForSignal(false, timeoutMs, pollMs);
 }
 
 /**
@@ -69,11 +76,14 @@ export async function waitForSignalInactive(
  * A wrongly-allowed scan holds the pin active for 5s, far longer than the
  * sampling interval, so it cannot slip between polls.
  */
-export async function signalStayedInactive(windowMs: number, pollMs = 200): Promise<boolean> {
-	const deadline = Date.now() + windowMs;
-	do {
-		if (await isSignalActive()) return false;
-		await new Promise((r) => setTimeout(r, pollMs));
-	} while (Date.now() < deadline);
-	return true;
+export async function signalStayedInactive(
+  windowMs: number,
+  pollMs = 200,
+): Promise<boolean> {
+  const deadline = Date.now() + windowMs;
+  do {
+    if (await isSignalActive()) return false;
+    await new Promise((r) => setTimeout(r, pollMs));
+  } while (Date.now() < deadline);
+  return true;
 }

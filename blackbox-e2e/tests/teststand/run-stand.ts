@@ -15,99 +15,125 @@
  *   sudo -E npm run teststand:run        # full run (hotspot needs root)
  *   TESTSTAND_MANAGE_HOTSPOT=false ...   # if the hotspot is already up
  */
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { config } from './lib/env';
-import { run, spawnStream } from './lib/exec';
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { config } from "./lib/env";
+import { run, spawnStream } from "./lib/exec";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(__dirname, '../../..');
-const webDir = path.join(repoRoot, 'web');
-const composeDir = path.join(repoRoot, 'blackbox-e2e');
+const repoRoot = path.resolve(__dirname, "../../..");
+const webDir = path.join(repoRoot, "web");
+const composeDir = path.join(repoRoot, "blackbox-e2e");
 
 const flag = (name: string, fallback: string) =>
-	(process.env[name] ?? fallback).toLowerCase() === 'true';
+  (process.env[name] ?? fallback).toLowerCase() === "true";
 
-const MANAGE_HOTSPOT = flag('TESTSTAND_MANAGE_HOTSPOT', 'true');
-const MANAGE_INFRA = flag('TESTSTAND_MANAGE_INFRA', 'true');
-const TEARDOWN = flag('TESTSTAND_TEARDOWN', 'true');
+const MANAGE_HOTSPOT = flag("TESTSTAND_MANAGE_HOTSPOT", "true");
+const MANAGE_INFRA = flag("TESTSTAND_MANAGE_INFRA", "true");
+const TEARDOWN = flag("TESTSTAND_TEARDOWN", "true");
 
-const composeArgs = ['compose', '-f', 'docker-compose.yml', '-f', 'docker-compose.teststand.yml'];
+const composeArgs = [
+  "compose",
+  "-f",
+  "docker-compose.yml",
+  "-f",
+  "docker-compose.teststand.yml",
+];
 
 // Reuse the proven AP setup the stand already uses (2.4 GHz, wlan0 →
 // 192.168.10.1, SSID PrismoTest). env.ts defaults are kept in sync with it.
-const apScript = path.join(repoRoot, 'firmware/tests/real_hardware/start-ap.sh');
+const apScript = path.join(
+  repoRoot,
+  "firmware/tests/real_hardware/start-ap.sh",
+);
 
 async function hotspotUp(): Promise<void> {
-	console.log(`\n▶ Starting WiFi hotspot "${config.wifiSsid}" on ${config.wifiIface}…`);
-	// No outer sudo — start-ap.sh sudo's its own privileged nmcli/rfkill calls.
-	await run('bash', [apScript]);
-	console.log(`  Device MQTT target: mqtt://${config.deviceMqttHost}:${config.deviceMqttPort}`);
+  console.log(
+    `\n▶ Starting WiFi hotspot "${config.wifiSsid}" on ${config.wifiIface}…`,
+  );
+  // No outer sudo — start-ap.sh sudo's its own privileged nmcli/rfkill calls.
+  await run("bash", [apScript]);
+  console.log(
+    `  Device MQTT target: mqtt://${config.deviceMqttHost}:${config.deviceMqttPort}`,
+  );
 }
 
 async function hotspotDown(): Promise<void> {
-	console.log('\n▶ Stopping WiFi hotspot…');
-	await run('sudo', ['nmcli', 'connection', 'down', config.apProfileName], { check: false });
+  console.log("\n▶ Stopping WiFi hotspot…");
+  await run("sudo", ["nmcli", "connection", "down", config.apProfileName], {
+    check: false,
+  });
 }
 
 async function infraUp(): Promise<void> {
-	console.log('\n▶ Starting production stack (Mongo / MQTT / web)…');
-	// Only app + its deps (mongo, mongo-init, mqtt); the worker isn't needed and
-	// its image is multi-GB.
-	await run('docker', [...composeArgs, 'up', '--build', '-d', 'app'], {
-		cwd: composeDir,
-		timeoutMs: 600_000
-	});
+  console.log("\n▶ Starting production stack (Mongo / MQTT / web)…");
+  // Only app + its deps (mongo, mongo-init, mqtt); the worker isn't needed and
+  // its image is multi-GB.
+  await run("docker", [...composeArgs, "up", "--build", "-d", "app"], {
+    cwd: composeDir,
+    timeoutMs: 600_000,
+  });
 
-	console.log('  Waiting for the app to become healthy…');
-	for (let i = 0; i < 60; i++) {
-		const { stdout } = await run(
-			'docker',
-			[...composeArgs, 'ps', 'app', '--format', '{{.Health}}'],
-			{
-				cwd: composeDir,
-				check: false
-			}
-		);
-		if (stdout.trim() === 'healthy') {
-			console.log('  App is healthy.');
-			return;
-		}
-		await new Promise((r) => setTimeout(r, 2_000));
-	}
-	throw new Error('App did not become healthy in time');
+  console.log("  Waiting for the app to become healthy…");
+  for (let i = 0; i < 60; i++) {
+    const { stdout } = await run(
+      "docker",
+      [...composeArgs, "ps", "app", "--format", "{{.Health}}"],
+      {
+        cwd: composeDir,
+        check: false,
+      },
+    );
+    if (stdout.trim() === "healthy") {
+      console.log("  App is healthy.");
+      return;
+    }
+    await new Promise((r) => setTimeout(r, 2_000));
+  }
+  throw new Error("App did not become healthy in time");
 }
 
 async function infraDown(): Promise<void> {
-	console.log('\n▶ Stopping production stack…');
-	await run('docker', [...composeArgs, 'down', '-v'], { cwd: composeDir, check: false });
+  console.log("\n▶ Stopping production stack…");
+  await run("docker", [...composeArgs, "down", "-v"], {
+    cwd: composeDir,
+    check: false,
+  });
 }
 
 async function runTests(): Promise<number> {
-	console.log('\n▶ Running the hardware Playwright suite…');
-	return spawnStream('npx', ['playwright', 'test', '--config', 'playwright.teststand.config.ts'], {
-		cwd: webDir,
-		env: process.env
-	});
+  console.log("\n▶ Running the hardware Playwright suite…");
+  return spawnStream(
+    "npx",
+    ["playwright", "test", "--config", "playwright.teststand.config.ts"],
+    {
+      cwd: webDir,
+      env: process.env,
+    },
+  );
 }
 
 async function main(): Promise<void> {
-	let exitCode = 1;
-	try {
-		if (MANAGE_HOTSPOT) await hotspotUp();
-		if (MANAGE_INFRA) await infraUp();
-		exitCode = await runTests();
-	} finally {
-		if (TEARDOWN) {
-			if (MANAGE_INFRA) await infraDown();
-			if (MANAGE_HOTSPOT) await hotspotDown();
-		}
-	}
-	console.log(exitCode === 0 ? '\n✅ Test stand run passed.' : '\n❌ Test stand run failed.');
-	process.exit(exitCode);
+  let exitCode = 1;
+  try {
+    if (MANAGE_HOTSPOT) await hotspotUp();
+    if (MANAGE_INFRA) await infraUp();
+    exitCode = await runTests();
+  } finally {
+    if (TEARDOWN) {
+      if (MANAGE_INFRA) await infraDown();
+      if (MANAGE_HOTSPOT) await hotspotDown();
+    }
+  }
+  console.log(
+    exitCode === 0
+      ? "\n✅ Test stand run passed."
+      : "\n❌ Test stand run failed.",
+  );
+  process.exit(exitCode);
 }
 
 main().catch((err) => {
-	console.error(err);
-	process.exit(1);
+  console.error(err);
+  process.exit(1);
 });

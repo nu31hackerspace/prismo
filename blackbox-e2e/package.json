@@ -6,7 +6,9 @@
   "scripts": {
     "test": "playwright test",
     "teststand:run": "tsx tests/teststand/run-stand.ts",
-    "teststand:test": "playwright test --config playwright.teststand.config.ts"
+    "teststand:test": "playwright test --config playwright.teststand.config.ts",
+    "lint": "prettier --check .",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
