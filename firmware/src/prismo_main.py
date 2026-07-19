@@ -4,7 +4,6 @@ from src import reader
 from src import reader_ui
 from src import config
 from src import health_log
-from src import state
 from src.mqtt_client import PrismoMQTT
 from src import color
 
