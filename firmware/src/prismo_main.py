@@ -11,6 +11,12 @@ from src import color
 ui = reader_ui.ReaderUI()
 mqtt = PrismoMQTT()
 
+wifi_manager = wifi_manager.WiFiManager()
+wifi_ok = wifi_manager.connect(
+    on_attempt=color.wifi_connecting_pulse,
+    on_complete=color.turn_off_all,
+)
+
 def on_new_config_callback():
     health_log.write_info("New config saved")
     ui.show_configuration_save()
@@ -73,12 +79,6 @@ def on_sync_keys(keys):
     except Exception as e:
         health_log.write_warn("sync_keys failed", error=str(e))
 
-wifi_manager = wifi_manager.WiFiManager()
-wifi_ok = wifi_manager.connect(
-    on_attempt=color.wifi_connecting_pulse,
-    on_complete=color.turn_off_all,
-)
-
 mqtt_ok = False
 mqtt_cfg = config.get_mqtt_config() if config.ENABLE_MQTT else None
 if mqtt_cfg:
@@ -112,18 +112,10 @@ ui.ready_to_read()
 # ≈ 15-18s. A pathological TLS reconnect can still trip it; that reboot lands
 # in the proven boot connect path, which is an acceptable last resort.
 wdt = WDT(timeout=20000)
-_last_led_connected = state.is_connected
 def on_tick():
-    global _last_led_connected
     wdt.feed()  # feed first so a slow reconnect attempt gets the full window
-    wifi_manager.maintain()
     if config.ENABLE_MQTT:
         mqtt.maintain()
-    if state.is_connected != _last_led_connected:
-        _last_led_connected = state.is_connected
-        # Refresh the idle light (blue online / red offline), but never fight
-        # the machine-mode latch color.
-        if not (config.DEVICE_MODE == config.DEVICE_MODE_MACHINE and ui.machine_active):
-            ui.ready_to_read()
 
 reader.subscribe(callback=on_key_read, tick_callback=on_tick)
+
