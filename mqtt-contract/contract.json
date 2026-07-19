@@ -29,7 +29,12 @@
 			"payload": {
 				"type": "object",
 				"properties": {
-					"online": { "type": "boolean", "required": true }
+					"online": { "type": "boolean", "required": true },
+					"uptime_s": {
+						"type": "integer",
+						"required": false,
+						"description": "Seconds since device boot (lets tests distinguish a runtime reconnect from a reboot)"
+					}
 				}
 			}
 		},

@@ -45,16 +45,13 @@ export const config = {
 	serialPort: envStr('TESTSTAND_SERIAL_PORT', '/dev/ttyESP32C3'),
 	mpremoteBin: envStr('TESTSTAND_MPREMOTE_BIN', 'mpremote'),
 	deviceMode: envStr('TESTSTAND_DEVICE_MODE', 'door'),
-	// Skip the boot animation/sounds on the stand: the animation otherwise trips
-	// the MicroPython task watchdog on boot (observed WDT reset before WiFi).
-	quickStart: envStr('TESTSTAND_QUICK_START', 'true') === 'true',
-	muteBuzzer: envStr('TESTSTAND_MUTE_BUZZER', 'true') === 'true',
-	// Optional one-time base-firmware (re)flash before injecting config.
-	// Requires a manual power-cycle afterwards (ESP32-C3 USB-JTAG quirk), so
-	// it is OFF by default — the per-run path only injects config + soft-resets.
-	flashBaseFirmware: envStr('TESTSTAND_FLASH_BASE', 'false') === 'true',
-	firmwareBin: envStr('TESTSTAND_FIRMWARE_BIN', ''),
 	esptoolBin: envStr('TESTSTAND_ESPTOOL_BIN', 'esptool'),
+
+	// ── PN532 tag emulator (second ESP32-C3, see blackbox-e2e/tag-emulator) ─
+	emulatorPort: envStr('TESTSTAND_EMULATOR_PORT', '/dev/ttyTagEmulator'),
+	// One tag-emulation window. The reader completes a scan cycle in ~2s
+	// (500ms poll + 1s post-read sleep), so 10s guarantees several reads.
+	emulateSeconds: Number(envStr('TESTSTAND_EMULATE_SECONDS', '10')),
 
 	// ── Pi GPIO that reads the relay-isolated success channel ─────────────
 	// See test-stand/README.md: success fires → relay closes NO → Pi pin LOW.
@@ -66,13 +63,35 @@ export const config = {
 	// (confirmed on the stand: idle gpioget = "inactive").
 	gpioActiveLevel: Number(envStr('TESTSTAND_GPIO_ACTIVE_LEVEL', '1')),
 
+	// ── MQTT broker as the *test host* reaches it (docker-published port; a
+	// wlan0 outage does not affect it) ─────────────────────────────────────
+	localMqttUrl: envStr('TESTSTAND_LOCAL_MQTT_URL', 'mqtt://localhost:1883'),
+
+	// ── WiFi AP control (reconnection specs toggle the hotspot) ───────────
+	// NetworkManager profile created by firmware/tests/real_hardware/start-ap.sh.
+	apProfileName: envStr('TESTSTAND_AP_PROFILE', 'prismo-ap'),
+	// Fallback bring-up when the profile is missing; resolved from the repo root.
+	startApScript: envStr('TESTSTAND_START_AP_SCRIPT', 'firmware/tests/real_hardware/start-ap.sh'),
+
+	// ── Docker container names (reconnect-broker-outage spec) ─────────────
+	mqttContainer: envStr('TESTSTAND_MQTT_CONTAINER', 'blackbox-e2e-mqtt-1'),
+
 	// ── Timing ────────────────────────────────────────────────────────────
 	// Time allowed for the device to boot, join WiFi, connect MQTT and appear
 	// Online after the config is injected and the board soft-resets.
 	onlineTimeoutMs: Number(envStr('TESTSTAND_ONLINE_TIMEOUT_MS', '60000')),
 	// Window to observe the success pin after clicking Trigger Success.
 	// Firmware holds the pin for SUCCESS_SIGNAL_DURATION (5s); allow MQTT latency.
-	signalTimeoutMs: Number(envStr('TESTSTAND_SIGNAL_TIMEOUT_MS', '8000'))
+	signalTimeoutMs: Number(envStr('TESTSTAND_SIGNAL_TIMEOUT_MS', '8000')),
+	// Badge flips Offline once heartbeats (5s) stop and the page's 10s timer
+	// fires; 30s gives 2x margin over the worst case.
+	offlineTimeoutMs: Number(envStr('TESTSTAND_OFFLINE_TIMEOUT_MS', '30000')),
+	// Worst-case recovery: WiFi backoff cap 60s + 15s attempt window +
+	// association/DHCP + immediate MQTT reconnect + heartbeat + UI update.
+	reconnectTimeoutMs: Number(envStr('TESTSTAND_RECONNECT_TIMEOUT_MS', '120000')),
+	// Boot with no AP: WiFi boot attempts (~10s + LED pulses) fail, the reader
+	// loop starts and runtime maintenance takes over.
+	bootOfflineGraceMs: Number(envStr('TESTSTAND_BOOT_OFFLINE_GRACE_MS', '25000'))
 } as const;
 
 export type TestStandConfig = typeof config;

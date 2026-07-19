@@ -28,6 +28,19 @@ export async function isSignalActive(): Promise<boolean> {
 	return (await readLevel()) === config.gpioActiveLevel;
 }
 
+async function waitForSignal(
+	active: boolean,
+	timeoutMs: number,
+	pollMs: number
+): Promise<boolean> {
+	const deadline = Date.now() + timeoutMs;
+	do {
+		if ((await isSignalActive()) === active) return true;
+		await new Promise((r) => setTimeout(r, pollMs));
+	} while (Date.now() < deadline);
+	return false;
+}
+
 /**
  * Polls the success line until it reads active, or the timeout elapses.
  * Returns true if the signal was observed.
@@ -36,10 +49,31 @@ export async function waitForSignalActive(
 	timeoutMs: number = config.signalTimeoutMs,
 	pollMs = 100
 ): Promise<boolean> {
-	const deadline = Date.now() + timeoutMs;
+	return waitForSignal(true, timeoutMs, pollMs);
+}
+
+/**
+ * Polls the success line until it reads inactive, or the timeout elapses.
+ * The firmware holds the pin for SUCCESS_SIGNAL_DURATION (5s) after a trigger,
+ * so specs wait this out before asserting a clean "pin idle" precondition.
+ */
+export async function waitForSignalInactive(
+	timeoutMs: number = config.signalTimeoutMs,
+	pollMs = 100
+): Promise<boolean> {
+	return waitForSignal(false, timeoutMs, pollMs);
+}
+
+/**
+ * True when the line stays inactive for the whole window (denied-scan checks).
+ * A wrongly-allowed scan holds the pin active for 5s, far longer than the
+ * sampling interval, so it cannot slip between polls.
+ */
+export async function signalStayedInactive(windowMs: number, pollMs = 200): Promise<boolean> {
+	const deadline = Date.now() + windowMs;
 	do {
-		if (await isSignalActive()) return true;
+		if (await isSignalActive()) return false;
 		await new Promise((r) => setTimeout(r, pollMs));
 	} while (Date.now() < deadline);
-	return false;
+	return true;
 }

@@ -27,8 +27,8 @@ mpremote cp src/*.py :src/ + reset
 ## Key Modules
 
 - `src/prismo_main.py` — top-level orchestrator
-- `src/wifi_manager.py` — WiFi connection (uses callbacks for LED feedback)
-- `src/mqtt_client.py` — MQTT client with robust reconnection and backoff
+- `src/wifi_manager.py` — blocking boot connect (LED feedback callbacks) + non-blocking runtime `maintain()` reconnect state machine
+- `src/mqtt_client.py` — MQTT client with tick-driven runtime reconnection (capped backoff, resubscribes command topics)
 - `src/reader.py` + `src/reader_ui.py` — PN532 NFC reading + LED/buzzer feedback
 - `src/config.py` — device configuration with `{{…}}` templates for production, overridden by `config_dev.py` for local dev
 - `src/color.py` — RGB LED control and animations (start, WiFi pulse, MQTT pulse)
