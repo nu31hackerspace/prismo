@@ -76,11 +76,51 @@ export async function publishDeviceStatus(
 	});
 }
 
+/**
+ * Regenerates the device token via the UI and waits until the credentials
+ * alert shows a password different from the previous one, so the old alert
+ * content is never returned by mistake.
+ */
+export async function regenerateMqttCredentials(
+	page: Page,
+	previous: MqttCredentials
+): Promise<MqttCredentials> {
+	await page.click('button:has-text("Generate Token")');
+	const mqttCredsAlert = page.locator('div', { hasText: 'New MQTT Credentials Generated' }).first();
+	await expect(mqttCredsAlert).toBeVisible();
+
+	let creds: MqttCredentials = previous;
+	await expect(async () => {
+		const rawText = (await mqttCredsAlert.textContent()) ?? '';
+		const mqttUser = rawText.match(/Username:\s*([^\s]+)/)?.[1] ?? '';
+		const mqttPass = rawText.match(/Password:\s*([^\s]+)/)?.[1] ?? '';
+		expect(mqttUser).toBeTruthy();
+		expect(mqttPass).toBeTruthy();
+		expect(mqttPass).not.toBe(previous.mqttPass);
+		creds = { mqttUser, mqttPass };
+	}).toPass({ timeout: 10_000 });
+	return creds;
+}
+
 export type ScanOptions = { allowed?: boolean; machineActive?: boolean };
 
 export async function publishScan(
 	mqttUrl: string,
 	credentials: MqttCredentials,
+	uid: string,
+	opts: ScanOptions = {}
+): Promise<void> {
+	return publishScanTo(mqttUrl, credentials, credentials.mqttUser, uid, opts);
+}
+
+/**
+ * Publishes a scan to an arbitrary device's topic. The target may differ from
+ * the credential owner — the broker ACL is expected to drop such messages.
+ */
+export async function publishScanTo(
+	mqttUrl: string,
+	credentials: MqttCredentials,
+	targetDeviceUser: string,
 	uid: string,
 	opts: ScanOptions = {}
 ): Promise<void> {
@@ -100,7 +140,7 @@ export async function publishScan(
 	await new Promise<void>((resolve, reject) => {
 		client.once('connect', () => {
 			client.publish(
-				deviceTopic(mqttUser.trim(), SUBTOPICS.scan),
+				deviceTopic(targetDeviceUser.trim(), SUBTOPICS.scan),
 				JSON.stringify(payload),
 				{ qos: 1 },
 				(err: Error | undefined) => {
@@ -112,6 +152,99 @@ export async function publishScan(
 		});
 		client.once('error', reject);
 	});
+}
+
+/**
+ * Attempts an MQTT connection and resolves with the broker's refusal message.
+ * Rejects if the broker accepts the credentials.
+ */
+export function expectMqttAuthFailure(
+	mqttUrl: string,
+	username: string,
+	password: string
+): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const client = mqtt.connect(mqttUrl, {
+			username: username.trim(),
+			password: password.trim(),
+			reconnectPeriod: 0,
+			connectTimeout: 5_000,
+			clientId: `ui-test-authfail-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+		});
+		const timer = setTimeout(() => {
+			client.end(true);
+			reject(new Error('Broker did not answer the connection attempt in time'));
+		}, 10_000);
+		client.once('connect', () => {
+			clearTimeout(timer);
+			client.end(true);
+			reject(new Error('Broker accepted credentials that should have been rejected'));
+		});
+		client.once('error', (err) => {
+			clearTimeout(timer);
+			client.end(true);
+			resolve(err.message);
+		});
+	});
+}
+
+export type DeviceSubscription = {
+	/** Returns the first (queued or future) message matching the predicate. */
+	next: (match?: (payload: any) => boolean, timeoutMs?: number) => Promise<unknown>;
+	close: () => Promise<void>;
+};
+
+/**
+ * Connects with the device's own credentials and subscribes to one of its
+ * subtopics — the device's point of view on server→device commands.
+ * Retained messages (e.g. cmd/sync) arrive immediately after subscribing.
+ */
+export async function subscribeAsDevice(
+	mqttUrl: string,
+	credentials: MqttCredentials,
+	subtopic: string
+): Promise<DeviceSubscription> {
+	const { mqttUser, mqttPass } = credentials;
+	const topic = deviceTopic(mqttUser.trim(), subtopic);
+	const client = mqtt.connect(mqttUrl, {
+		username: mqttUser.trim(),
+		password: mqttPass.trim(),
+		clientId: `ui-test-sub-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+	});
+
+	const messages: unknown[] = [];
+	client.on('message', (_topic, raw) => {
+		try {
+			messages.push(JSON.parse(raw.toString()));
+		} catch {
+			// Non-JSON payloads are not part of the contract; ignore them.
+		}
+	});
+
+	await new Promise<void>((resolve, reject) => {
+		client.once('connect', () => {
+			client.subscribe(topic, { qos: 1 }, (err) => (err ? reject(err) : resolve()));
+		});
+		client.once('error', reject);
+	});
+
+	return {
+		async next(match = () => true, timeoutMs = 10_000) {
+			const deadline = Date.now() + timeoutMs;
+			let cursor = 0;
+			while (Date.now() < deadline) {
+				while (cursor < messages.length) {
+					const candidate = messages[cursor++];
+					if (match(candidate)) return candidate;
+				}
+				await new Promise((r) => setTimeout(r, 200));
+			}
+			throw new Error(`No matching message arrived on ${topic} within ${timeoutMs}ms`);
+		},
+		async close() {
+			await client.endAsync();
+		}
+	};
 }
 
 export async function navigateToKeys(page: Page): Promise<void> {
