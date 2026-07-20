@@ -9,17 +9,17 @@
  * Requires passwordless sudo for nmcli (the CI runner has it; locally run the
  * suite via `sudo -E npm run teststand:run` or add an NOPASSWD rule).
  */
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { config } from './env';
-import { run } from './exec';
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { config } from "./env";
+import { run } from "./exec";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const repoRoot = path.resolve(__dirname, '../../../..');
+const repoRoot = path.resolve(__dirname, "../../../..");
 
 /** Take the AP down: the device loses WiFi within seconds. */
 export async function apDown(): Promise<void> {
-	await run('sudo', ['nmcli', 'connection', 'down', config.apProfileName]);
+  await run("sudo", ["nmcli", "connection", "down", config.apProfileName]);
 }
 
 /**
@@ -30,18 +30,18 @@ export async function apDown(): Promise<void> {
  * hotspot must fail loudly, not silently.
  */
 export async function apUp(): Promise<void> {
-	try {
-		await run('sudo', [
-			'nmcli',
-			'connection',
-			'up',
-			config.apProfileName,
-			'ifname',
-			config.wifiIface
-		]);
-	} catch {
-		await run('bash', [path.resolve(repoRoot, config.startApScript)]);
-	}
+  try {
+    await run("sudo", [
+      "nmcli",
+      "connection",
+      "up",
+      config.apProfileName,
+      "ifname",
+      config.wifiIface,
+    ]);
+  } catch {
+    await run("bash", [path.resolve(repoRoot, config.startApScript)]);
+  }
 }
 
 /**
@@ -50,9 +50,9 @@ export async function apUp(): Promise<void> {
  * later spec).
  */
 export async function ensureApUp(): Promise<void> {
-	try {
-		await apUp();
-	} catch (err) {
-		console.error('ensureApUp failed (stand may need manual AP restore):', err);
-	}
+  try {
+    await apUp();
+  } catch (err) {
+    console.error("ensureApUp failed (stand may need manual AP restore):", err);
+  }
 }

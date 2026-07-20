@@ -32,7 +32,7 @@ Yes, partially. Limitations to be aware of:
 ## Wiring (Prismo pin map)
 
 | PN532 | ESP32-C3 GPIO |
-|-------|---------------|
+| ----- | ------------- |
 | SCK   | 1             |
 | MISO  | 2             |
 | MOSI  | 3             |
@@ -41,6 +41,7 @@ Yes, partially. Limitations to be aware of:
 ## How it works
 
 When the script runs, it operates in two phases:
+
 1. **Waiting for Input**: On startup, it does not emulate anything. It waits indefinitely for your input.
 2. **Custom Emulation**: You connect via a serial terminal and send a 6-character hex string. It will immediately begin emulating your custom UID. You can send new keys at any time to update it on the fly.
 
@@ -50,25 +51,30 @@ To interact with the device and send your custom hex key, you need a serial moni
 
 **Option 1: Using `miniterm` (Recommended)**
 If you have Python installed:
+
 ```sh
 python -m serial.tools.miniterm /dev/tty.usbmodem1101 115200
 ```
-*(Press `Ctrl+]` to exit miniterm)*
+
+_(Press `Ctrl+]` to exit miniterm)_
 
 **Option 2: Using `screen` (Built-in on Mac/Linux)**
+
 ```sh
 screen /dev/tty.usbmodem1101 115200
 ```
-*(Press `Ctrl+A` then `K` to kill screen)*
+
+_(Press `Ctrl+A` then `K` to kill screen)_
 
 **Option 3: Using `mpremote repl`**
 If the script is saved as `main.py` on the device and running automatically:
+
 ```sh
 mpremote connect /dev/tty.usbmodem1101 repl
 ```
+
 ## Run
 
 ```sh
 mpremote connect <PORT> cp PN532.py : + cp main.py : + run main.py
 ```
-

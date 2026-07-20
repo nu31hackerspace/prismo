@@ -26,6 +26,12 @@ import network
 import utime
 import ubinascii
 import json
+import _thread
+
+# Serialises the uptime accumulator and log-file writes now that the MQTT
+# worker thread logs concurrently with the reader thread. Held only for the
+# brief mutation/append, never across a socket op.
+_log_lock = _thread.allocate_lock()
 
 # ------------------------------------------------------------------ #
 # Configuration                                                        #
@@ -73,10 +79,11 @@ def gc_collect():
 
 def _uptime_now_ms():
     global _uptime_last_ticks_ms, _uptime_ms
-    now = utime.ticks_ms()
-    _uptime_ms += utime.ticks_diff(now, _uptime_last_ticks_ms)
-    _uptime_last_ticks_ms = now
-    return _uptime_ms
+    with _log_lock:
+        now = utime.ticks_ms()
+        _uptime_ms += utime.ticks_diff(now, _uptime_last_ticks_ms)
+        _uptime_last_ticks_ms = now
+        return _uptime_ms
 
 
 def uptime_s():
@@ -238,10 +245,11 @@ def write_log():
     Call this from a machine.Timer callback or a background thread.
     """
     try:
-        _rotate()
-        line = json.dumps(collect()) + "\n"
-        with open(LOG_FILE, "a") as f:
-            f.write(line)
+        line = json.dumps(collect()) + "\n"  # collect() locks internally
+        with _log_lock:
+            _rotate()
+            with open(LOG_FILE, "a") as f:
+                f.write(line)
     except Exception as e:
         # Never let logging crash the device
         print("[health_log] write error:", e)
@@ -277,10 +285,12 @@ def write_event(level, msg, **kwargs):
     # Always echo to serial so a connected developer can see it live
     print("[{}] {}".format(level, msg), kwargs if kwargs else "")
 
+    line = json.dumps(entry) + "\n"
     try:
-        _rotate()
-        with open(LOG_FILE, "a") as f:
-            f.write(json.dumps(entry) + "\n")
+        with _log_lock:
+            _rotate()
+            with open(LOG_FILE, "a") as f:
+                f.write(line)
     except Exception as e:
         print("[health_log] write_event error:", e)
 

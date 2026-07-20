@@ -15,11 +15,13 @@ node dist/index.js --port <port> --key <hex_string> --time <seconds>
 ```
 
 **Options:**
+
 - `-p, --port <port>`: The serial port of your ESP32-C3 (e.g. `/dev/tty.usbmodem1101` on Mac, or `/dev/ttyACM0` on Linux/Raspberry Pi)
 - `-k, --key <hex>`: The 6-character hex string of the NFC tag to emulate (e.g., `aabbcc`)
 - `-t, --time <seconds>`: How long to emulate the tag before stopping
 
 **Example:**
+
 ```sh
 node dist/index.js -p /dev/tty.usbmodem1101 -k 123456 -t 10
 ```
