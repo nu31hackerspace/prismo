@@ -1,14 +1,23 @@
+import _thread
 from machine import WDT
 from src import wifi_manager
 from src import reader
 from src import reader_ui
 from src import config
 from src import health_log
+from src import mqtt_worker
 from src.mqtt_client import PrismoMQTT
 from src import color
 
 ui = reader_ui.ReaderUI()
 mqtt = PrismoMQTT()
+scan_queue = mqtt_worker.ScanQueue()
+
+# Serialises UI access: on_key_read runs on the reader thread while remote
+# on_trigger commands run on the MQTT worker thread, and both drive the same
+# LED/buzzer/output pin and machine_active state. Guard the call sites (not
+# ReaderUI, whose methods call each other — a non-reentrant lock would deadlock).
+ui_lock = _thread.allocate_lock()
 
 wifi_manager = wifi_manager.WiFiManager()
 wifi_ok = wifi_manager.connect(
@@ -18,21 +27,25 @@ wifi_ok = wifi_manager.connect(
 
 def on_new_config_callback():
     health_log.write_info("New config saved")
-    ui.show_configuration_save()
+    with ui_lock:
+        ui.show_configuration_save()
 
 def on_key_read(uid):
     allowed = config.is_user_allowed(uid)
-    if allowed:
-        if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE:
-            ui.machine_toggle(uid)
+    with ui_lock:
+        if allowed:
+            if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE:
+                ui.machine_toggle(uid)
+            else:
+                ui.success()
         else:
-            ui.success()
-    else:
-        ui.error()
+            ui.error()
+        machine_active = ui.machine_active if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE else None
 
     health_log.write_info("Key scanned", uid=uid, allowed=allowed)
-    machine_active = ui.machine_active if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE else None
-    mqtt.publish_scan(uid, allowed, machine_active=machine_active)
+    # Hand off to the MQTT worker thread; never touch the socket from here so a
+    # slow reconnect can't stall the next card scan.
+    scan_queue.put(uid, allowed, machine_active)
 
 def on_add_key(uid):
     health_log.write_info('add_key command received', uid=uid)
@@ -58,16 +71,17 @@ def on_remove_key(uid):
 
 def on_trigger(action):
     health_log.write_info("Trigger command received", action=action)
-    if action == "success":
-        ui.success()
-    elif action == "error":
-        ui.error()
-    elif action == "on":
-        ui.machine_on()
-    elif action == "off":
-        ui.machine_off()
-    else:
-        health_log.write_warn("Unknown trigger action", action=action)
+    with ui_lock:
+        if action == "success":
+            ui.success()
+        elif action == "error":
+            ui.error()
+        elif action == "on":
+            ui.machine_on()
+        elif action == "off":
+            ui.machine_off()
+        else:
+            health_log.write_warn("Unknown trigger action", action=action)
 
 def on_sync_keys(keys):
     """Replace the local allowlist with the server-authoritative key list."""
@@ -104,17 +118,25 @@ health_log.write_info("Start reader", connected=mqtt_ok)
 ui.reset()
 ui.ready_to_read()
 
-# 20s: must cover the worst gap between feeds. Two known near-worst cases:
-# a cmd/trigger success (5s hold + 3s-bounded publish) followed in the same
-# reader iteration by a card scan (another 5s hold + 3s publish + 1s pause)
-# ≈ 17.5s; and an MQTT reconnect attempt (DNS + a few 3s-bounded socket ops)
-# ≈ 15-18s. A pathological TLS reconnect can still trip it; that reboot lands
-# in the proven boot connect path, which is an acceptable last resort.
+# 20s watchdog, fed every reader iteration by on_tick. The reader thread no
+# longer does network I/O — WiFi/MQTT maintenance runs on the worker thread and
+# never gates a feed. The only thing that now delays a feed is the UI lock: a
+# card scan can wait out an in-flight remote-trigger hold (≤ SUCCESS/ERROR
+# signal duration) before taking its own hold. Two stacked holds stay well
+# under 20s.
 wdt = WDT(timeout=20000)
 def on_tick():
-    wdt.feed()  # feed first so a slow reconnect attempt gets the full window
-    if config.ENABLE_MQTT:
-        mqtt.maintain()
+    # WiFi/MQTT maintenance now runs on the worker thread, so the reader loop
+    # feeds the watchdog every iteration regardless of network state.
+    wdt.feed()
+
+# Sole owner of the MQTT socket: runs WiFi/MQTT reconnection and drains the
+# scan queue off the reader thread. Extra stack for the TLS handshake.
+_thread.stack_size(16 * 1024)
+_thread.start_new_thread(
+    mqtt_worker.run,
+    (mqtt, wifi_manager, scan_queue, config.ENABLE_MQTT),
+)
 
 reader.subscribe(callback=on_key_read, tick_callback=on_tick)
 
