@@ -10,7 +10,10 @@
 		"format": "prettier --write ."
 	},
 	"exports": {
-		".": "./mqtt-contract.generated.ts"
+		".": {
+			"types": "./mqtt-contract.generated.d.ts",
+			"default": "./mqtt-contract.generated.js"
+		}
 	},
 	"devDependencies": {
 		"@types/node": "^25.9.1",

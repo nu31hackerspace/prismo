@@ -1,5 +1,5 @@
 import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
-import { env } from '$env/dynamic/private';
+const env = process.env;
 import type {
 	UserDocument,
 	TrackingDocument,

@@ -1,7 +1,7 @@
 import { usersCol, ObjectId } from './db';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { env } from '$env/dynamic/private';
+const env = process.env;
 
 const SESSION_COOKIE = 'session';
 const DAYS_365_MS = 365 * 24 * 60 * 60 * 1000;

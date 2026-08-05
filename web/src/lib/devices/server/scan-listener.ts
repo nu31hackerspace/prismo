@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import { env } from '$env/dynamic/private';
+const env = process.env;
 import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol } from '$lib/server/db';
 import { TOPIC_PREFIX, SCAN_WILDCARD, STATUS_WILDCARD, type ScanPayload } from 'mqtt-contract';
 
@@ -9,7 +9,7 @@ export function initializeScanListener(): void {
 	if (initialized) return;
 	initialized = true;
 
-	const url = env.MQTT_URL;
+	const url = env.MQTT_URL ?? 'mqtt://localhost:1883';
 	const clientId = `prismo-scan-listener-${process.pid}`;
 	console.log(`[scan-listener] connecting to ${url} (clientId: ${clientId})`);
 

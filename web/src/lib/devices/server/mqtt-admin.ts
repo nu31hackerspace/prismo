@@ -1,6 +1,6 @@
 import mqtt from 'mqtt';
 import crypto from 'crypto';
-import { env } from '$env/dynamic/private';
+const env = process.env;
 import { TOPIC_PREFIX } from 'mqtt-contract';
 
 const DYNSEC_TOPIC = '$CONTROL/dynamic-security/v1';

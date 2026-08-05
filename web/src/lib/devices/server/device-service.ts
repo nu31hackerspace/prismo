@@ -1,7 +1,7 @@
 import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol, ObjectId } from '$lib/server/db';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { env } from '$env/dynamic/private';
+const env = process.env;
 import { createDeviceMqttUser, updateDeviceMqttPassword, publishToDevice } from './mqtt-admin';
 import {
 	SUBTOPICS,
