@@ -17,7 +17,12 @@ Solder the female pins nearby.
 
 ![Step 1.2](step_12.jpg)
 
+Add a socket for PN532
+
+![Step 1.3](step_13.jpg)
+
 _So at the moment you solder all the required components for a working device_, **but we recommend adding the light and sound feature for a better user experience**
+
 
 ## Solder light components
 
