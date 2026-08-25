@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Render head PCB
-        uses: INTI-CMNB/KiBot@v2_dk9
+        uses: INTI-CMNB/KiBot@v2_dk10
         with:
           config: hardware/main/kibot.yaml
           dir: hardware/main/kibot_output_head
@@ -39,7 +39,7 @@ jobs:
           git checkout ${{ github.event.pull_request.base.sha }} -- hardware/main/
 
       - name: Render base PCB
-        uses: INTI-CMNB/KiBot@v2_dk9
+        uses: INTI-CMNB/KiBot@v2_dk10
         with:
           config: hardware/main/kibot.yaml
           dir: hardware/main/kibot_output_base
