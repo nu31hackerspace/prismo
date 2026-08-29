@@ -6,74 +6,70 @@
 
 ### Step 1.1
 
-Solder ESP32-C3 Super mini to Prismo PCB
+Solder pins for ESP32-C3 Super mini to Prismo PCB
 
 ![Step 1.1](step_11.jpg)
 
 ### Step 1.2
 
-Solder the female pins nearby.
-
+Solder the esp32 board
 
 ![Step 1.2](step_12.jpg)
 
 Add a socket for PN532
 
-![Step 1.3](step_13.jpg)
 
-_So at the moment you solder all the required components for a working device_, **but we recommend adding the light and sound feature for a better user experience**
+| Supper mini              | zero pro (alternative board) |
+| ------------------------ | ---------------------------- |
+| ![Step 1.3](step_13.jpg) | ![Step 1.3](step_13a.jpg)    |
 
 
-## Solder light components
 
-The light line connects to the 5V line and is controlled via 3 transistors. 
-
-### Step 2.1 
-
-Solder three 1kOm resistors to the light board output.
-
-![Step 2.1](step_21.jpg)
-
-### Step 2.2
-
-Solder three BC337 transistors
-
-![Step 2.2](step_22.jpg)
-
-### Step 2.3
-
-Solder four 150 Ω resistors for the red line
-
-![Step 2.3](step_23.jpg)
-
-### Step 2.4
-
-Solder four 100 Ω resistors for the green and blue lines
-![Step 2.4](step_24.jpg)
-
-### Step 2.5
-
-Solder four RKGB LED diodes. We use the diodes with a common cathode. Match the long (cathode) pin on the diode with the board GND.
-
-![Step 2.5](step_25.jpg)
-
+So at the moment, you solder all the required components for a working device_, **but we recommend adding the light and sound feature for a better user experience**. The project fully supports both esp32 supper mini and esp32 zero pro
 
 ## Add buzzer
 
 The board has a small buzzer for sound effects; this step is also optional. The sound enhances the user experience.
 
+### Step 2.1
+
+Solder the buzzer and its resistor. You can control the buzzer's volume by choosing the right resistor. We recommend a 100 Ω resistor. For reference, the 1000 Ω resistor makes the buzzer really quiet, so you can hear it only in completely silent environments.
+
+![Step 2.1](step_21.jpg)
+
+## Solder light components
+
+The light line connects to the 5V line and is controlled via 3 transistors. 
+
 ### Step 3.1
 
-Solder the resistor for the buzzer. You can control the buzzer's volume by choosing the right resistor. 
-Our recommendation is a 510Om. For reference, the 1k resistor makes the buzzer really quiet, so you can hear it only in completely silent environments.
+Solder four RKGB LED diodes. Use diodes with a common cathode. Match the long (cathode) pin on the diode with the board GND. The other side of the board is labeled RKGB; the letters match the LED diode pinout.
 
 ![Step 3.1](step_31.jpg)
 
 ### Step 3.2
 
-Solder the buzzer. The positive pin of the buzzer is located near the resistor you solder in step 3.1 
+Solder four 150 Ω resistors for the red line
 
 ![Step 3.2](step_32.jpg)
+
+### Step 3.3
+
+Solder four 100 Ω resistors for the green and blue lines
+![Step 3.3](step_33.jpg)
+
+### Step 3.4 
+
+Solder three 1000 Ω resistors to the light board output.
+
+![Step 3.4](step_34.jpg)
+
+### Step 3.5
+
+Solder three BC337 transistors
+
+![Step 3.5](step_35.jpg)
+
 
 ## Step 4
 
