@@ -5,6 +5,8 @@
 	import Icon from '@iconify/svelte';
 
 	const githubUrl = 'https://github.com/nu31hackerspace/prismo';
+	const docsUrl = `${githubUrl}/blob/main/README.md`;
+	const instructionUrl = `${githubUrl}/blob/main/docs/instruction/instruction.md`;
 
 	const features = [
 		{
@@ -76,6 +78,22 @@
 			prismo
 		</a>
 		<div class="flex items-center gap-3">
+			<div class="hidden items-center gap-3 sm:flex">
+				<MainButton
+					buttonStyle="ghost"
+					size="S"
+					icon="mdi:book-open-variant"
+					label="Docs"
+					link={docsUrl}
+				/>
+				<MainButton
+					buttonStyle="ghost"
+					size="S"
+					icon="mdi:clipboard-list-outline"
+					label="Instruction"
+					link={instructionUrl}
+				/>
+			</div>
 			<MainButton buttonStyle="ghost" size="S" icon="mdi:github" label="GitHub" link={githubUrl} />
 			<MainButton
 				buttonStyle="primary"
@@ -219,11 +237,18 @@
 					GitHub
 				</a>
 				<a
-					href="{githubUrl}/blob/main/README.md"
+					href={docsUrl}
 					rel="noopener noreferrer"
 					class="text-sm text-label-tertiary transition-colors hover:text-label-primary"
 				>
 					Docs
+				</a>
+				<a
+					href={instructionUrl}
+					rel="noopener noreferrer"
+					class="text-sm text-label-tertiary transition-colors hover:text-label-primary"
+				>
+					Instruction
 				</a>
 			</div>
 			<span class="text-xs text-label-tertiary"> open source · MIT license </span>
