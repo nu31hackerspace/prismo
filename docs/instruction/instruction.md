@@ -4,6 +4,8 @@
 
 ## Solder main components
 
+## Main components soldering
+
 ### Step 1.1
 
 Solder pins for ESP32-C3 Super mini to Prismo PCB
@@ -12,22 +14,21 @@ Solder pins for ESP32-C3 Super mini to Prismo PCB
 
 ### Step 1.2
 
-Solder the esp32 board
+Solder the ESP32 board
 
 ![Step 1.2](step_12.jpg)
 
 Add a socket for PN532
 
 
-| Supper mini              | zero pro (alternative board) |
-| ------------------------ | ---------------------------- |
-| ![Step 1.3](step_13.jpg) | ![Step 1.3](step_13a.jpg)    |
+| Super mini              | Zero Pro (alternative board) |
+| ------------------------ | --------------------------- |
+| ![Step 1.3](step_13.jpg) | ![Step 1.3](step_13a.jpg)   |
 
 
+At this point, you solder all the required components for a working device, **but we recommend adding the light and sound feature for a better user experience**. The project fully supports both ESP32 Super Mini and ESP32 Zero Pro
 
-So at the moment, you solder all the required components for a working device_, **but we recommend adding the light and sound feature for a better user experience**. The project fully supports both esp32 supper mini and esp32 zero pro
-
-## Add buzzer
+## 2. Soldering audio - add buzzer
 
 The board has a small buzzer for sound effects; this step is also optional. The sound enhances the user experience.
 
@@ -70,6 +71,7 @@ Solder three BC337 transistors
 
 ![Step 3.5](step_35.jpg)
 
+## Solder PN532 module
 
 ## Step 4
 
@@ -78,3 +80,23 @@ Solder the male pins to the PN532 module
 ![Step 4.0](step_40.jpg)
 
 So congrats, you've done the soldering part. Now you can visit our website app to flash your board [here](https://prismo.nu31.space/)
+
+## Assemble
+
+### Step 5.1
+
+Add two heat inserts into 3d printed housing and add the diffuser; use glue for permanent attachment.
+
+![Step 5.1](step_51.jpg)
+
+### Step 5.2
+
+Attach the PN532 using two PCB standoffs
+
+![Step 5.2](step_52.jpg)
+
+### Step 5.3
+
+Add the main PCB and fix it with two M3 bolts
+
+![Step 5.3](step_53.jpg)
