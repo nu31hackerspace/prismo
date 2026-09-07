@@ -24,10 +24,23 @@ firmware or web, and vice versa.
 
 ## Development setup
 
-Each component has its own README with setup steps:
+Docker is the only prerequisite for the backend/web side. From the repository
+root:
 
+```bash
+./dev.sh
+```
+
+This starts the web app, MongoDB and the MQTT broker, waits until everything is
+serving and prints the URLs. Sign in with the "Sign in with Google" button —
+locally it uses a mock account, so no OAuth credentials are needed. Use
+`./dev.sh emulator` to simulate a device when you don't have a board on the
+desk, and `./dev.sh --help` for the rest.
+
+Component detail:
+
+- **Web app:** [`web/DEVELOPMENT.md`](web/DEVELOPMENT.md)
 - **Firmware:** [`firmware/README.md`](firmware/README.md)
-- **Web app:** [`web/README.md`](web/README.md) and [`web/DEVELOPMENT.md`](web/DEVELOPMENT.md)
 
 ### Firmware: enable the pre-commit hook
 

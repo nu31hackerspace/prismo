@@ -1,214 +1,182 @@
-## Quick Start (Dev Container)
+# Development
 
-The fastest way to get the full stack running locally. Everything runs in Docker — no local Node.js, MongoDB, or MQTT setup needed. Run all commands from the repository root.
+## Quick start
 
-### Start
-
-```bash
-bash dev.sh
-```
-
-Or manually:
+You need **Docker** and nothing else — no local Node.js, MongoDB or Mosquitto.
+Run from the repository root:
 
 ```bash
-docker compose -f docker-compose.dev.yml up --build -d
+./dev.sh
 ```
 
-### Available Services
+That starts the web app, MongoDB (as a single-node replica set), a Mosquitto
+broker and a database viewer, waits until the app is actually serving, prints
+the URLs and then follows the app logs. Ctrl+C detaches; the stack keeps
+running.
 
-| Service               | URL                   | Credentials   |
-| --------------------- | --------------------- | ------------- |
-| SvelteKit app (HMR)   | http://localhost:3000 | admin / admin |
-| Compass Web (MongoDB) | http://localhost:5000 | admin / admin |
-| MQTT broker           | mqtt://localhost:1883 | admin / admin |
+| Service        | URL                   | Credentials   |
+| -------------- | --------------------- | ------------- |
+| Web app        | http://localhost:3000 | see below     |
+| MongoDB viewer | http://localhost:5000 | admin / admin |
+| MongoDB        | localhost:27017       | no auth       |
+| MQTT broker    | mqtt://localhost:1883 | admin / admin |
+
+### Signing in
+
+Click **Sign in with Google**. Locally the stack runs with `TEST_MODE=1`, which
+swaps the Google OAuth client for a mock — you are logged straight in as a test
+user and **no Google credentials are needed**.
+
+To exercise the real Google flow instead, put this in the root `.env`:
+
+```env
+DEV_MOCK_LOGIN=
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+```
+
+### Port already in use
+
+If something on your machine already owns 3000 / 27017 / 1883 / 5000, `./dev.sh`
+says so before starting anything. Copy `.env.example` to `.env` in the repository
+root and change the ports:
+
+```env
+WEB_PORT=3100
+MONGO_PORT=27117
+MQTT_PORT=1983
+MONGO_VIEWER_PORT=5100
+```
+
+## Commands
+
+All of these are run from the repository root.
+
+```bash
+./dev.sh                 # start everything, follow app logs
+./dev.sh --help          # full command list
+./dev.sh down            # stop, keep data
+./dev.sh reset           # stop and wipe the database / broker state
+./dev.sh logs [service]  # follow logs (default: app)
+./dev.sh ps              # service status
+./dev.sh shell           # bash inside the app container
+./dev.sh test            # run the Playwright E2E suite
+```
 
 ### Live editing
 
-- **Web app**: The `web/` directory is mounted into the `app` container. Any change to `.svelte`, `.ts`, or other source files triggers Vite HMR instantly.
-- **Worker**: `worker/worker.py` and `worker/build.sh` are mounted read-only into the worker container. Changes are picked up on the next job cycle (no rebuild needed).
+- **Web app** — `web/` is mounted into the `app` container, so any change to a
+  `.svelte` or `.ts` file triggers Vite HMR immediately.
+- **Worker** — `worker/worker.py` and `worker/build.sh` are mounted read-only
+  into the worker container and picked up on the next job cycle.
 
-### Using mqtt.js
+## Working without hardware
 
-Exec into the `app` container to use the MQTT helper:
-
-```bash
-# Subscribe to all topics
-docker compose -f docker-compose.dev.yml exec app \
-  node /mqtt/mqtt.js --mode=read --topic='#'
-
-# Publish a message
-docker compose -f docker-compose.dev.yml exec app \
-  node /mqtt/mqtt.js --mode=write --topic='prismo/test' --message='hello'
-```
-
-The `MQTT_BROKER`, `MQTT_USER`, and `MQTT_PASSWORD` env vars are pre-configured inside the container — `mqtt.js` defaults work out of the box.
-
-### Stop
+`./dev.sh emulator` publishes device→server MQTT messages exactly as a real
+Prismo board would, so you can develop device features without a board on the
+desk. The available messages and their fields come from
+[`mqtt-contract/contract.json`](../mqtt-contract/contract.json):
 
 ```bash
-bash dev-down.sh
+./dev.sh emulator --help
+
+# A card was tapped and accepted
+./dev.sh emulator scan my-device --uid=DEADBEEF --allowed=true
+
+# Heartbeat
+./dev.sh emulator status my-device --online=true --uptime-s=120
 ```
 
----
-
-## Local Development Setup (Manual)
-
-### Prerequisites
-
-- **Node.js** 22+
-- **Docker** (for the worker)
-- **PostgreSQL** instance accessible from your machine
-
----
-
-### 1. Environment
-
-Copy the example env file and fill in your values:
+Use `./dev.sh mqtt` to watch or inject raw traffic:
 
 ```bash
-cp .env.example .env
+./dev.sh mqtt --mode=read  --topic='#'
+./dev.sh mqtt --mode=write --topic='prismo/test' --message='hello'
 ```
 
-Minimum required variables:
+## Firmware build worker
 
-```env
-MONGODB_URL=mongodb://admin:admin@localhost:27017/prismo?authSource=admin
-SESSION_SECRET=any-random-secret-string
-GOOGLE_CLIENT_ID=your-google-client-id
-```
-
----
-
-### 2. Install dependencies
+The `/flasher` page hands firmware builds to a worker container. Its image
+carries the full ESP-IDF and MicroPython toolchain (several GB), so it is **not**
+started by default. Add it only when you work on firmware builds:
 
 ```bash
-npm install
+./dev.sh up --with-worker
 ```
 
----
+Then log in, open `/flasher`, enter any WiFi credentials and click **Build
+Firmware**. The worker picks the job up and compiles (~1–2 minutes with cached
+objects); the UI polls and switches to **Firmware ready** when it is done.
+Watch it with `./dev.sh logs worker`.
 
-### 3. Start the SvelteKit dev server
+To iterate on the MicroPython sources themselves, also mount them into the
+worker by adding to `docker-compose.dev.yml`:
 
-```bash
-npm run dev
+```yaml
+- ./firmware/src:/firmware/src
 ```
 
-App is available at `http://localhost:5173` with hot module replacement.
+> **Warning:** the worker temporarily rewrites `wifi_config.py` while a build
+> runs (it substitutes the template placeholders, then restores them). Do not
+> edit that file while a job is in progress.
 
----
-
-### 4. Start the worker (Docker with host file mounts)
-
-The worker image is heavy (~several GB — it contains the full ESP-IDF and MicroPython toolchain). Pull the pre-built image from the registry and mount your local worker scripts over it so code changes are picked up instantly without rebuilding:
-
-The worker reads `MONGODB_URL` from the environment. The easiest way to supply it is via the same `.env` file you already have:
+Rebuilding the worker image locally is only needed if you change its Dockerfile
+or toolchain versions (~10 minutes on the first run):
 
 ```bash
-docker run \
-  --rm \
-  --name prismo-worker-dev \
-  --env-file .env \
-  -v "$(pwd)/worker/worker.py:/worker/worker.py" \
-  -v "$(pwd)/worker/build.sh:/worker/build.sh" \
-  ghcr.io/nu31hackerspace/prismo-worker:latest
-```
-
-> **Note:** Make sure `MONGODB_URL` in `.env` uses `host.docker.internal` instead of `localhost` so the container can reach your host MongoDB. On Linux add `--add-host=host.docker.internal:host-gateway` if the hostname doesn't resolve automatically.
-
-The mounts override only the Python script and build wrapper — the toolchain, pre-compiled firmware objects, and firmware source stay in the container as built.
-
-To also mount firmware source (if you are actively changing MicroPython code and want incremental rebuilds from your local files):
-
-```bash
-docker run \
-  --rm \
-  --name prismo-worker-dev \
-  --env-file .env \
-  -v "$(pwd)/worker/worker.py:/worker/worker.py" \
-  -v "$(pwd)/worker/build.sh:/worker/build.sh" \
-  -v "$(pwd)/../firmware/src:/firmware/src" \
-  ghcr.io/nu31hackerspace/prismo-worker:latest
-```
-
-> **Warning:** Mounting `firmware/src` means the worker will temporarily modify your host's `wifi_config.py` while a build job runs (it replaces the template placeholders, then restores them). Avoid editing that file while a job is in progress.
-
----
-
-### 5. Trigger a test build
-
-With both the web app and worker running, log in and go to `/flasher`. Enter any WiFi credentials and click **Build Firmware**. The worker will pick up the job, compile the firmware (~1–2 minutes with cached objects), and store the result. The UI polls every 5 seconds and switches to **Firmware ready** when done.
-
-You can watch the worker logs in the terminal where Docker is running.
-
----
-
-### Rebuilding the worker image locally
-
-Only needed if you change the Dockerfile, toolchain versions, or want to test the full image build:
-
-**Take a long time (~10 minutes) for first run**
-
-```bash
-# Run from the repo root
 docker build -f web/worker/Dockerfile -t prismo-worker:local .
 ```
 
-Then swap `ghcr.io/nu31hackerspace/prismo-worker:latest` with `prismo-worker:local` in the run command above.
+Then point the `worker` service at `prismo-worker:local`.
 
-## Run MQTT
-
-Build docker image
-
-```sh
-docker build -f mosquitto/Dockerfile -t prismo-mqtt:local .
-```
-
-Run docker stack
-
-```sh
-docker stack deploy --resolve-image never -c docker-stack.local.yml prismo_local
-```
-
-In case you run docker in some VM envirment, like colima, use socar for port redirect
-
-```
-socat TCP-LISTEN:11883,fork,reuseaddr TCP:192.168.64.2:1883
-```
-
----
-
-## Running E2E Tests Locally
-
-E2E tests use Playwright and require MongoDB (replica set) and Mosquitto MQTT broker. Run these commands from the repository root:
+## E2E tests
 
 ```bash
-# Start test infrastructure
-docker compose -f docker-compose.ci.yml up -d --build --wait
-
-# Install Playwright browsers (first time only)
-npx playwright install --with-deps chromium
-
-# Run tests
-npx playwright test
-
-# Tear down when done
-docker compose -f docker-compose.ci.yml down -v
+./dev.sh test                            # whole suite
+./dev.sh test --grep device              # a subset
+./dev.sh test --grep-invert firmware     # skip the firmware build spec
 ```
 
-### Using the existing local stack
+The first run installs Chromium inside the app container; it is cached in a
+Docker volume afterwards. Reports land in `web/playwright-report/` — open them
+with `npx playwright show-report` from `web/`.
 
-If you already have the local Docker stack running (`docker-stack.local.yml`), just run:
+One spec (`firmware-download.spec.ts`) drives a real firmware build, so it needs
+the worker: run the stack with `./dev.sh up --with-worker` first, or skip that
+spec with `--grep-invert firmware`. `./dev.sh test` reminds you when the worker
+is not up.
+
+CI runs the same suite against `docker-compose.ci.yml`, which is the same
+infrastructure minus the app container (CI runs the app on the runner itself).
+
+## Running the app outside Docker
+
+Only needed if you want a debugger attached to the SvelteKit process or you
+prefer your host's Node. Start the infrastructure, then run the app on the host:
 
 ```bash
-npx playwright test
+./dev.sh up --no-logs
+cd web
+cp .env.example .env      # then fill in MONGODB_URL / MQTT_URL for localhost
+npm install
+npm run dev
 ```
 
-The tests read `MONGODB_URL` and `MQTT_URL` from your `.env` file automatically.
-
-### Viewing test reports
-
-After a test run, open the HTML report:
+Other useful scripts in `web/`:
 
 ```bash
-npx playwright show-report
+npm run check    # svelte-check / TypeScript
+npm run lint     # Prettier check
+npm run format   # Prettier write
 ```
+
+## Updating the flasher's firmware binary
+
+The flasher serves `web/static/firmware/firmware.bin`. To ship a freshly built
+binary:
+
+```bash
+cp firmware/dist/firmware.bin web/static/firmware/firmware.bin
+```
+
+See [`firmware/README.md`](../firmware/README.md) for how to build it.

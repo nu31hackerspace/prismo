@@ -8,7 +8,7 @@ import { deviceTopic, SUBTOPICS } from 'mqtt-contract';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const CONTRACT_PATH = path.resolve(__dirname, '..', '..', 'mqtt-contract', 'contract.json');
+const CONTRACT_PATH = path.resolve(__dirname, '..', 'mqtt-contract', 'contract.json');
 
 type PropertySchema = {
 	type: string;

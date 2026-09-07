@@ -239,5 +239,5 @@
 		</div>
 	</div>
 
-	<DeviceDangerZone {form} deviceMode={data.device.mode} />
+	<DeviceDangerZone {form} deviceMode={data.device.mode} deviceSlug={data.device.deviceSlug} />
 </main>

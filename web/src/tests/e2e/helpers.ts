@@ -33,7 +33,7 @@ export async function navigateToDevice(page: Page, deviceName: string): Promise<
 }
 
 export async function generateMqttCredentials(page: Page): Promise<MqttCredentials> {
-	await page.click('button:has-text("Generate Token")');
+	await page.click('button:has-text("Setup Device")');
 	const mqttCredsAlert = page.locator('div', { hasText: 'New MQTT Credentials Generated' }).first();
 	await expect(mqttCredsAlert).toBeVisible();
 

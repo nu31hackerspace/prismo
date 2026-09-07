@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
+# Kept for backwards compatibility — use ./dev.sh down (or ./dev.sh reset).
 set -euo pipefail
-
 cd "$(dirname "$0")"
-
-echo "Stopping dev environment and removing volumes..."
-docker compose -f docker-compose.dev.yml down -v
-echo "Done."
+exec ./dev.sh reset

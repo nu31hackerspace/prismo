@@ -99,6 +99,26 @@ The repository is a monorepo. That means all components of the project live in o
 - `firmware/` – the software that runs on the Prismo device. This folder has its own README.md.
 - `hardware/` – the hardware design files, such as KiCad schematics and PCB layout. This folder has its own README.md.
 - `web/` – the web app used to manage devices, register cards, and flash the board with firmware. This app is containerized and can be run locally or on a remote machine.
+- `mqtt-contract/` – the shared MQTT message contract between the firmware and the backend.
+- `blackbox-e2e/` – hardware-in-the-loop tests that run against a physical device on a test rig.
+
+## Run it locally
+
+Docker is the only prerequisite — no local Node.js, MongoDB or MQTT broker needed.
+
+```bash
+git clone https://github.com/nu31hackerspace/prismo.git
+cd prismo
+./dev.sh
+```
+
+This starts the web app, MongoDB and the Mosquitto broker, waits until they are
+ready, and prints the URLs. Open http://localhost:3000 and click **Sign in with
+Google** — locally that uses a mock account, so no OAuth credentials are needed.
+
+No board on your desk? `./dev.sh emulator scan my-device --uid=DEADBEEF --allowed=true`
+publishes the same MQTT messages a real device would. Run `./dev.sh --help` for
+the rest, and see [`web/DEVELOPMENT.md`](web/DEVELOPMENT.md) for the details.
 
 ## Project CI
 

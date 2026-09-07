@@ -6,3 +6,6 @@ __pycache__
 firmware/src/config_dev.py
 playwright-report-*/
 trace-data/
+
+# Local dev overrides for docker-compose.dev.yml
+.env

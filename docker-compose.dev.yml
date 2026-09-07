@@ -1,8 +1,13 @@
+# Local development stack. Start it with `./dev.sh` — that script wraps this
+# file, waits for the services to become healthy and prints the URLs.
+#
+# Host ports can be remapped in the root `.env` (see `.env.example`) when
+# something else on your machine already owns 3000 / 27017 / 1883 / 5000.
 services:
   mongo:
     image: mongo:8
     ports:
-      - '27017:27017'
+      - '${MONGO_PORT:-27017}:27017'
     command: --replSet rs0
     volumes:
       - mongo-dev-data:/data/db
@@ -26,7 +31,7 @@ services:
     image: haohanyang/compass-web:0.3.1
     restart: unless-stopped
     ports:
-      - '5000:8080'
+      - '${MONGO_VIEWER_PORT:-5000}:8080'
     depends_on:
       mongo:
         condition: service_healthy
@@ -38,7 +43,7 @@ services:
   mqtt:
     build: ./mosquitto
     ports:
-      - '1883:1883'
+      - '${MQTT_PORT:-1883}:1883'
     environment:
       - MQTT_ADMIN_USER=admin
       - MQTT_ADMIN_PASSWORD=admin
@@ -54,13 +59,15 @@ services:
     image: node:22
     working_dir: /app
     ports:
-      - '3000:3000'
+      - '${WEB_PORT:-3000}:3000'
       - '24678:24678'
     volumes:
       - ./web:/app
       - app-node-modules:/app/node_modules
-      - ./mosquitto/mqtt.js:/mqtt/mqtt.js:ro
-      - ./mosquitto/package.json:/mqtt/package.json:ro
+      - ./mosquitto:/mqtt
+      - mqtt-tools-node-modules:/mqtt/node_modules
+      - ./mqtt-contract:/mqtt-contract:ro
+      - playwright-browsers:/root/.cache/ms-playwright
     depends_on:
       mongo:
         condition: service_healthy
@@ -72,11 +79,24 @@ services:
       - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
       - SESSION_SECRET=dev-secret-not-for-production
-      - ORIGIN=http://localhost:3000
+      - ORIGIN=http://localhost:${WEB_PORT:-3000}
       - USERNAME=admin
       - PASSWORD=admin
+      # Mock Google sign-in so contributors can log in without OAuth credentials.
+      # Set DEV_MOCK_LOGIN= (empty) in the root .env to use real Google OAuth.
+      - TEST_MODE=${DEV_MOCK_LOGIN-1}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-unused}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-unused}
+      # Consumed by mqtt.js / device-emulator.ts when exec'ing into this container
+      - MQTT_BROKER=mqtt://mqtt:1883
+      - MQTT_USER=admin
+      - MQTT_PASSWORD=admin
+    healthcheck:
+      test: node -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 30s
     command:
       - bash
       - -c
@@ -85,8 +105,11 @@ services:
         cd /mqtt && npm install && cd /app
         npm run dev -- --host 0.0.0.0
 
+  # Firmware build worker. Heavy (~several GB image) and only needed when you
+  # work on /flasher builds, so it is opt-in: `./dev.sh up --with-worker`.
   worker:
     image: ghcr.io/nu31hackerspace/prismo-worker:latest
+    profiles: [worker]
     depends_on:
       mongo:
         condition: service_healthy
@@ -106,3 +129,5 @@ volumes:
   mongo-dev-data:
   mqtt-dev-data:
   app-node-modules:
+  mqtt-tools-node-modules:
+  playwright-browsers:

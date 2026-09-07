@@ -2,7 +2,13 @@ import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol, ObjectId } from '
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { env } from '$env/dynamic/private';
-import { createDeviceMqttUser, updateDeviceMqttPassword, publishToDevice } from './mqtt-admin';
+import {
+	createDeviceMqttUser,
+	updateDeviceMqttPassword,
+	deleteDeviceMqttUser,
+	clearRetainedForDevice,
+	publishToDevice
+} from './mqtt-admin';
 import {
 	SUBTOPICS,
 	type CmdAddKeyPayload,
@@ -100,6 +106,24 @@ export async function generateMqttCredentialsBySlug(deviceSlug: string, userId: 
 		mqttUser: device.deviceSlug,
 		mqttPass: mqttPassword
 	};
+}
+
+/**
+ * Permanently removes a device. Broker credentials are revoked first so a
+ * device that is online right now loses access immediately, and the retained
+ * key list is cleared so the broker stops serving it. Keys and history rows
+ * belong to the device and go with it.
+ */
+export async function deleteDevice(deviceSlug: string, userId: string): Promise<void> {
+	const device = await requireOwnedDevice(deviceSlug, userId);
+	const deviceId = device._id!;
+
+	await clearRetainedForDevice(deviceSlug, [SUBTOPICS.cmd_sync]);
+	await deleteDeviceMqttUser(deviceSlug);
+
+	await deviceKeysCol.deleteMany({ deviceId });
+	await deviceHistoryCol.deleteMany({ deviceId });
+	await devicesCol.deleteOne({ _id: deviceId });
 }
 
 /**

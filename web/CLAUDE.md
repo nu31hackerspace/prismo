@@ -15,7 +15,7 @@
 - `loginUser(page)` — signs in via the UI
 - `createDevice(page, name, mode?)` — creates a device through the form (default mode: `'door'`)
 - `navigateToDevice(page, name)` — clicks through to the device management page
-- `generateMqttCredentials(page)` — clicks "Generate Token" and returns credentials
+- `generateMqttCredentials(page)` — clicks "Setup Device" and returns credentials
 - `publishDeviceStatus(mqttUrl, credentials, online)` — sends a status heartbeat via MQTT
 - Publishing custom MQTT payloads directly using `mqtt.connect` for scan/command events
 
