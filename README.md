@@ -104,21 +104,21 @@ The repository is a monorepo. That means all components of the project live in o
 
 ## Run it locally
 
-Docker is the only prerequisite — no local Node.js, MongoDB or MQTT broker needed.
+Clone a repo
 
 ```bash
 git clone https://github.com/nu31hackerspace/prismo.git
 cd prismo
-./dev.sh
 ```
 
-This starts the web app, MongoDB and the Mosquitto broker, waits until they are
-ready, and prints the URLs. Open http://localhost:3000 and click **Sign in with
-Google** — locally that uses a mock account, so no OAuth credentials are needed.
+Use you favorite agent to start the dev environment, using `.agents/skills/prismo-dev-setup`
 
-No board on your desk? `./dev.sh emulator scan my-device --uid=DEADBEEF --allowed=true`
-publishes the same MQTT messages a real device would. Run `./dev.sh --help` for
-the rest, and see [`web/DEVELOPMENT.md`](web/DEVELOPMENT.md) for the details.
+The skill will setup a few domains:
+
+- `app.prismo.local.nu31.space`
+- `mongo-viewer.prismo.local.nu31.space`
+- `mqtt-viewer.prismo.local.nu31.space`
+- `mqtt.prismo.local.nu31.space`
 
 ## Project CI
 
