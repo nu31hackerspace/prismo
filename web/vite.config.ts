@@ -5,5 +5,8 @@ import devtoolsJson from 'vite-plugin-devtools-json';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
-	server: { port: 3000 }
+	server: {
+		port: 3000,
+		allowedHosts: ['app.prismo.local.nu31.space']
+	}
 });

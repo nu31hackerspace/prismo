@@ -1,0 +1,19 @@
+{
+	local_certs
+}
+
+app.prismo.local.nu31.space {
+	reverse_proxy app:3000
+}
+
+mongo-viewer.prismo.local.nu31.space {
+	reverse_proxy mongo-viewer:8080
+}
+
+mqtt-viewer.prismo.local.nu31.space {
+	reverse_proxy mqtt-viewer:5173
+}
+
+mqtt.prismo.local.nu31.space {
+	reverse_proxy mqtt:9001
+}

@@ -129,6 +129,37 @@ export async function updateDeviceMqttPassword(slug: string, password: string): 
 	console.log(`[mqtt-admin] updateDeviceMqttPassword done: ${slug}`);
 }
 
+export async function deleteDeviceMqttUser(slug: string): Promise<void> {
+	console.log(`[mqtt-admin] deleteDeviceMqttUser: ${slug}`);
+	await sendDynSecCommands([
+		{ command: 'deleteClient', username: slug },
+		{ command: 'deleteRole', rolename: `${slug}-role` }
+	]);
+	console.log(`[mqtt-admin] deleteDeviceMqttUser done: ${slug}`);
+}
+
+/**
+ * Drops the retained messages the broker holds for a device by publishing an
+ * empty retained payload on each topic. Without this the broker would keep
+ * serving stale commands to any client that later owns the same slug.
+ */
+export async function clearRetainedForDevice(slug: string, subtopics: string[]): Promise<void> {
+	const client = await connectAdmin();
+	try {
+		for (const subtopic of subtopics) {
+			const topic = `${TOPIC_PREFIX}/${slug}/${subtopic}`;
+			console.log(`[mqtt-admin] clearing retained: ${topic}`);
+			await new Promise<void>((resolve, reject) => {
+				client.publish(topic, '', { qos: 1, retain: true }, (err) =>
+					err ? reject(err) : resolve()
+				);
+			});
+		}
+	} finally {
+		client.end();
+	}
+}
+
 export async function publishToDevice(
 	slug: string,
 	subtopic: string,

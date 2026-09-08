@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
 	import MainButton from '$lib/components/MainButton.svelte';
 	import Badge from '$lib/components/Badge.svelte';
 	import Icon from '@iconify/svelte';
 	import {
-		isWebSerialSupported,
+		getWebSerialAvailability,
 		connectToDevice,
 		flashFirmware,
 		disconnectDevice,
@@ -16,8 +17,15 @@
 
 	type Token = { mqttUser: string; mqttPass: string };
 
-	let { form, deviceMode }: { form: { token?: Token } | null; deviceMode: 'door' | 'machine' } =
-		$props();
+	let {
+		form,
+		deviceMode,
+		deviceSlug
+	}: {
+		form: { token?: Token } | null;
+		deviceMode: 'door' | 'machine';
+		deviceSlug: string;
+	} = $props();
 
 	// ── MQTT token ────────────────────────────────────────────────────────
 	let newToken = $state<Token | null>(null);
@@ -34,6 +42,37 @@
 		resetFlasher();
 	}
 
+	// ── Delete device ─────────────────────────────────────────────────────
+	let confirmingDelete = $state(false);
+	let deleteConfirmation = $state('');
+	let deleteError = $state('');
+	let deleting = $state(false);
+
+	const canDelete = $derived(deleteConfirmation.trim() === deviceSlug);
+
+	function cancelDelete() {
+		confirmingDelete = false;
+		deleteConfirmation = '';
+		deleteError = '';
+	}
+
+	const submitDelete: SubmitFunction = ({ cancel }) => {
+		if (!canDelete) {
+			cancel();
+			return;
+		}
+		deleting = true;
+		deleteError = '';
+		return async ({ result, update }) => {
+			deleting = false;
+			if (result.type === 'failure') {
+				deleteError = (result.data as { message?: string })?.message ?? 'Failed to delete device';
+				return;
+			}
+			await update();
+		};
+	};
+
 	// ── Flasher state ─────────────────────────────────────────────────────
 	let flasherState = $state<FlasherState>('idle');
 	let firmwareFileId = $state<string | null>(null);
@@ -43,6 +82,7 @@
 	let flashError = $state('');
 	let flashWifiSsid = $state('');
 	let flashWifiPassword = $state('');
+	let showFlashWifiPassword = $state(false);
 	let replugCountdown = $state(0);
 	let bootCountdown = $state(0);
 
@@ -50,7 +90,7 @@
 	let transport: Transport | null = null;
 	let logContainer: HTMLDivElement | undefined = $state();
 
-	const webSerialSupported = isWebSerialSupported();
+	const webSerial = getWebSerialAvailability();
 
 	function resetFlasher() {
 		flasherState = 'idle';
@@ -61,6 +101,7 @@
 		flashError = '';
 		flashWifiSsid = '';
 		flashWifiPassword = '';
+		showFlashWifiPassword = false;
 		esploader = null;
 		transport = null;
 	}
@@ -313,14 +354,24 @@
 						<h4 class="font-display text-base font-bold text-label-primary">Flash Firmware</h4>
 					</div>
 
-					{#if !webSerialSupported}
-						<div
-							class="rounded-xl border border-separator-secondary bg-background-primary p-4 text-center"
-						>
-							<p class="text-sm text-label-secondary">
-								Web Serial API is required. Use <strong>Chrome</strong>, <strong>Edge</strong>, or
-								<strong>Opera</strong> desktop.
-							</p>
+					{#if !webSerial.available}
+						<div class="rounded-xl border border-separator-secondary bg-background-primary p-4">
+							{#if webSerial.reason === 'insecure-origin'}
+								<p class="text-sm text-label-secondary">
+									Flashing needs the Web Serial API, which browsers only expose on a secure origin.
+									This page is served from
+									<strong class="font-mono">{webSerial.origin}</strong> over plain HTTP.
+								</p>
+								<p class="mt-2 text-sm text-label-secondary">
+									Open the app at <strong class="font-mono">http://localhost</strong> or over HTTPS and
+									the flasher will appear.
+								</p>
+							{:else}
+								<p class="text-sm text-label-secondary">
+									Web Serial API is required. Use <strong>Chrome</strong>, <strong>Edge</strong>, or
+									<strong>Opera</strong> desktop.
+								</p>
+							{/if}
 						</div>
 					{:else if flasherState === 'idle'}
 						{#if flashError}
@@ -333,12 +384,23 @@
 								placeholder="WiFi SSID"
 								class="min-w-32 flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary"
 							/>
-							<input
-								type="password"
-								bind:value={flashWifiPassword}
-								placeholder="WiFi Password"
-								class="min-w-32 flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary"
-							/>
+							<div class="relative min-w-32 flex-1">
+								<input
+									type={showFlashWifiPassword ? 'text' : 'password'}
+									bind:value={flashWifiPassword}
+									placeholder="WiFi Password"
+									class="w-full rounded-xl border border-separator-secondary bg-background-primary py-2 pr-10 pl-3 text-sm text-label-primary outline-none focus:border-accent-primary"
+								/>
+								<button
+									type="button"
+									onclick={() => (showFlashWifiPassword = !showFlashWifiPassword)}
+									aria-label={showFlashWifiPassword ? 'Hide WiFi password' : 'Show WiFi password'}
+									title={showFlashWifiPassword ? 'Hide WiFi password' : 'Show WiFi password'}
+									class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-label-secondary hover:text-label-primary"
+								>
+									<Icon icon={showFlashWifiPassword ? 'mdi:eye-off' : 'mdi:eye'} width="18" />
+								</button>
+							</div>
 						</div>
 						<div class="mt-3 flex items-center gap-3">
 							<span class="text-xs text-label-secondary">
@@ -581,18 +643,95 @@
 
 <!-- Danger Zone card -->
 <div class="border-red-500/20 bg-red-500/[0.03] mt-6 rounded-2xl border p-6">
-	<div class="mb-4 flex items-center gap-3">
+	<div class="mb-5 flex items-center gap-3">
 		<div class="rounded-xl bg-background-primary p-2 text-label-secondary">
-			<Icon icon="mdi:key-variant" class="h-5 w-5" />
+			<Icon icon="mdi:alert-outline" class="h-5 w-5" />
 		</div>
-		<h2 class="font-display text-lg font-bold text-label-primary">MQTT Credentials</h2>
-		<Badge label="Danger Zone" variant="error" />
+		<h2 class="font-display text-lg font-bold text-label-primary">Danger Zone</h2>
+		<Badge label="Irreversible" variant="error" />
 	</div>
-	<p class="mb-4 text-sm text-label-secondary">
-		Regenerate credentials for this device. The previous password will stop working immediately and
-		the device will disconnect until reflashed.
-	</p>
-	<form method="POST" action="?/createToken" use:enhance>
-		<MainButton label="Generate Token" icon="mdi:refresh" buttonStyle="secondary" size="M" />
-	</form>
+
+	<div
+		class="divide-y divide-separator-secondary overflow-hidden rounded-xl border border-separator-secondary bg-background-primary"
+	>
+		<div class="flex flex-wrap items-center justify-between gap-4 p-5">
+			<div class="min-w-64 flex-1">
+				<h3 class="font-display text-base font-bold text-label-primary">MQTT Credentials</h3>
+				<p class="mt-1 text-sm text-label-secondary">
+					Regenerate credentials for this device. The previous password will stop working
+					immediately and the device will disconnect until reflashed.
+				</p>
+			</div>
+			<form method="POST" action="?/createToken" use:enhance>
+				<MainButton label="Setup Device" icon="mdi:tools" buttonStyle="secondary" size="M" />
+			</form>
+		</div>
+
+		<div class="p-5">
+			<div class="flex flex-wrap items-center justify-between gap-4">
+				<div class="min-w-64 flex-1">
+					<h3 class="font-display text-base font-bold text-label-primary">Delete Device</h3>
+					<p class="mt-1 text-sm text-label-secondary">
+						Permanently removes this device with its allowed keys, history and broker credentials.
+						The physical board keeps its firmware but can no longer connect.
+					</p>
+				</div>
+				{#if !confirmingDelete}
+					<button
+						type="button"
+						onclick={() => (confirmingDelete = true)}
+						class="border-red-500/40 text-red-500 hover:bg-red-500/10 inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-bold transition-colors"
+					>
+						<Icon icon="mdi:delete-outline" class="h-6 w-6" />
+						Delete Device
+					</button>
+				{/if}
+			</div>
+
+			{#if confirmingDelete}
+				<form
+					method="POST"
+					action="?/deleteDevice"
+					use:enhance={submitDelete}
+					class="border-red-500/20 bg-red-500/5 mt-4 rounded-xl border p-4"
+				>
+					<label for="confirm-slug" class="text-sm text-label-secondary">
+						Type <strong class="font-mono text-label-primary">{deviceSlug}</strong> to confirm.
+					</label>
+					<div class="mt-3 flex flex-wrap gap-3">
+						<input
+							id="confirm-slug"
+							name="confirmSlug"
+							type="text"
+							autocomplete="off"
+							bind:value={deleteConfirmation}
+							placeholder={deviceSlug}
+							class="min-w-48 flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 font-mono text-sm text-label-primary outline-none focus:border-accent-primary"
+						/>
+						<button
+							type="submit"
+							disabled={!canDelete || deleting}
+							class="bg-red-500 hover:bg-red-600 text-white inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							<Icon
+								icon={deleting ? 'mdi:loading' : 'mdi:delete-forever'}
+								class="h-5 w-5 {deleting ? 'animate-spin' : ''}"
+							/>
+							{deleting ? 'Deleting…' : 'Delete Forever'}
+						</button>
+						<button
+							type="button"
+							onclick={cancelDelete}
+							class="rounded-lg px-4 py-2 text-sm font-bold text-label-secondary transition-colors hover:bg-fill-tertiary hover:text-label-primary"
+						>
+							Cancel
+						</button>
+					</div>
+					{#if deleteError}
+						<p class="text-red-500 mt-3 text-xs">{deleteError}</p>
+					{/if}
+				</form>
+			{/if}
+		</div>
+	</div>
 </div>

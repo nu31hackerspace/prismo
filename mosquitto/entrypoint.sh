@@ -14,6 +14,10 @@ cat > "${CONF_FILE}" <<EOF
 listener ${MQTT_PORT}
 allow_anonymous false
 
+listener 9001
+protocol websockets
+allow_anonymous false
+
 plugin /usr/lib/mosquitto_dynamic_security.so
 plugin_opt_config_file ${DYNSEC_FILE}
 

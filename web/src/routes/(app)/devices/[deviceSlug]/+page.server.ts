@@ -1,4 +1,4 @@
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol, ObjectId } from '$lib/server/db';
 import {
@@ -6,7 +6,8 @@ import {
 	removeKeyFromDevice,
 	triggerDevice,
 	forceSyncDevice,
-	generateMqttCredentialsBySlug
+	generateMqttCredentialsBySlug,
+	deleteDevice
 } from '$lib/devices/server/device-service';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
@@ -122,6 +123,20 @@ export const actions: Actions = {
 		} catch (e: unknown) {
 			return fail(400, { message: e instanceof Error ? e.message : 'Unknown error' });
 		}
+	},
+
+	deleteDevice: async ({ request, params, locals }) => {
+		if (!locals.user) return fail(401, { message: 'Unauthorized' });
+		const data = await request.formData();
+		const confirmSlug = (data.get('confirmSlug') as string)?.trim();
+		if (confirmSlug !== params.deviceSlug)
+			return fail(400, { message: 'Device slug does not match' });
+		try {
+			await deleteDevice(params.deviceSlug!, locals.user.id);
+		} catch (e: unknown) {
+			return fail(400, { message: e instanceof Error ? e.message : 'Unknown error' });
+		}
+		throw redirect(303, '/devices');
 	},
 
 	syncKeys: async ({ params, locals }) => {

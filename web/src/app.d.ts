@@ -12,9 +12,6 @@ declare global {
 			};
 			session?: import('$lib/server/auth').UserSession | null;
 		}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
 	}
 }
 

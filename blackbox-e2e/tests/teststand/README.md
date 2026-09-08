@@ -29,7 +29,7 @@ phase):
 1. **Seed auth** — inserts a user + session into Mongo and mints the session
    cookie (the _only_ black-box exception, to skip Google OAuth). See
    `lib/seed-auth.ts`.
-2. **Create device** through the UI, **Generate Token** (real MQTT creds), set
+2. **Create device** through the UI, **Setup Device** (real MQTT creds), set
    the WiFi credentials, **Build Firmware** on the Pi worker, **Download** it.
 3. **Flash** the ESP32-C3 with `esptool` (erase + write the downloaded binary).
 4. Assert the UI shows **Online** (real MQTT heartbeats) and that **Trigger

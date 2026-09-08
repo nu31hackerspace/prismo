@@ -41,8 +41,32 @@ function createLog(type: FlasherLog['type'], message: string): FlasherLog {
 	return { type, message, timestamp: new Date() };
 }
 
+export type WebSerialAvailability =
+	| { available: true }
+	| { available: false; reason: 'insecure-origin'; origin: string }
+	| { available: false; reason: 'unsupported-browser' };
+
+/**
+ * Web Serial is exposed only in a secure context, so `navigator.serial` is
+ * missing both on an unsupported browser and on a supported one served over
+ * plain HTTP from anything other than localhost. The two need different advice.
+ */
+export function getWebSerialAvailability(): WebSerialAvailability {
+	if (typeof navigator === 'undefined' || typeof window === 'undefined') {
+		return { available: false, reason: 'unsupported-browser' };
+	}
+
+	if ('serial' in navigator) return { available: true };
+
+	if (!window.isSecureContext) {
+		return { available: false, reason: 'insecure-origin', origin: window.location.origin };
+	}
+
+	return { available: false, reason: 'unsupported-browser' };
+}
+
 export function isWebSerialSupported(): boolean {
-	return typeof navigator !== 'undefined' && 'serial' in navigator;
+	return getWebSerialAvailability().available;
 }
 
 export async function connectToDevice(callbacks: FlasherCallbacks): Promise<{
