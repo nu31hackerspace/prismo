@@ -1,57 +1,17 @@
-## Project Configuration
+<!-- BEGIN:nextjs-agent-rules -->
 
-- **Language**: TypeScript
-- **Package Manager**: npm
-- **Add-ons**: prettier, tailwindcss, mcp, sveltekit-adapter, mdsvex
+# This is NOT the Next.js you know
 
----
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
-You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
-## Available MCP Tools:
+<!-- END:nextjs-agent-rules -->
 
-### 1. list-sections
+## Frontend UI Standards
 
-Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
-When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
+Based on project conventions, please adhere to the following when developing React components for the web app:
 
-### 2. get-documentation
-
-Retrieves full documentation content for specific sections. Accepts single or multiple sections.
-After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
-
-### 3. svelte-autofixer
-
-Analyzes Svelte code and returns issues and suggestions.
-You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
-
-### 4. playground-link
-
-Generates a Svelte Playground link with the provided code.
-After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
-
-# Prismo Web — Claude Code Guidelines
-
-## E2E Testing Rules
-
-**E2E tests must be fully black-box — no direct database access.**
-
-- Do NOT call `setDeviceModeInDb`, `MongoClient`, or any DB helpers from test files.
-- All test state must be set up through the UI or MQTT messages, exactly as a real user or device would.
-- To create a device in machine mode, pass `mode: 'machine'` to the `createDevice` UI helper — the form sends it to the server.
-- To emulate device commands (scan, status, machine state), publish MQTT messages using the device's credentials obtained via `generateMqttCredentials`.
-- Never reach into the database to verify state — assert only through what the UI shows.
-
-### Helpers that are allowed
-
-- `loginUser(page)` — signs in via the UI
-- `createDevice(page, name, mode?)` — creates a device through the form (default mode: `'door'`)
-- `navigateToDevice(page, name)` — clicks through to the device management page
-- `generateMqttCredentials(page)` — clicks "Setup Device" and returns credentials
-- `publishDeviceStatus(mqttUrl, credentials, online)` — sends a status heartbeat via MQTT
-- Publishing custom MQTT payloads directly using `mqtt.connect` for scan/command events
-
-### Helpers that are forbidden in tests
-
-- `setDeviceModeInDb` — bypasses the UI, not black-box
-- Any direct `MongoClient` usage in spec files
+1. **Forms vs. Event Handlers:** Do NOT use `<form>` elements and `FormData` just to make simple REST API calls. Prefer simple `onClick` handlers directly on action buttons to keep the DOM clean.
+2. **Design System:** Use standard UI components (e.g., `import { Button } from "@/components/ui/button"`) rather than native HTML elements like `<button>`. Utilize the built-in props provided by the component (e.g., the `icon="mdi:icon-name"` prop on `Button` instead of manually nesting an `<Icon>` component).
+3. **Loading States:** Do NOT add manual loading logic or "spinners" for network requests triggered by buttons. The project explicitly omits these in favor of maximum simplicity unless specifically requested.

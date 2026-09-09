@@ -1,7 +1,6 @@
-import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol, ObjectId } from '$lib/server/db';
+import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol, ObjectId } from '@/lib/server/db';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { env } from '$env/dynamic/private';
 import {
 	createDeviceMqttUser,
 	updateDeviceMqttPassword,
@@ -16,7 +15,7 @@ import {
 	type CmdTriggerPayload,
 	type CmdTriggerAction,
 	type CmdSyncPayload
-} from 'mqtt-contract';
+} from '@/lib/mqtt-contract/mqtt-contract.generated';
 
 function generateDeviceSlug(name: string): string {
 	const base = name
@@ -33,7 +32,7 @@ function generateDeviceSlug(name: string): string {
  * so a DB leak does not expose working MQTT credentials.
  */
 function deriveMqttPassword(tokenKey: string): string {
-	const secret = env.SESSION_SECRET;
+	const secret = process.env.SESSION_SECRET;
 	if (!secret) throw new Error('SESSION_SECRET env var is not set');
 	return jwt.sign({ tokenKey: tokenKey }, secret, { noTimestamp: true });
 }

@@ -1,5 +1,5 @@
-import { devicesCol, deviceKeysCol, keysCol, ObjectId } from '$lib/server/db';
-import { addKeyToDevice, removeKeyFromDevice } from '$lib/devices/server/device-service';
+import { devicesCol, deviceKeysCol, keysCol, ObjectId } from '@/lib/server/db';
+import { addKeyToDevice, removeKeyFromDevice } from '@/lib/devices/server/device-service';
 
 export interface OrgKeyWithDevices {
 	keyId: string;

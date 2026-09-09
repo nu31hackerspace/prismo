@@ -1,13 +1,9 @@
-# Baked-in credentials — replaced by worker before build
-WIFI_SSID = "{{WIFI_SSID}}"
-WIFI_PASS = "{{WIFI_PASS}}"
-MQTT_URL  = "{{MQTT_URL}}"
-MQTT_USER = "{{MQTT_USER}}"
-MQTT_PASS = "{{MQTT_PASS}}"
-DEVICE_MODE = "{{DEVICE_MODE}}"
+import json
+import machine
+import ubinascii
+from src import health_log
 
-# Source commit the firmware was built from — replaced by the worker before
-# build. For local dev set GIT_COMMIT in config_dev.py.
+# Source commit the firmware was built from
 GIT_COMMIT = "{{GIT_COMMIT}}"
 
 DEVICE_MODE_DOOR = "door"
@@ -31,9 +27,20 @@ try:
 except ImportError:
     pass
 
+RUN_TIME_CONFIG_FILE = "config.json"
+
+def load_config():
+    try:
+        with open(RUN_TIME_CONFIG_FILE, 'r') as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
 def get_wifi():
-    if WIFI_SSID and not WIFI_SSID.startswith("{{"):
-        return WIFI_SSID, WIFI_PASS
+    cfg = load_config()
+    ssid = cfg.get("wifi_ssid")
+    if ssid and not ssid.startswith("{{"):
+        return ssid, cfg.get("wifi_pass", "")
     return None, None
 
 def has_wifi():
@@ -47,22 +54,17 @@ def get_git_commit():
 
 def get_mqtt_config():
     """Returns (host, port, user, password, ssl) or None if not configured."""
-    if not MQTT_URL or MQTT_URL.startswith("{{"):
+    cfg = load_config()
+    mqtt_url = cfg.get("mqtt_url")
+    if not mqtt_url or mqtt_url.startswith("{{"):
         return None
-    scheme, rest = MQTT_URL.split('://', 1)
+    scheme, rest = mqtt_url.split('://', 1)
     ssl = scheme in ('mqtts', 'ssl')
 
     host_port = rest.split(':', 1)
     host = host_port[0]
     port = int(host_port[1]) if len(host_port) > 1 else (8883 if ssl else 1883)
-    return host, port, MQTT_USER, MQTT_PASS, ssl
-
-
-RUN_TIME_CONFIG_FILE = "config.json"
-
-import machine
-import ubinascii
-from src import health_log
+    return host, port, cfg.get("mqtt_user", ""), cfg.get("mqtt_pass", ""), ssl
 
 def get_mac_suffix():
     return ubinascii.hexlify(machine.unique_id()).decode().upper()
@@ -85,8 +87,6 @@ PIN_NFC_SS = 4
 PIN_OUTPUT_SUCESS = 5
 
 PIN_BUZZER = 7
-
-import json
 
 # In-RAM allowlist so the scan path never reads or parses flash. None means
 # "not loaded yet"; it is populated lazily on first lookup and kept in sync by
@@ -140,13 +140,6 @@ def set_uids(keys):
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
     _allowed_uids = set(u['uid'] for u in cfg['allowed_users'])
-
-def load_config():
-    try:
-        with open(RUN_TIME_CONFIG_FILE, 'r') as f:
-            return json.load(f)
-    except (OSError, ValueError):
-        return None
 
 if DEBUG:
     health_log.write_info("Config: debug mode", config=str(load_config()))

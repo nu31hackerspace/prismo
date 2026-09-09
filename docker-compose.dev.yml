@@ -67,7 +67,6 @@ services:
       - app-node-modules:/app/node_modules
       - ./mosquitto:/mqtt
       - mqtt-tools-node-modules:/mqtt/node_modules
-      - ./mqtt-contract:/mqtt-contract:ro
       - playwright-browsers:/root/.cache/ms-playwright
     depends_on:
       mongo:
@@ -89,7 +88,7 @@ services:
       - MQTT_USER=admin
       - MQTT_PASSWORD=admin
     healthcheck:
-      test: node -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      test: node -e "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
       interval: 5s
       timeout: 5s
       retries: 40
@@ -98,9 +97,9 @@ services:
       - bash
       - -c
       - |
-        npm install
-        cd /mqtt && npm install && cd /app
-        npm run dev -- --host 0.0.0.0
+        echo "skip"
+        cd /mqtt && echo "skip" && cd /app
+        npm run dev -- -H 0.0.0.0
 
   mqtt-viewer:
     build: ./mqtt-viewer
@@ -109,7 +108,6 @@ services:
     volumes:
       - ./mqtt-viewer:/app
       - mqtt-viewer-node-modules:/app/node_modules
-      - ./mqtt-contract:/mqtt-contract:ro
     depends_on:
       mqtt:
         condition: service_healthy

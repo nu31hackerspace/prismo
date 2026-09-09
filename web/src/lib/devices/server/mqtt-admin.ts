@@ -1,7 +1,6 @@
 import mqtt from 'mqtt';
 import crypto from 'crypto';
-import { env } from '$env/dynamic/private';
-import { TOPIC_PREFIX } from 'mqtt-contract';
+import { TOPIC_PREFIX } from '@/lib/mqtt-contract/mqtt-contract.generated';
 
 const DYNSEC_TOPIC = '$CONTROL/dynamic-security/v1';
 const DYNSEC_RESPONSE_TOPIC = '$CONTROL/dynamic-security/v1/response';
@@ -20,9 +19,9 @@ interface DynSecResponse {
 
 function connectAdmin(): Promise<mqtt.MqttClient> {
 	return new Promise((resolve, reject) => {
-		const adminUser = env.USERNAME;
-		const adminPass = env.PASSWORD;
-		const url = env.MQTT_URL ?? 'mqtt://localhost:1883';
+		const adminUser = process.env.USERNAME;
+		const adminPass = process.env.PASSWORD;
+		const url = process.env.MQTT_URL ?? 'mqtt://localhost:1883';
 		console.log(`[mqtt-admin] connecting to ${url} as ${adminUser}`);
 		const client = mqtt.connect(url, { username: adminUser, password: adminPass });
 		client.once('connect', () => {

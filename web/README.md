@@ -1,51 +1,36 @@
-# Prismo Web
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-The SvelteKit app used to manage devices, register cards and flash boards from
-the browser, plus the firmware build worker.
+## Getting Started
 
-## Running it
-
-From the repository root:
+First, run the development server:
 
 ```bash
-./dev.sh
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Docker is the only prerequisite. This brings up the app, MongoDB, the MQTT
-broker and a database viewer, and prints the URLs when everything is ready.
-Full details — sign-in, port overrides, the device emulator, tests, the firmware
-worker — are in [`DEVELOPMENT.md`](DEVELOPMENT.md).
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Layout
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-```
-web/
-├── src/routes/          # pages and API endpoints
-├── src/lib/server/      # db access, auth, Google OAuth
-├── src/lib/devices/     # device + MQTT logic
-├── src/tests/e2e/       # Playwright specs
-├── static/firmware/     # firmware.bin served by the flasher
-└── worker/              # firmware build worker (Python + ESP-IDF image)
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Environment variables
+## Learn More
 
-| Variable               | Purpose                                             |
-| ---------------------- | --------------------------------------------------- |
-| `MONGODB_URL`          | MongoDB connection string (replica set required)    |
-| `MONGODB_DATABASE`     | Database name, defaults to `prismo`                 |
-| `MQTT_URL`             | Broker URL including credentials                    |
-| `SESSION_SECRET`       | Signing key for session JWTs                        |
-| `ORIGIN`               | Public origin, used to build the OAuth redirect URI |
-| `USERNAME`, `PASSWORD` | MQTT admin credentials the app manages devices with |
-| `GOOGLE_CLIENT_ID`     | Google OAuth client ID                              |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret                          |
-| `TEST_MODE`            | Replaces Google OAuth with a mock (dev/tests only)  |
+To learn more about Next.js, take a look at the following resources:
 
-`./dev.sh` sets all of these for you. `.env.example` covers running the app
-outside Docker.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## Production deployment
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-GitHub Actions builds the Docker image and deploys it via Docker Swarm on every
-push to `main` — see `.github/workflows/build-and-deploy.yml`.
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

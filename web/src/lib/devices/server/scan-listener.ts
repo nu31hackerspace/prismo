@@ -1,7 +1,7 @@
 import mqtt from 'mqtt';
-import { env } from '$env/dynamic/private';
-import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol } from '$lib/server/db';
-import { TOPIC_PREFIX, SCAN_WILDCARD, STATUS_WILDCARD, type ScanPayload } from 'mqtt-contract';
+import { env } from '@/lib/server/env';
+import { devicesCol, deviceKeysCol, deviceHistoryCol, keysCol } from '@/lib/server/db';
+import { TOPIC_PREFIX, SCAN_WILDCARD, STATUS_WILDCARD, type ScanPayload } from '@/lib/mqtt-contract/mqtt-contract.generated';
 
 let initialized = false;
 

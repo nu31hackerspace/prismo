@@ -1,7 +1,6 @@
 import { usersCol, ObjectId } from './db';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { env } from '$env/dynamic/private';
 
 const SESSION_COOKIE = 'session';
 const DAYS_365_MS = 365 * 24 * 60 * 60 * 1000;
@@ -12,7 +11,7 @@ export interface UserSession {
 }
 
 function getSecret(): string {
-	const secret = env.SESSION_SECRET;
+	const secret = process.env.SESSION_SECRET;
 	if (!secret) throw new Error('SESSION_SECRET env var is not set');
 	return secret;
 }
@@ -64,6 +63,15 @@ export async function invalidateSession(userId: string, sessionId: string): Prom
 		{ _id: new ObjectId(userId) },
 		{ $pull: { sessions: { id: sessionId } as any } }
 	);
+}
+
+export async function getUserFromServer() {
+  const { cookies } = await import("next/headers");
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+  const { user } = await validateSession(token);
+  return user;
 }
 
 export { SESSION_COOKIE };

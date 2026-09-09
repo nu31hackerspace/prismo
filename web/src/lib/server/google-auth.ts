@@ -7,7 +7,7 @@
  * while allowing our actual route handlers to process the authentication flow normally.
  */
 import { OAuth2Client as RealOAuth2Client } from 'google-auth-library';
-import { env } from '$env/dynamic/private';
+import { env } from '@/lib/server/env';
 
 class MockOAuth2Client {
 	// Mimics the instantiation parameters

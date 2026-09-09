@@ -47,7 +47,7 @@ export type WebSerialAvailability =
 	| { available: false; reason: 'unsupported-browser' };
 
 /**
- * Web Serial is exposed only in a secure context, so `navigator.serial` is
+ * Web Serial is exposed only in a secure context, so `(navigator as any).serial` is
  * missing both on an unsupported browser and on a supported one served over
  * plain HTTP from anything other than localhost. The two need different advice.
  */
@@ -76,7 +76,7 @@ export async function connectToDevice(callbacks: FlasherCallbacks): Promise<{
 	callbacks.onStateChange('connecting');
 	callbacks.onLog(createLog('info', 'Requesting serial port...'));
 
-	const port = await navigator.serial.requestPort();
+	const port = await (navigator as any).serial.requestPort();
 	callbacks.onLog(createLog('info', 'Serial port selected'));
 
 	const transport = new Transport(port);
@@ -94,7 +94,6 @@ export async function connectToDevice(callbacks: FlasherCallbacks): Promise<{
 	const esploader = new ESPLoader({
 		transport,
 		baudrate: BAUD_RATE,
-		romBaudrate: ROM_BAUD_RATE,
 		terminal
 	});
 
@@ -146,7 +145,7 @@ export async function flashFirmware(
 	callbacks.onLog(createLog('info', 'Erasing flash and writing firmware...'));
 
 	await esploader.writeFlash({
-		fileArray: [{ data: firmwareData, address: 0x0 }],
+		fileArray: [{ data: (firmwareData as any), address: 0x0 }],
 		flashSize: 'keep',
 		flashMode: 'keep',
 		flashFreq: 'keep',

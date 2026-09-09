@@ -1,5 +1,4 @@
 import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
-import { env } from '$env/dynamic/private';
 import type {
 	UserDocument,
 	TrackingDocument,
@@ -10,8 +9,8 @@ import type {
 	KeyDocument
 } from './schema';
 
-const client = new MongoClient(env.MONGODB_URL ?? 'mongodb://localhost:27017');
-const database = client.db(env.MONGODB_DATABASE ?? 'prismo');
+const client = new MongoClient(process.env.MONGODB_URL ?? 'mongodb://localhost:27017');
+const database = client.db(process.env.MONGODB_DATABASE ?? 'prismo');
 
 export const usersCol = database.collection<UserDocument>('users');
 export const trackingCol = database.collection<TrackingDocument>('tracking');
@@ -48,7 +47,7 @@ async function ensureIndexes() {
 	}
 }
 
-if (env.MONGODB_URL) {
+if (process.env.MONGODB_URL) {
 	console.info('init the mongo db');
 	ensureIndexes().catch(console.error);
 } else {

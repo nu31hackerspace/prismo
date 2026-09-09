@@ -3,7 +3,10 @@
 }
 
 app.prismo.local.nu31.space {
-	reverse_proxy app:3000
+	reverse_proxy app:3000 {
+		header_up Host localhost:3000
+		header_up Origin http://localhost:3000
+	}
 }
 
 mongo-viewer.prismo.local.nu31.space {
