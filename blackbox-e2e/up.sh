@@ -23,26 +23,28 @@ echo "Building and starting black-box e2e stack (production build)..."
 $COMPOSE up --build -d
 
 echo ""
-echo "Waiting for the app to become healthy..."
-for i in $(seq 1 60); do
-  status=$($COMPOSE ps app --format '{{.Health}}' 2>/dev/null || true)
-  if [ "$status" = "healthy" ]; then
-    echo "App is healthy."
-    break
-  fi
-  if [ "$i" -eq 60 ]; then
-    echo "ERROR: app did not become healthy in time. Recent logs:"
-    $COMPOSE logs --tail 50 app
-    exit 1
-  fi
-  sleep 2
+echo "Waiting for backend and client to become healthy..."
+for service in backend client; do
+  for i in $(seq 1 60); do
+    status=$($COMPOSE ps "$service" --format '{{.Health}}' 2>/dev/null || true)
+    if [ "$status" = "healthy" ]; then
+      echo "$service is healthy."
+      break
+    fi
+    if [ "$i" -eq 60 ]; then
+      echo "ERROR: $service did not become healthy in time. Recent logs:"
+      $COMPOSE logs --tail 50 "$service"
+      exit 1
+    fi
+    sleep 2
+  done
 done
 
 echo ""
 echo "Stack is up:"
-echo "  Web app (production build) → http://localhost:3000"
-echo "  MongoDB                    → mongodb://localhost:27017/prismo"
-echo "  MQTT broker                → mqtt://admin:admin@localhost:1883"
+echo "  Web app (production build, via Caddy) → http://localhost:13000"
+echo "  MongoDB                               → mongodb://localhost:27017/prismo"
+echo "  MQTT broker                           → mqtt://admin:admin@localhost:1883"
 echo ""
-echo "Tail logs:  docker compose -f blackbox-e2e/docker-compose.yml logs -f app"
+echo "Tail logs:  docker compose -f blackbox-e2e/docker-compose.yml logs -f backend client"
 echo "Tear down:  ./blackbox-e2e/down.sh"

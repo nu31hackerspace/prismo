@@ -1,0 +1,9 @@
+{
+  "name": "prismo",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "client",
+    "shared"
+  ]
+}

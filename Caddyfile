@@ -3,20 +3,21 @@
 }
 
 app.prismo.local.nu31.space {
-	reverse_proxy app:3000 {
-		header_up Host localhost:3000
-		header_up Origin http://localhost:3000
+	handle /api/* {
+		reverse_proxy backend:4000
 	}
-}
-
-mongo-viewer.prismo.local.nu31.space {
-	reverse_proxy mongo-viewer:8080
-}
-
-mqtt-viewer.prismo.local.nu31.space {
-	reverse_proxy mqtt-viewer:5173
+	handle /socket.io/* {
+		reverse_proxy backend:4000
+	}
+	handle {
+		reverse_proxy client:5173
+	}
 }
 
 mqtt.prismo.local.nu31.space {
 	reverse_proxy mqtt:9001
+}
+
+postgres-viewer.prismo.local.nu31.space {
+	reverse_proxy postgres-viewer:80
 }

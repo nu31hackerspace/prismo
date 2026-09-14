@@ -5,16 +5,19 @@
 #
 # Difference from the local blackbox stack: Google OAuth is NOT mocked here.
 # The test seeds a session directly (its one allowed DB shortcut) and drives the
-# genuine production auth path, so we turn TEST_MODE off. ORIGIN tracks the host
-# the browser actually uses (defaults to the published port 13000).
+# genuine production auth path, so we turn TEST_MODE off. The browser reaches
+# everything through Caddy on the published port 13000 — same-origin, so
+# there's no ORIGIN/CORS setting to override here.
 
 services:
-  app:
-    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-nu31hackerspace/prismo-web-admin}:${IMAGE_TAG:-latest}
+  backend:
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-nu31hackerspace/prismo-web-admin}-backend:${IMAGE_TAG:-latest}
     environment:
       # Empty string is falsy in google-auth.ts → real OAuth client.
       - TEST_MODE=
-      - ORIGIN=${TESTSTAND_ORIGIN:-http://localhost:13000}
+
+  client:
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-nu31hackerspace/prismo-web-admin}-client:${IMAGE_TAG:-latest}
 
   worker:
     image: ${REGISTRY:-ghcr.io}/${WORKER_IMAGE_NAME:-nu31hackerspace/prismo-worker}:${IMAGE_TAG:-latest}

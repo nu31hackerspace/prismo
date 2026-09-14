@@ -4,14 +4,16 @@ This file provides guidance to AI coding assistants when working with code in th
 
 ## Project Overview
 
-**Prismo** is an open-source NFC/RFID access control system for hackerspaces. It runs MicroPython on an ESP32-C3 microcontroller and includes a SvelteKit web frontend for firmware flashing.
+**Prismo** is an open-source NFC/RFID access control system for hackerspaces. It runs MicroPython on an ESP32-C3 microcontroller and includes a React SPA for device management and firmware flashing, backed by a separate Express + socket.io API server.
 
 ## Repository Structure
 
 Each sub-project has its own `AGENTS.md` with detailed instructions:
 
 - `firmware/` — MicroPython code for ESP32-C3; compiled into a single `.bin` file → [firmware/AGENTS.md](firmware/AGENTS.md)
-- `web/` — SvelteKit landing page + flasher UI (Web Serial API) → [web/AGENTS.md](web/AGENTS.md)
+- `backend/` — Express API + socket.io realtime sync server (devices, keys, MQTT admin, Postgres).
+- `client/` — React SPA (landing page, device management, flasher UI using the Web Serial API).
+- `shared/` — TypeScript types shared between `backend/` and `client/`.
 - `hardware/` — KiCad PCB design, Gerber files, STEP models, 3MF enclosure files 
 
 ## CI/CD

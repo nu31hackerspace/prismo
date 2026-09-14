@@ -1,0 +1,11 @@
+{
+  "name": "@prismo/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./entities": "./entities.ts",
+    "./sync": "./sync.ts",
+    "./devices": "./devices.ts"
+  }
+}

@@ -1,0 +1,177 @@
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2526}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2664}
+{"timestamp_ms": 3308, "uid": "test_card_uid", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 3, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 613, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 4, "msg": "init wifi manager", "timestamp_ms": 4213}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 4, "msg": "No WiFi configured", "timestamp_ms": 4271}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 4, "msg": "Start reader", "timestamp_ms": 4341}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 4, "msg": "subscribe_commands", "timestamp_ms": 4448}
+{"timestamp_ms": 4530, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 4, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 4, "timestamp_ms": 4616, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 4, "timestamp_ms": 4698, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 5, "timestamp_ms": 5369, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 624, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2549}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2600}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2672}
+{"timestamp_ms": 3310, "uid": "test_card_uid", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 3, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 616, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2483}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2544}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2621}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2735}
+{"timestamp_ms": 2810, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2895, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2984, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3616, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 616, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2482}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2537}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2619}
+{"timestamp_ms": 3258, "uid": "test_card_uid", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 3, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 614, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2471}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2523}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2596}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2701}
+{"timestamp_ms": 2783, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2868, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2950, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3592, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 1, "timestamp_ms": 1001, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 3, "msg": "init wifi manager", "timestamp_ms": 3500}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 3, "msg": "No WiFi configured", "timestamp_ms": 3556}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 3, "msg": "Start reader", "timestamp_ms": 3629}
+{"timestamp_ms": 4273, "uid": "test_card_uid", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 4, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 611, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2460}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2514}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2589}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2689}
+{"timestamp_ms": 2769, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2855, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2932, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3548, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 623, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2464}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2518}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2587}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2685}
+{"timestamp_ms": 2755, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2834, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2907, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3527, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 627, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2491}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2542}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2613}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2710}
+{"timestamp_ms": 2784, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2856, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2925, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3555, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 882, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 3, "msg": "init wifi manager", "timestamp_ms": 3571}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 3, "msg": "No WiFi configured", "timestamp_ms": 3635}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 3, "msg": "Start reader", "timestamp_ms": 3706}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 3, "msg": "subscribe_commands", "timestamp_ms": 3801}
+{"timestamp_ms": 3870, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 3, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3942, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 4, "timestamp_ms": 4018, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 4, "timestamp_ms": 4701, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 618, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2462}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2514}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2584}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2689}
+{"timestamp_ms": 2763, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2842, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2915, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3545, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 614, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 3, "msg": "init wifi manager", "timestamp_ms": 3713}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 3, "msg": "No WiFi configured", "timestamp_ms": 3980}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 4, "msg": "Start reader", "timestamp_ms": 4178}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 4, "msg": "subscribe_commands", "timestamp_ms": 4469}
+{"timestamp_ms": 4543, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 4, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 4, "timestamp_ms": 4641, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 4, "timestamp_ms": 4721, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 5, "timestamp_ms": 5418, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 615, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2513}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2574}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2643}
+{"timestamp_ms": 3296, "uid": "test_card_uid", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 3, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 622, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2551}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2602}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2670}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2739}
+{"timestamp_ms": 2808, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "111111", "uptime_s": 2, "timestamp_ms": 2890, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "111111", "uptime_s": 2, "timestamp_ms": 2971, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "111111", "uptime_s": 3, "timestamp_ms": 3556, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"uid": "222222", "uptime_s": 3, "timestamp_ms": 3664, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "222222", "uptime_s": 3, "timestamp_ms": 3736, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "222222", "uptime_s": 5, "timestamp_ms": 5257, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"timestamp_ms": 6144, "uid": "111111", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 6, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 11, "msg": "subscribe_commands", "timestamp_ms": 11418}
+{"timestamp_ms": 11490, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 11, "user": "test_user", "client": "None", "type": "event"}
+{"timestamp_ms": 11594, "uid": "222222", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 11, "device_id": "62F2F4", "allowed": false, "type": "event"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 12, "msg": "subscribe_commands", "timestamp_ms": 12691}
+{"timestamp_ms": 12750, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 12, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "111111", "uptime_s": 12, "timestamp_ms": 12834, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "111111", "uptime_s": 12, "timestamp_ms": 12905, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "111111", "uptime_s": 13, "timestamp_ms": 13489, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"timestamp_ms": 14083, "uid": "111111", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 14, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"uid": "111111", "uptime_s": 19, "timestamp_ms": 19159, "level": "INFO", "log_version": "1", "type": "event", "msg": "remove_key command received", "device_id": "62F2F4"}
+{"uid": "111111", "uptime_s": 19, "timestamp_ms": 19234, "level": "INFO", "log_version": "1", "type": "event", "msg": "delete_uid ", "device_id": "62F2F4"}
+{"uid": "111111", "uptime_s": 20, "timestamp_ms": 20092, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key removed via MQTT", "device_id": "62F2F4"}
+{"timestamp_ms": 20491, "uid": "111111", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 20, "device_id": "62F2F4", "allowed": false, "type": "event"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 21, "msg": "subscribe_commands", "timestamp_ms": 21584}
+{"timestamp_ms": 21653, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 21, "user": "test_user", "client": "None", "type": "event"}
+{"action": "success", "uptime_s": 21, "timestamp_ms": 21735, "level": "INFO", "log_version": "1", "type": "event", "msg": "Trigger command received", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 26, "msg": "subscribe_commands", "timestamp_ms": 26828}
+{"timestamp_ms": 26889, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 26, "user": "test_user", "client": "None", "type": "event"}
+{"action": "error", "uptime_s": 26, "timestamp_ms": 26996, "level": "INFO", "log_version": "1", "type": "event", "msg": "Trigger command received", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 28, "msg": "subscribe_commands", "timestamp_ms": 28131}
+{"timestamp_ms": 28196, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 28, "user": "test_user", "client": "None", "type": "event"}
+{"action": "on", "uptime_s": 28, "timestamp_ms": 28296, "level": "INFO", "log_version": "1", "type": "event", "msg": "Trigger command received", "device_id": "62F2F4"}
+{"action": "off", "uptime_s": 28, "timestamp_ms": 28399, "level": "INFO", "log_version": "1", "type": "event", "msg": "Trigger command received", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 28, "msg": "subscribe_commands", "timestamp_ms": 28506}
+{"timestamp_ms": 28578, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 28, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "AABBCC", "uptime_s": 28, "timestamp_ms": 28672, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "AABBCC", "uptime_s": 28, "timestamp_ms": 28762, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "AABBCC", "uptime_s": 29, "timestamp_ms": 29365, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"timestamp_ms": 30014, "uid": "AABBCC", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 30, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"timestamp_ms": 30586, "uid": "AABBCC", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 30, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"timestamp_ms": 31148, "uid": "AABBCC", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 31, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"timestamp_ms": 31706, "uid": "DIFFERENT", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 31, "device_id": "62F2F4", "allowed": false, "type": "event"}
+{"config": "{'allowed_users': [{'uid': 'AABBCC'}]}", "uptime_s": 0, "timestamp_ms": 531, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2381}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2433}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2505}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2605}
+{"timestamp_ms": 2688, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2764, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2845, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3475, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 616, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2498}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2550}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2620}
+{"timestamp_ms": 3262, "uid": "test_card_uid", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 3, "device_id": "62F2F4", "allowed": true, "type": "event"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 615, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2494}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2546}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2617}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "subscribe_commands", "timestamp_ms": 2718}
+{"timestamp_ms": 2789, "level": "ERROR", "log_version": "1", "device_id": "62F2F4", "msg": "MQTT client or user not initialized", "uptime_s": 2, "user": "test_user", "client": "None", "type": "event"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2883, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_key command received", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 2, "timestamp_ms": 2955, "level": "INFO", "log_version": "1", "type": "event", "msg": "add_uid ", "device_id": "62F2F4"}
+{"uid": "test_card_uid", "uptime_s": 3, "timestamp_ms": 3571, "level": "INFO", "log_version": "1", "type": "event", "msg": "Key added via MQTT", "device_id": "62F2F4"}
+{"config": "{'allowed_users': [{'uid': 'test_card_uid'}]}", "uptime_s": 0, "timestamp_ms": 621, "level": "INFO", "log_version": "1", "type": "event", "msg": "Config: debug mode", "device_id": "62F2F4"}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "init wifi manager", "timestamp_ms": 2482}
+{"log_version": "1", "type": "event", "level": "ERROR", "device_id": "62F2F4", "uptime_s": 2, "msg": "No WiFi configured", "timestamp_ms": 2536}
+{"log_version": "1", "type": "event", "level": "INFO", "device_id": "62F2F4", "uptime_s": 2, "msg": "Start reader", "timestamp_ms": 2620}
+{"timestamp_ms": 3263, "uid": "test_card_uid", "level": "INFO", "log_version": "1", "msg": "Key scanned", "uptime_s": 3, "device_id": "62F2F4", "allowed": true, "type": "event"}

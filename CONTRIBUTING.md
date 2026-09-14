@@ -15,7 +15,9 @@ This is a monorepo:
 
 - `firmware/` — MicroPython firmware for the ESP32-C3 (has its own README).
 - `hardware/` — KiCad PCB, STEP models, 3MF enclosures (has its own README).
-- `web/` — SvelteKit app for device management, card registration, and flashing.
+- `backend/` — API + realtime sync server for device management and card registration.
+- `client/` — the SPA (device management, card registration, flashing) served as static files.
+- `shared/` — TypeScript types shared between `backend/` and `client/`.
 - `mqtt-contract/` — the shared MQTT message contract between firmware and backend.
 - `blackbox-e2e/` — hardware-in-the-loop end-to-end tests that run on a physical rig.
 
@@ -39,7 +41,6 @@ desk, and `./dev.sh --help` for the rest.
 
 Component detail:
 
-- **Web app:** [`web/DEVELOPMENT.md`](web/DEVELOPMENT.md)
 - **Firmware:** [`firmware/README.md`](firmware/README.md)
 
 ### Firmware: enable the pre-commit hook
@@ -56,8 +57,8 @@ git config core.hooksPath .githooks
 
 - **Firmware (Python):** [ruff](https://docs.astral.sh/ruff/). Run `ruff check .`
   from `firmware/`. Auto-fix with `ruff check --fix .`.
-- **Web (TypeScript/Svelte):** Prettier. Run `npm run lint` / `npm run format`
-  from `web/`, and `npm run check` for type-checking.
+- **Backend / client (TypeScript):** ESLint. Run `npm run lint --workspace=backend`
+  / `npm run lint --workspace=client` from the repo root.
 
 ## Pull request process
 

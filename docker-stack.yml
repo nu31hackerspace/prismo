@@ -1,43 +1,43 @@
 version: '3.8'
 
 services:
-  app:
-    image: ghcr.io/${IMAGE_NAME}:${COMMIT_SHA}
+  backend:
+    image: ghcr.io/${IMAGE_NAME}-backend:${COMMIT_SHA}
     deploy:
       update_config:
         order: start-first
     environment:
-      - MONGODB_URL=${MONGODB_URL}
-      - ORIGIN=${ORIGIN}
+      - POSTGRES_URL=${POSTGRES_URL}
       - COMMIT_SHA=${COMMIT_SHA}
       - SESSION_SECRET=${SESSION_SECRET}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - USERNAME=${USERNAME}
       - PASSWORD=${PASSWORD}
       - MQTT_URL=${MQTT_URL}
+      - PORT=4000
     networks:
       - infra_reverse-proxy
       - infra_mongo-rs-net
       - infra_mqtt-net
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      test: ['CMD', 'curl', '-f', 'http://localhost:4000/api/health']
       interval: 15s
       timeout: 30s
       retries: 4
       start_period: 60s
 
-  worker:
-    image: ghcr.io/nu31hackerspace/prismo-worker:${COMMIT_SHA}
+  client:
+    image: ghcr.io/${IMAGE_NAME}-client:${COMMIT_SHA}
     deploy:
-      replicas: 1
-    environment:
-      - MONGODB_URL=${MONGODB_URL}
-      - MQTT_URL=${PUBLIC_MQTT_URL}
-      - COMMIT_SHA=${COMMIT_SHA}
+      update_config:
+        order: start-first
     networks:
-      - infra_mongo-rs-net
-      - infra_mqtt-net
+      - infra_reverse-proxy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost/']
+      interval: 15s
+      timeout: 30s
+      retries: 4
+      start_period: 30s
 
 networks:
   infra_reverse-proxy:

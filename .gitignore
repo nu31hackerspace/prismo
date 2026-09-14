@@ -2,6 +2,12 @@
 .mpy-workbench
 __pycache__
 
+# backend / client / shared (npm workspaces)
+node_modules/
+backend/dist/
+client/dist/
+*.tsbuildinfo
+
 **/.claude/settings.local.json
 firmware/src/config_dev.py
 playwright-report-*/

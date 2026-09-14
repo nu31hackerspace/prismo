@@ -98,7 +98,9 @@ The repository is a monorepo. That means all components of the project live in o
 
 - `firmware/` – the software that runs on the Prismo device. This folder has its own README.md.
 - `hardware/` – the hardware design files, such as KiCad schematics and PCB layout. This folder has its own README.md.
-- `web/` – the web app used to manage devices, register cards, and flash the board with firmware. This app is containerized and can be run locally or on a remote machine.
+- `backend/` – the API + realtime sync server used to manage devices and register cards. This app is containerized and can be run locally or on a remote machine.
+- `client/` – the single-page web app (served as static files) used to manage devices, register cards, and flash the board with firmware.
+- `shared/` – TypeScript types shared between `backend/` and `client/`.
 - `mqtt-contract/` – the shared MQTT message contract between the firmware and the backend.
 - `blackbox-e2e/` – hardware-in-the-loop tests that run against a physical device on a test rig.
 
@@ -117,7 +119,6 @@ The skill will setup a few domains:
 
 - `app.prismo.local.nu31.space`
 - `mongo-viewer.prismo.local.nu31.space`
-- `mqtt-viewer.prismo.local.nu31.space`
 - `mqtt.prismo.local.nu31.space`
 
 ## Project CI
@@ -127,3 +128,4 @@ The project uses GitHub Actions for CI. Every change is built, linted, and — f
 ## License
 
 Prismo is released under the [MIT License](LICENSE).
+

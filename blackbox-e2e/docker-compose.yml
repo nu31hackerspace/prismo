@@ -1,14 +1,17 @@
 # Black-box end-to-end test environment.
 #
-# Unlike docker-compose.dev.yml (which runs `vite dev` with the source bind-mounted),
-# this brings the stack up the way it runs in production: the web app is the image
-# built from web/Dockerfile (`node build`, NODE_ENV=production) — the exact artifact
-# that gets deployed. Infrastructure (Mongo replica set, Mosquitto, worker) mirrors
+# Unlike docker-compose.dev.yml (which runs `vite dev` / `tsx watch` with the
+# source bind-mounted), this brings the stack up the way it runs in
+# production: `backend` and `client` are the images built from
+# backend/Dockerfile and client/Dockerfile — the exact artifacts that get
+# deployed — fronted by the same same-origin Caddy routing docker-stack.yml
+# uses. Infrastructure (Mongo replica set, Mosquitto, worker) mirrors
 # docker-stack.yml.
 #
-# The only production deviation is TEST_MODE=1, which swaps the real Google OAuth
-# client for the in-app mock (see web/src/lib/server/google-auth.ts) so "Sign In"
-# works without real Google credentials. Everything else is the production build.
+# The only production deviation is TEST_MODE=1, which swaps the real Google
+# OAuth client for the in-app mock (see backend/src/google-auth.ts) so
+# "Sign In" works without real Google credentials. Everything else is the
+# production build.
 #
 # Mongo (27017) and MQTT (1883) are published to the host so the black-box test
 # runner can reset the database and publish device messages.
@@ -35,6 +38,20 @@ services:
       mongosh --host mongo --eval
       "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
 
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=prismo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d prismo"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
   mqtt:
     build: ../mosquitto
     image: prismo-mqtt:blackbox
@@ -49,37 +66,64 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
+  backend:
     build:
       context: ..
-      dockerfile: web/Dockerfile
-    image: prismo-web-admin:blackbox
-    ports:
-      - "13000:3000"
+      dockerfile: backend/Dockerfile
+    image: prismo-backend:blackbox
     depends_on:
       mongo:
         condition: service_healthy
       mongo-init:
         condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
       mqtt:
         condition: service_healthy
     environment:
-      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - PORT=4000
+      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
       - SESSION_SECRET=blackbox-secret-not-for-production
-      - ORIGIN=http://localhost:3000
       - USERNAME=admin
       - PASSWORD=admin
-      - GOOGLE_CLIENT_ID=unused
-      - GOOGLE_CLIENT_SECRET=unused
       # Mock Google OAuth so the test runner can sign in without real credentials.
       - TEST_MODE=1
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
       interval: 5s
       timeout: 10s
       retries: 10
       start_period: 20s
+
+  client:
+    build:
+      context: ..
+      dockerfile: client/Dockerfile
+      args:
+        VITE_GOOGLE_CLIENT_ID: unused
+    image: prismo-client:blackbox
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+
+  # Same-origin routing in front of backend + client, mirroring the Caddy
+  # setup docker-stack.yml uses in production — this is what makes cookies
+  # and the socket.io handshake work without CORS.
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "13000:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      client:
+        condition: service_healthy
 
   worker:
     # Use the published production worker image rather than building the multi-GB
@@ -90,9 +134,12 @@ services:
         condition: service_healthy
       mongo-init:
         condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
       mqtt:
         condition: service_healthy
     environment:
       - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
     restart: on-failure

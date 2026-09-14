@@ -22,6 +22,20 @@ services:
       mongosh --host mongo --eval
       "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
 
+  postgres:
+    image: postgres:16
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=prismo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d prismo"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
   mqtt:
     build: ./mosquitto
     ports:
@@ -38,15 +52,18 @@ services:
   worker:
     build:
       context: .
-      dockerfile: web/worker/Dockerfile
+      dockerfile: backend/worker/Dockerfile
     depends_on:
       mongo:
         condition: service_healthy
       mongo-init:
         condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
       mqtt:
         condition: service_healthy
     environment:
       - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
     restart: on-failure

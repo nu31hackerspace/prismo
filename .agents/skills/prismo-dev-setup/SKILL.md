@@ -23,8 +23,8 @@ Find the object where `"name": "prismo-dev-vm"` and extract its `"address"` fiel
 Ensure that the following domains map to the VM IP address (not 127.0.0.1) in `/etc/hosts`:
 - `app.prismo.local.nu31.space`
 - `mongo-viewer.prismo.local.nu31.space`
-- `mqtt-viewer.prismo.local.nu31.space`
 - `mqtt.prismo.local.nu31.space`
+- `postgres-viewer.prismo.local.nu31.space`
 
 If the domains are missing or point to the wrong IP:
 1. Show the user the required changes.
@@ -41,7 +41,9 @@ Start the services in detached mode with building enabled:
 Verify the services started correctly and notify the user that they can access the applications via HTTPS at the configured domains.
 
 ## 6. Helper Commands (MQTT and Emulator)
+The web app is split into two services: `backend` (API + socket.io, port 4000) and `client` (the SPA, served by Vite in dev). Caddy routes `/api/*` and `/socket.io/*` on `app.prismo.local.nu31.space` to `backend`, everything else to `client`. The `/mqtt` mount (and so the MQTT helper/emulator) lives on `backend`.
+
 If the user asks to run the MQTT helper or emulator:
-- **MQTT**: `docker compose -f docker-compose.dev.yml exec app node /mqtt/mqtt.js <args>`
-- **Emulator**: `docker compose -f docker-compose.dev.yml exec -w /mqtt app npx tsx device-emulator.ts <args>`
-- **Test**: `docker compose -f docker-compose.dev.yml exec -e PLAYWRIGHT_BASE_URL=https://app.prismo.local.nu31.space app npx playwright test <args>`
+- **MQTT**: `docker compose -f docker-compose.dev.yml exec backend node /mqtt/mqtt.js <args>`
+- **Emulator**: `docker compose -f docker-compose.dev.yml exec -w /mqtt backend npx tsx device-emulator.ts <args>`
+- **Test**: `docker compose -f docker-compose.dev.yml exec -e PLAYWRIGHT_BASE_URL=https://app.prismo.local.nu31.space backend npx playwright test <args>`

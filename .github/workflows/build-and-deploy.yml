@@ -14,6 +14,7 @@ env:
   COMMIT_SHA: ${{ github.sha }}
   USERNAME: ${{ vars.USERNAME }}
   PASSWORD: ${{ secrets.PASSWORD }}
+  GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
 
 jobs:
   check-dev-flags:
@@ -31,7 +32,7 @@ jobs:
           done
           exit $FAIL
 
-  build-web-image:
+  build-backend-image:
     runs-on: ubuntu-24.04
     needs: check-dev-flags
     permissions:
@@ -48,18 +49,49 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push web image
+      - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: web/Dockerfile
+          file: backend/Dockerfile
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_SHA }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ env.COMMIT_SHA }}
           build-args: |
             COMMIT_SHA=${{ env.COMMIT_SHA }}
-          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:latest
+          cache-to: type=inline
+
+  build-client-image:
+    runs-on: ubuntu-24.04
+    needs: check-dev-flags
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push client image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: client/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client:${{ env.COMMIT_SHA }}
+          build-args: |
+            VITE_GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client:latest
           cache-to: type=inline
 
   build-worker-image:
@@ -99,7 +131,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: web/worker/Dockerfile
+          file: backend/worker/Dockerfile
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ env.WORKER_IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=worker-${{ env.PLATFORM_PAIR }}
@@ -159,7 +191,8 @@ jobs:
   deploy:
     runs-on: ubuntu-24.04
     needs:
-      - build-web-image
+      - build-backend-image
+      - build-client-image
       - merge-worker-image
     timeout-minutes: 5
 
@@ -172,10 +205,7 @@ jobs:
           echo "WORKER_IMAGE_NAME='${{ env.WORKER_IMAGE_NAME }}'" >> .env
           echo "COMMIT_SHA='${{ env.COMMIT_SHA }}'" >> .env
           echo "MONGODB_URL='mongodb://${{ env.USERNAME }}:${{ env.PASSWORD }}@mongo-rs-1:27017/prismo?replicaSet=rs0&authSource=admin'" >> .env
-          echo "ORIGIN='https://prismo.nu31.space'" >> .env
           echo "SESSION_SECRET='${{ secrets.SESSION_SECRET }}'" >> .env
-          echo "GOOGLE_CLIENT_ID='${{ vars.GOOGLE_CLIENT_ID }}'" >> .env
-          echo "GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}'" >> .env
           echo "MQTT_URL='${{ vars.MQTT_URL }}'" >> .env
           echo "PUBLIC_MQTT_URL='${{ vars.PUBLIC_MQTT_URL }}'" >> .env
 

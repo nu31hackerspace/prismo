@@ -1,0 +1,11 @@
+:80 {
+	handle /api/* {
+		reverse_proxy backend:4000
+	}
+	handle /socket.io/* {
+		reverse_proxy backend:4000
+	}
+	handle {
+		reverse_proxy client:80
+	}
+}

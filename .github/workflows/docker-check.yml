@@ -19,7 +19,7 @@ jobs:
           done
           exit $FAIL
 
-  build-web-image:
+  build-backend-image:
     runs-on: ubuntu-24.04
     needs: check-dev-flags
     steps:
@@ -28,14 +28,32 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build web image
+      - name: Build backend image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: web/Dockerfile
+          file: backend/Dockerfile
           push: false
           build-args: |
             COMMIT_SHA=${{ github.sha }}
+
+  build-client-image:
+    runs-on: ubuntu-24.04
+    needs: check-dev-flags
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build client image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: client/Dockerfile
+          push: false
+          build-args: |
+            VITE_GOOGLE_CLIENT_ID=fake-client-id
 
   build-worker-image:
     needs: check-dev-flags
@@ -63,7 +81,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: web/worker/Dockerfile
+          file: backend/worker/Dockerfile
           platforms: ${{ matrix.platform }}
           push: false
           cache-from: type=gha,scope=worker-${{ env.PLATFORM_PAIR }}

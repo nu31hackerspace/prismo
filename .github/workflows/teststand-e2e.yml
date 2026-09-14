@@ -18,11 +18,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: web
-            file: web/Dockerfile
-            image: nu31hackerspace/prismo-web-admin
+          - name: backend
+            file: backend/Dockerfile
+            image: nu31hackerspace/prismo-web-admin-backend
+          - name: client
+            file: client/Dockerfile
+            image: nu31hackerspace/prismo-web-admin-client
+            # This run drives the genuine Google OAuth flow (not the
+            # TEST_MODE mock), so the client needs the real client ID baked
+            # in — Vite inlines VITE_* vars at build time, not read at runtime.
+            build-args: VITE_GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
           - name: worker
-            file: web/worker/Dockerfile
+            file: backend/worker/Dockerfile
             image: nu31hackerspace/prismo-worker
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +49,7 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ matrix.image }}:test-${{ github.sha }}
+          build-args: ${{ matrix.build-args }}
           # Registry layer cache: the worker image's ESP-IDF/MicroPython layers
           # take ~8 min to build but only change when the Dockerfile does, so
           # repeat runs that only touch test/firmware code rebuild in seconds.
@@ -111,16 +119,20 @@ jobs:
         working-directory: blackbox-e2e
         run: |
           docker compose $COMPOSE_FILES build mqtt
-          docker compose $COMPOSE_FILES pull app worker
+          docker compose $COMPOSE_FILES pull backend client worker
           docker compose $COMPOSE_FILES up --no-build -d
-          echo "Waiting for the app to become healthy…"
-          for i in $(seq 1 60); do
-            status=$(docker compose $COMPOSE_FILES ps app --format '{{.Health}}' 2>/dev/null || true)
-            if [ "$status" = "healthy" ]; then echo "App healthy."; exit 0; fi
-            sleep 3
+          echo "Waiting for backend and client to become healthy…"
+          for service in backend client; do
+            for i in $(seq 1 60); do
+              status=$(docker compose $COMPOSE_FILES ps "$service" --format '{{.Health}}' 2>/dev/null || true)
+              if [ "$status" = "healthy" ]; then echo "$service healthy."; break; fi
+              if [ "$i" -eq 60 ]; then
+                echo "$service did not become healthy:"; docker compose $COMPOSE_FILES logs --tail 60 "$service"
+                exit 1
+              fi
+              sleep 3
+            done
           done
-          echo "App did not become healthy:"; docker compose $COMPOSE_FILES logs --tail 60 app
-          exit 1
 
       - name: Run hardware e2e suite
         working-directory: blackbox-e2e
@@ -132,8 +144,10 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          echo "--- app logs ---"
-          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs app) || true
+          echo "--- backend logs ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs backend) || true
+          echo "--- client logs ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs client) || true
           echo "--- worker logs ---"
           (cd blackbox-e2e && docker compose $COMPOSE_FILES logs worker) || true
           echo "--- gpio read ---"

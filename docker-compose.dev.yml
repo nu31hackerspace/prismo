@@ -40,6 +40,34 @@ services:
       - CW_BASIC_AUTH_USERNAME=admin
       - CW_BASIC_AUTH_PASSWORD=admin
 
+  postgres:
+    image: postgres:16
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=prismo
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d prismo"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  postgres-viewer:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    ports:
+      - '${POSTGRES_VIEWER_PORT:-5050}:80'
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   mqtt:
     build: ./mosquitto
     ports:
@@ -56,30 +84,31 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
+  # backend and client are two independent apps sharing the `@prismo/shared`
+  # npm workspace, so both mount the whole repo root (not just their own
+  # subfolder) — that's what lets `npm install` at the root see and link the
+  # workspace, the same way the production Dockerfiles build them.
+  backend:
     image: node:22
-    working_dir: /app
+    working_dir: /repo
     ports:
-      - '${WEB_PORT:-3000}:3000'
-      - '24678:24678'
+      - '${BACKEND_PORT:-4000}:4000'
     volumes:
-      - ./web:/app
-      - app-node-modules:/app/node_modules
+      - .:/repo
+      - repo-node-modules:/repo/node_modules
       - ./mosquitto:/mqtt
       - mqtt-tools-node-modules:/mqtt/node_modules
       - playwright-browsers:/root/.cache/ms-playwright
     depends_on:
-      mongo:
+      postgres:
         condition: service_healthy
-      mongo-init:
-        condition: service_completed_successfully
       mqtt:
         condition: service_healthy
     environment:
-      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - PORT=4000
+      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
       - SESSION_SECRET=dev-secret-not-for-production
-      - ORIGIN=${ORIGIN:-https://app.prismo.local.nu31.space}
       - USERNAME=admin
       - PASSWORD=admin
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -88,7 +117,7 @@ services:
       - MQTT_USER=admin
       - MQTT_PASSWORD=admin
     healthcheck:
-      test: node -e "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      test: node -e "fetch('http://localhost:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
       interval: 5s
       timeout: 5s
       retries: 40
@@ -97,25 +126,29 @@ services:
       - bash
       - -c
       - |
-        echo "skip"
-        cd /mqtt && echo "skip" && cd /app
-        npm run dev -- -H 0.0.0.0
+        npm install
+        npm run dev --workspace=backend
 
-  mqtt-viewer:
-    build: ./mqtt-viewer
+  client:
+    image: node:22
+    working_dir: /repo
     ports:
-      - '${MQTT_VIEWER_PORT:-5173}:5173'
+      - '${WEB_PORT:-3000}:5173'
+      - '24678:24678'
     volumes:
-      - ./mqtt-viewer:/app
-      - mqtt-viewer-node-modules:/app/node_modules
+      - .:/repo
+      - repo-node-modules:/repo/node_modules
     depends_on:
-      mqtt:
+      backend:
         condition: service_healthy
     environment:
-      - VITE_MQTT_URL=wss://mqtt.prismo.local.nu31.space
-      - VITE_MQTT_USER=admin
-      - VITE_MQTT_PASSWORD=admin
-    command: npm run dev -- --host 0.0.0.0
+      - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+    command:
+      - bash
+      - -c
+      - |
+        npm install
+        npm run dev --workspace=client -- --host 0.0.0.0
 
   # Firmware build worker. Heavy (~several GB image) and only needed when you
   # work on /flasher builds, so it is opt-in: `./dev.sh up --with-worker`.
@@ -127,13 +160,16 @@ services:
         condition: service_healthy
       mongo-init:
         condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
       mqtt:
         condition: service_healthy
     volumes:
-      - ./web/worker/worker.py:/worker/worker.py:ro
-      - ./web/worker/build.sh:/worker/build.sh:ro
+      - ./backend/worker/worker.py:/worker/worker.py:ro
+      - ./backend/worker/build.sh:/worker/build.sh:ro
     environment:
       - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
     restart: on-failure
 
@@ -148,16 +184,17 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - app
+      - backend
+      - client
       - mongo-viewer
-      - mqtt-viewer
+      - postgres-viewer
 
 volumes:
   mongo-dev-data:
+  postgres-dev-data:
   mqtt-dev-data:
-  app-node-modules:
+  repo-node-modules:
   mqtt-tools-node-modules:
   playwright-browsers:
-  mqtt-viewer-node-modules:
   caddy_data:
   caddy_config:
