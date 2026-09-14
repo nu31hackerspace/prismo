@@ -41,9 +41,6 @@ async function main() {
     io.to(`workspace:${workspaceId}`).emit('sync:batch', batch);
   });
 
-  // Same-origin deployment means the browser sends the httpOnly session
-  // cookie with the socket.io handshake automatically — the client never
-  // needs to read or hand over the token itself.
   io.use(async (socket, next) => {
     const cookieHeader = socket.handshake.headers.cookie;
     const token = cookieHeader ? parseCookies(cookieHeader)[SESSION_COOKIE] : undefined;
@@ -59,9 +56,6 @@ async function main() {
 
   io.on('connection', (socket) => {
     const { workspaceId } = socket.data;
-    // The client drives resync (including the very first load) by reporting
-    // its last known seq; seq 0 means "never synced" and gets a full
-    // snapshot, anything else gets just the delta since then.
     socket.on('sync:resync', async ({ seq }: { seq: number }) => {
       const result = seq > 0
         ? { kind: 'delta' as const, batch: await readDelta(workspaceId, seq) }

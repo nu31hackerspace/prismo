@@ -47,28 +47,6 @@ def on_key_read(uid):
     # slow reconnect can't stall the next card scan.
     scan_queue.put(uid, allowed, machine_active)
 
-def on_add_key(uid):
-    health_log.write_info('add_key command received', uid=uid)
-    if not uid:
-        health_log.write_warn("add_key command missing uid")
-        return
-    try:
-        config.add_uid(uid)
-        health_log.write_info("Key added via MQTT", uid=uid)
-    except ValueError as e:
-        health_log.write_warn("add_key failed", error=str(e))
-
-def on_remove_key(uid):
-    health_log.write_info('remove_key command received', uid=uid)
-    if not uid:
-        health_log.write_warn("remove_key command missing uid")
-        return
-    try:
-        config.delete_uid(uid)
-        health_log.write_info("Key removed via MQTT", uid=uid)
-    except ValueError as e:
-        health_log.write_warn("remove_key failed", error=str(e))
-
 def on_trigger(action):
     health_log.write_info("Trigger command received", action=action)
     with ui_lock:
@@ -98,7 +76,7 @@ if mqtt_cfg:
     # Configure unconditionally: even if WiFi is down at boot, maintain() can
     # establish the first connection once the network appears.
     mqtt.configure(*mqtt_cfg)
-    mqtt.set_command_callbacks(on_add_key, on_remove_key, on_trigger, on_sync_keys)
+    mqtt.set_command_callbacks(on_trigger, on_sync_keys)
 if wifi_ok and mqtt_cfg:
     for attempt in range(config.MQTT_CONNECT_ATTEMPTS):
         color.mqtt_connecting_pulse()

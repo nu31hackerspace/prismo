@@ -1,46 +1,27 @@
 import crypto from 'crypto';
-import type pg from 'pg';
 import type { UUID, EntityName } from '@prismo/shared/entities';
 import { pool } from '@/db/pg';
 import { mutate } from '@/db/mutate';
 import { recordAction } from '@/db/actions';
-import { getActiveById, getActiveEntityById, insertEntity, softDelete, softDeleteWhere, type TypedEntityRow } from '@/db/entities';
-import { pushRetainedSync } from '@/devices/device-service';
-import { clearRetainedForDevice, deleteDeviceMqttUser, publishToDevice } from '@/devices/mqtt-admin';
-import { SUBTOPICS, type CmdAddKeyPayload, type CmdRemoveKeyPayload } from '@/lib/mqtt-contract/mqtt-contract.generated';
+import { getActiveById, getActiveEntityById, insertEntity, softDelete, type TypedEntityRow } from '@/db/entities';
+import { pushRetainedSync, deriveMqttPassword } from '@/devices/device-service';
+import { clearRetainedForDevice, createDeviceMqttUser, deleteDeviceMqttUser } from '@/devices/mqtt-admin';
+import { SUBTOPICS } from '@/lib/mqtt-contract/mqtt-contract.generated';
 
-const DELETABLE_TYPES = new Set<EntityName>(['device', 'key', 'keyAccess']);
-
-const CREATABLE_TYPES = new Set<EntityName>(['device', 'key', 'keyAccess']);
-
-async function getDeviceSlugsForKey(workspaceId: UUID, keyId: UUID): Promise<string[]> {
-  const { rows } = await pool.query<{ deviceSlug: string }>(
-    `SELECT d.data->>'deviceSlug' AS "deviceSlug"
+async function getDeviceUuidsForKey(workspaceId: UUID, keyId: UUID): Promise<string[]> {
+  const { rows } = await pool.query<{ deviceUuid: string }>(
+    `SELECT d.id AS "deviceUuid"
      FROM entities dk
      JOIN entities d ON d.id = (dk.data->>'deviceId')::uuid AND d.type = 'device' AND d.deleted = false
      WHERE dk.type = 'keyAccess' AND dk.workspace_id = $1 AND dk.data->>'keyId' = $2 AND dk.deleted = false`,
     [workspaceId, keyId],
   );
-  return rows.map((r) => r.deviceSlug);
-}
-
-async function cascadeDelete(
-  client: pg.PoolClient,
-  seq: number,
-  workspaceId: UUID,
-  entity: TypedEntityRow,
-): Promise<void> {
-  if (entity.type === 'device') {
-    await softDeleteWhere(client, seq, workspaceId, 'keyAccess', { deviceId: entity.id });
-  }
-  if (entity.type === 'key') {
-    await softDeleteWhere(client, seq, workspaceId, 'keyAccess', { keyId: entity.id });
-  }
+  return rows.map((r) => r.deviceUuid);
 }
 
 interface KeyAccessContext {
   deviceId: UUID;
-  deviceSlug: string;
+  deviceUuid: string;
   keyId: UUID;
   uidHash: string;
 }
@@ -55,44 +36,37 @@ async function getKeyAccessContext(workspaceId: UUID, entity: TypedEntityRow): P
     getActiveById(pool, workspaceId, 'key', keyId),
   ]);
   if (!device || !key) return null;
-  return { deviceId, deviceSlug: device.data.deviceSlug as string, keyId, uidHash: key.data.uidHash as string };
+  return { deviceId, deviceUuid: device.id, keyId, uidHash: key.data.uidHash as string };
 }
 
-// Deletes any entity by id, provided it belongs to `workspaceId` — the only
-// permission check this needs, since workspace membership is already
-// established by requireAuth. Cascades and side effects are dispatched by
-// entity type.
 export async function deleteEntity(workspaceId: UUID, id: UUID): Promise<{ id: UUID; type: EntityName }> {
   const entity = await getActiveEntityById(pool, workspaceId, id);
-  if (!entity || !DELETABLE_TYPES.has(entity.type)) {
+  if (!entity) {
     throw new Error('Entity not found');
   }
 
-  // Collected before the delete removes the keyAccess links that make these
-  // queries possible.
-  const linkedDeviceSlugs = entity.type === 'key' ? await getDeviceSlugsForKey(workspaceId, id) : [];
+  const linkedDeviceUuids = entity.type === 'key' ? await getDeviceUuidsForKey(workspaceId, id) : [];
   const keyAccessContext = entity.type === 'keyAccess' ? await getKeyAccessContext(workspaceId, entity) : null;
 
   if (entity.type === 'device') {
-    const deviceSlug = entity.data.deviceSlug as string;
-    await clearRetainedForDevice(deviceSlug, [SUBTOPICS.cmd_sync]).catch(() => { });
-    await deleteDeviceMqttUser(deviceSlug).catch(() => { });
+    const deviceUuid = entity.id;
+    await clearRetainedForDevice(deviceUuid, [SUBTOPICS.cmd_sync]).catch(() => { });
+    await deleteDeviceMqttUser(deviceUuid).catch(() => { });
   }
 
   await mutate(workspaceId, async (client, seq) => {
-    await cascadeDelete(client, seq, workspaceId, entity);
     const deletedId = await softDelete(client, seq, workspaceId, id);
     if (!deletedId) throw new Error('Entity not found');
   });
 
-  for (const slug of linkedDeviceSlugs) {
-    pushRetainedSync(slug).catch((err) =>
-      console.error(`[entity-service] retained sync failed after deleteEntity(key) for "${slug}":`, err),
+  for (const uuid of linkedDeviceUuids) {
+    pushRetainedSync(uuid).catch((err) =>
+      console.error(`[entity-service] retained sync failed after deleteEntity(key) for "${uuid}":`, err),
     );
   }
 
   if (keyAccessContext) {
-    const { deviceId, deviceSlug, keyId, uidHash } = keyAccessContext;
+    const { deviceId, deviceUuid, keyId, uidHash } = keyAccessContext;
 
     recordAction({
       workspaceId,
@@ -102,13 +76,8 @@ export async function deleteEntity(workspaceId: UUID, id: UUID): Promise<{ id: U
       keyId,
     }).catch((err) => console.error('[entity-service] recordAction(key_removed) failed:', err));
 
-    publishToDevice(deviceSlug, SUBTOPICS.cmd_remove_key, {
-      uid: uidHash,
-    } satisfies CmdRemoveKeyPayload).catch((err) =>
-      console.error(`[entity-service] cmd/remove_key failed for "${deviceSlug}":`, err),
-    );
-    pushRetainedSync(deviceSlug).catch((err) =>
-      console.error(`[entity-service] retained sync failed after deleteEntity(keyAccess) for "${deviceSlug}":`, err),
+    pushRetainedSync(deviceUuid).catch((err) =>
+      console.error(`[entity-service] retained sync failed after deleteEntity(keyAccess) for "${deviceUuid}":`, err),
     );
   }
 
@@ -124,7 +93,7 @@ async function createKeyAccess(workspaceId: UUID, data: Record<string, unknown>)
   if (!device) throw new Error('Device not found');
   const key = await getActiveById(pool, workspaceId, 'key', keyId);
   if (!key) throw new Error('Key not found');
-  const deviceSlug = device.data.deviceSlug as string;
+  const deviceUuid = device.id;
   const uidHash = key.data.uidHash as string;
 
   await mutate(workspaceId, async (client, seq) => {
@@ -157,13 +126,8 @@ async function createKeyAccess(workspaceId: UUID, data: Record<string, unknown>)
     keyId: key.id,
   }).catch((err) => console.error('[entity-service] recordAction(key_added) failed:', err));
 
-  publishToDevice(deviceSlug, SUBTOPICS.cmd_add_key, {
-    uid: uidHash,
-  } satisfies CmdAddKeyPayload).catch((err) =>
-    console.error(`[entity-service] cmd/add_key failed for "${deviceSlug}":`, err),
-  );
-  pushRetainedSync(deviceSlug).catch((err) =>
-    console.error(`[entity-service] retained sync failed after createEntity(keyAccess) for "${deviceSlug}":`, err),
+  pushRetainedSync(deviceUuid).catch((err) =>
+    console.error(`[entity-service] retained sync failed after createEntity(keyAccess) for "${deviceUuid}":`, err),
   );
 
   return row.id;
@@ -197,29 +161,32 @@ async function createKey(workspaceId: UUID, data: Record<string, unknown>): Prom
   return row.id;
 }
 
-function generateDeviceSlug(name: string): string {
-  const base = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-  const suffix = crypto.randomBytes(3).toString('hex');
-  return `${base}-${suffix}`;
-}
-
 async function createDevice(workspaceId: UUID, data: Record<string, unknown>): Promise<UUID> {
   const name = data.name as string | undefined;
   if (!name) throw new Error('Missing name');
   const mode = (data.mode as string | undefined) ?? 'door';
-  const deviceSlug = generateDeviceSlug(name);
+  const id = crypto.randomUUID();
+
+  // Provision the broker identity before the row exists so nothing can ever
+  // observe a device entity whose DynSec client wasn't created. The id is
+  // generated here rather than left to the DB default so it can double as
+  // the device's MQTT username/topic segment.
+  const tokenKey = crypto.randomBytes(4).toString('hex');
+  const mqttPassword = deriveMqttPassword(tokenKey);
+  await createDeviceMqttUser(id, mqttPassword);
 
   const row = await mutate(workspaceId, (client, seq) =>
     insertEntity(client, workspaceId, 'device', {
       name,
-      deviceSlug,
       mode,
       modeParams: {},
       lastSeenAt: null,
-    }, seq),
+    }, seq, id),
+  );
+
+  await pool.query(
+    'INSERT INTO device_secrets (device_id, token_key) VALUES ($1, $2)',
+    [row.id, tokenKey],
   );
 
   return row.id;
@@ -234,8 +201,6 @@ export async function createEntity(
   type: EntityName,
   data: Record<string, unknown>,
 ): Promise<{ id: UUID; type: EntityName }> {
-  if (!CREATABLE_TYPES.has(type)) throw new Error(`Cannot create entity of type "${type}"`);
-
   const id = type === 'device'
     ? await createDevice(workspaceId, data)
     : type === 'key'

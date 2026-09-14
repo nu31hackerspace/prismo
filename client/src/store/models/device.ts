@@ -13,7 +13,6 @@ export class Device extends ModelBase {
   declare readonly id: UUID;
   declare readonly workspaceId: UUID;
   declare readonly name: string;
-  declare readonly deviceSlug: string;
   declare readonly mode: string;
   declare readonly modeParams: { isOn?: boolean };
   declare readonly lastSeenAt: string | null;

@@ -28,13 +28,7 @@ function getPresetPayload(subtopic: string) {
     case SUBTOPICS.scan:
       return '{\n  "uid": "12345678",\n  "allowed": true,\n  "machine_active": false\n}';
     case SUBTOPICS.status:
-      return '{\n  "online": true,\n  "uptime_s": 120\n}';
-    case SUBTOPICS.logs:
-      return '{\n  "log_version": "1.0",\n  "type": "event",\n  "level": "INFO",\n  "msg": "Device started",\n  "device_id": "test-device",\n  "uptime_s": 120,\n  "timestamp_ms": 1700000000000\n}';
-    case SUBTOPICS.cmd_add_key:
-      return '{\n  "uid": "12345678"\n}';
-    case SUBTOPICS.cmd_remove_key:
-      return '{\n  "uid": "12345678"\n}';
+      return '{\n  "online": true,\n  "uptime_s": 120,\n  "keys_checksum": ""\n}';
     case SUBTOPICS.cmd_trigger:
       return '{\n  "action": "success"\n}';
     case SUBTOPICS.cmd_sync:
@@ -58,7 +52,7 @@ export default function MqttPage() {
   const [messages, setMessages] = useState<LiveMessage[]>([]);
 
   const [useContract, setUseContract] = useState(true);
-  const [deviceSlug, setDeviceSlug] = useState('test-device');
+  const [deviceUuid, setDeviceUuid] = useState('test-device');
   const [selectedSubtopic, setSelectedSubtopic] = useState<string>(SUBTOPICS.cmd_trigger);
   const [customTopic, setCustomTopic] = useState('prismo/test');
   const [payload, setPayload] = useState(getPresetPayload(SUBTOPICS.cmd_trigger));
@@ -145,7 +139,7 @@ export default function MqttPage() {
       return;
     }
 
-    const topic = useContract ? deviceTopic(deviceSlug, selectedSubtopic) : customTopic;
+    const topic = useContract ? deviceTopic(deviceUuid, selectedSubtopic) : customTopic;
     if (!topic) {
       setPublishStatus('Topic required');
       return;
@@ -270,11 +264,11 @@ export default function MqttPage() {
             {useContract ? (
               <>
                 <div>
-                  <FieldLabel htmlFor="mqtt-device-slug">Device slug</FieldLabel>
+                  <FieldLabel htmlFor="mqtt-device-uuid">Device UUID</FieldLabel>
                   <TextInput
-                    id="mqtt-device-slug"
-                    value={deviceSlug}
-                    onChange={(e) => setDeviceSlug(e.target.value)}
+                    id="mqtt-device-uuid"
+                    value={deviceUuid}
+                    onChange={(e) => setDeviceUuid(e.target.value)}
                     placeholder="test-device"
                   />
                 </div>

@@ -99,7 +99,7 @@ export default observer(function DevicesPage() {
 
                 <h3 className="mb-1 font-display text-xl font-bold text-label-primary">{device.name}</h3>
                 <p className="mb-6 flex-grow font-mono text-xs text-label-tertiary">
-                  {device.deviceSlug}
+                  {device.id}
                 </p>
 
                 <Button

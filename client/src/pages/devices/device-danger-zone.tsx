@@ -5,7 +5,7 @@ import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
 import { flashAndConfigure, readDeviceState } from "@/client/flasher";
 
-export default function DeviceDangerZone({ deviceId, deviceSlug, deviceMode }: { deviceId: string, deviceSlug: string, deviceMode: string }) {
+export default function DeviceDangerZone({ deviceId, deviceMode }: { deviceId: string, deviceMode: string }) {
   const navigate = useNavigate();
   const [token, setToken] = useState<{ mqttUser: string; mqttPass: string } | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -17,7 +17,7 @@ export default function DeviceDangerZone({ deviceId, deviceSlug, deviceMode }: {
   const [isFlashing, setIsFlashing] = useState(false);
   const [flashError, setFlashError] = useState("");
 
-  const canDelete = deleteConfirmation === deviceSlug;
+  const canDelete = deleteConfirmation === deviceId;
 
   async function handleCreateToken() {
     try {
@@ -149,9 +149,9 @@ export default function DeviceDangerZone({ deviceId, deviceSlug, deviceMode }: {
 
             {confirmingDelete && (
               <div className="border-red-500/20 bg-red-500/5 mt-4 rounded-xl border p-4">
-                <label htmlFor="confirm-slug" className="text-sm text-label-secondary">Type <strong className="font-mono text-label-primary">{deviceSlug}</strong> to confirm.</label>
+                <label htmlFor="confirm-slug" className="text-sm text-label-secondary">Type <strong className="font-mono text-label-primary">{deviceId}</strong> to confirm.</label>
                 <div className="mt-3 flex flex-wrap gap-3">
-                  <input id="confirm-slug" type="text" autoComplete="off" value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} placeholder={deviceSlug} className="min-w-48 flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 font-mono text-sm text-label-primary outline-none focus:border-accent-primary" />
+                  <input id="confirm-slug" type="text" autoComplete="off" value={deleteConfirmation} onChange={(e) => setDeleteConfirmation(e.target.value)} placeholder={deviceId} className="min-w-48 flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 font-mono text-sm text-label-primary outline-none focus:border-accent-primary" />
                   <Button tag="device_delete_confirm" variant="primary" onClick={handleDelete} disabled={!canDelete} icon="mdi:delete-forever" className="bg-red-500 hover:bg-red-600 border-red-500 hover:border-red-600 font-bold">Delete Forever</Button>
                   <Button tag="device_delete_cancel" variant="ghost" onClick={() => { setConfirmingDelete(false); setDeleteConfirmation(""); }} className="font-bold">Cancel</Button>
                 </div>

@@ -37,11 +37,9 @@ export async function migrate() {
   await query('CREATE INDEX IF NOT EXISTS idx_entities_rev ON entities (workspace_id, updated_rev)');
   await query('CREATE INDEX IF NOT EXISTS idx_entities_type ON entities (workspace_id, type)');
 
-  await query(`
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_device_slug
-      ON entities ((data->>'deviceSlug'))
-      WHERE type = 'device'
-  `);
+  await query('DROP INDEX IF EXISTS idx_entities_device_slug');
+  await query('DROP INDEX IF EXISTS idx_entities_device_uuid');
+
   await query(`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_key_uid
       ON entities (workspace_id, (data->>'uidHash'))

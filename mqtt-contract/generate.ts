@@ -92,8 +92,8 @@ function generateTs(contract: any): string {
 	out.push('export type SubtopicKey = keyof typeof SUBTOPICS;\n');
 
 	out.push(
-		'export function deviceTopic(deviceSlug: string, subtopic: string): string {\n' +
-			'\treturn `${TOPIC_PREFIX}/${deviceSlug}/${subtopic}`;\n' +
+		'export function deviceTopic(deviceId: string, subtopic: string): string {\n' +
+			'\treturn `${TOPIC_PREFIX}/${deviceId}/${subtopic}`;\n' +
 			'}\n'
 	);
 

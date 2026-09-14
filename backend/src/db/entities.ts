@@ -21,18 +21,26 @@ export function toWire(workspaceId: UUID, row: EntityRow): Record<string, unknow
   return { id: row.id, workspaceId, ...row.data };
 }
 
+// `id` lets a caller pin the row's primary key instead of leaving it to the
+// DB default — used for devices, whose id must be known before the row
+// exists (it doubles as the MQTT broker identity provisioned beforehand).
 export async function insertEntity(
   db: Queryable,
   workspaceId: UUID,
   type: EntityName,
   data: Record<string, unknown>,
   seq: number,
+  id?: UUID,
 ): Promise<EntityRow> {
   const { rows: [row] } = await db.query<EntityRow>(
-    `INSERT INTO entities (workspace_id, type, data, updated_rev)
-     VALUES ($1, $2, $3::jsonb, $4)
-     RETURNING id, data`,
-    [workspaceId, type, JSON.stringify(data), seq],
+    id
+      ? `INSERT INTO entities (id, workspace_id, type, data, updated_rev)
+         VALUES ($1, $2, $3, $4::jsonb, $5)
+         RETURNING id, data`
+      : `INSERT INTO entities (workspace_id, type, data, updated_rev)
+         VALUES ($1, $2, $3::jsonb, $4)
+         RETURNING id, data`,
+    id ? [id, workspaceId, type, JSON.stringify(data), seq] : [workspaceId, type, JSON.stringify(data), seq],
   );
   return row;
 }
@@ -52,19 +60,18 @@ export async function findActive(
   return row ?? null;
 }
 
-// Same as findActive but not scoped to a workspace — used where the caller
-// only has a value that's globally unique (e.g. a device slug from an MQTT
-// topic, before the workspace is known).
-export async function findActiveGlobal(
+// Same as getActiveById but not scoped to a workspace — used where the
+// caller only has the entity's own id (e.g. a device id read off an MQTT
+// topic segment) before the workspace is known.
+export async function getActiveByIdGlobal(
   db: Queryable,
   type: EntityName,
-  field: string,
-  value: string,
+  id: UUID,
 ): Promise<(EntityRow & { workspaceId: UUID }) | null> {
   const { rows: [row] } = await db.query<EntityRow & { workspaceId: UUID }>(
     `SELECT id, workspace_id AS "workspaceId", data FROM entities
-     WHERE type = $1 AND data ->> $2 = $3 AND deleted = false`,
-    [type, field, value],
+     WHERE id = $1 AND type = $2 AND deleted = false`,
+    [id, type],
   );
   return row ?? null;
 }

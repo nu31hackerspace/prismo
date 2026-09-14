@@ -20,7 +20,6 @@ export async function requireMember(userId: UUID, workspaceId: UUID): Promise<vo
 }
 
 export async function ensureUserAndMembership(googleId: string, email: string, name: string): Promise<string> {
-  // Upsert user
   const { rows: userRows } = await query(
     `INSERT INTO "user" (email, name, meta) VALUES ($1, $2, $3)
      ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, meta = EXCLUDED.meta

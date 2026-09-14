@@ -97,56 +97,56 @@ async function sendDynSecCommands(commands: DynSecCommand[]): Promise<void> {
 	}
 }
 
-export async function createDeviceMqttUser(slug: string, password: string): Promise<void> {
-	console.log(`[mqtt-admin] createDeviceMqttUser: ${slug}`);
-	const roleName = `${slug}-role`;
+export async function createDeviceMqttUser(deviceUuid: string, password: string): Promise<void> {
+	console.log(`[mqtt-admin] createDeviceMqttUser: ${deviceUuid}`);
+	const roleName = `${deviceUuid}-role`;
 	await sendDynSecCommands([
-		{ command: 'createClient', username: slug, password },
+		{ command: 'createClient', username: deviceUuid, password },
 		{ command: 'createRole', rolename: roleName },
 		{
 			command: 'addRoleACL',
 			rolename: roleName,
 			acltype: 'publishClientSend',
-			topic: `${TOPIC_PREFIX}/${slug}/#`,
+			topic: `${TOPIC_PREFIX}/${deviceUuid}/#`,
 			allow: true
 		},
 		{
 			command: 'addRoleACL',
 			rolename: roleName,
 			acltype: 'subscribePattern',
-			topic: `${TOPIC_PREFIX}/${slug}/#`,
+			topic: `${TOPIC_PREFIX}/${deviceUuid}/#`,
 			allow: true
 		},
-		{ command: 'addClientRole', username: slug, rolename: roleName }
+		{ command: 'addClientRole', username: deviceUuid, rolename: roleName }
 	]);
-	console.log(`[mqtt-admin] createDeviceMqttUser done: ${slug}`);
+	console.log(`[mqtt-admin] createDeviceMqttUser done: ${deviceUuid}`);
 }
 
-export async function updateDeviceMqttPassword(slug: string, password: string): Promise<void> {
-	console.log(`[mqtt-admin] updateDeviceMqttPassword: ${slug}`);
-	await sendDynSecCommands([{ command: 'modifyClient', username: slug, password }]);
-	console.log(`[mqtt-admin] updateDeviceMqttPassword done: ${slug}`);
+export async function updateDeviceMqttPassword(deviceUuid: string, password: string): Promise<void> {
+	console.log(`[mqtt-admin] updateDeviceMqttPassword: ${deviceUuid}`);
+	await sendDynSecCommands([{ command: 'modifyClient', username: deviceUuid, password }]);
+	console.log(`[mqtt-admin] updateDeviceMqttPassword done: ${deviceUuid}`);
 }
 
-export async function deleteDeviceMqttUser(slug: string): Promise<void> {
-	console.log(`[mqtt-admin] deleteDeviceMqttUser: ${slug}`);
+export async function deleteDeviceMqttUser(deviceUuid: string): Promise<void> {
+	console.log(`[mqtt-admin] deleteDeviceMqttUser: ${deviceUuid}`);
 	await sendDynSecCommands([
-		{ command: 'deleteClient', username: slug },
-		{ command: 'deleteRole', rolename: `${slug}-role` }
+		{ command: 'deleteClient', username: deviceUuid },
+		{ command: 'deleteRole', rolename: `${deviceUuid}-role` }
 	]);
-	console.log(`[mqtt-admin] deleteDeviceMqttUser done: ${slug}`);
+	console.log(`[mqtt-admin] deleteDeviceMqttUser done: ${deviceUuid}`);
 }
 
 /**
  * Drops the retained messages the broker holds for a device by publishing an
  * empty retained payload on each topic. Without this the broker would keep
- * serving stale commands to any client that later owns the same slug.
+ * serving stale commands to any client that later owns the same uuid.
  */
-export async function clearRetainedForDevice(slug: string, subtopics: string[]): Promise<void> {
+export async function clearRetainedForDevice(deviceUuid: string, subtopics: string[]): Promise<void> {
 	const client = await connectAdmin();
 	try {
 		for (const subtopic of subtopics) {
-			const topic = `${TOPIC_PREFIX}/${slug}/${subtopic}`;
+			const topic = `${TOPIC_PREFIX}/${deviceUuid}/${subtopic}`;
 			console.log(`[mqtt-admin] clearing retained: ${topic}`);
 			await new Promise<void>((resolve, reject) => {
 				client.publish(topic, '', { qos: 1, retain: true }, (err) =>
@@ -160,12 +160,12 @@ export async function clearRetainedForDevice(slug: string, subtopics: string[]):
 }
 
 export async function publishToDevice(
-	slug: string,
+	deviceUuid: string,
 	subtopic: string,
 	payload: Record<string, unknown>,
 	options: { retain?: boolean } = {}
 ): Promise<void> {
-	const topic = `${TOPIC_PREFIX}/${slug}/${subtopic}`;
+	const topic = `${TOPIC_PREFIX}/${deviceUuid}/${subtopic}`;
 	console.log(
 		`[mqtt-admin] publishToDevice: ${topic}`,
 		payload,

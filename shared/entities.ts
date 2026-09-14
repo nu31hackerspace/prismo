@@ -7,6 +7,7 @@ export interface Workspace {
 
 export interface User {
   id: UUID;
+  k
   email: string;
   name: string;
   workspaces: UUID[];
@@ -16,7 +17,6 @@ export interface Device {
   id: UUID;
   workspaceId: UUID;
   name: string;
-  deviceSlug: string;
   mode: string;
   modeParams: { isOn?: boolean };
   lastSeenAt: string | null;

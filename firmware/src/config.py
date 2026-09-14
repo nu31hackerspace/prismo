@@ -103,43 +103,38 @@ def _ensure_allowlist():
 def is_user_allowed(uid):
     return uid in _ensure_allowlist()
 
-def add_uid(uid):
-    health_log.write_info('add_uid ', uid=uid)
-    cfg = load_config() or {}
-    users = cfg.get('allowed_users', [])
-    for user in users:
-        if user.get('uid') == uid:
-            raise ValueError(f"User with UID {uid} already exists")
-    users.append({'uid': uid})
-    cfg['allowed_users'] = users
-    with open(RUN_TIME_CONFIG_FILE, 'w') as f:
-        json.dump(cfg, f)
-    _ensure_allowlist().add(uid)
-
-def delete_uid(uid):
-    health_log.write_info('delete_uid ', uid=uid)
-    cfg = load_config() or {}
-    users = cfg.get('allowed_users', [])
-    new_users = [u for u in users if u.get('uid') != uid]
-    if len(new_users) == len(users):
-        raise ValueError(f"User with UID {uid} not found")
-    cfg['allowed_users'] = new_users
-    with open(RUN_TIME_CONFIG_FILE, 'w') as f:
-        json.dump(cfg, f)
-    _ensure_allowlist().discard(uid)
-
 
 def set_uids(keys):
     """Replace the entire allowed_users list.
     keys — list of dicts with at least a 'uid' field, e.g. [{'uid': 'abc', 'username': 'Alice'}]
     """
-    global _allowed_uids
+    global _allowed_uids, _keys_checksum
     health_log.write_info('set_uids', count=len(keys))
     cfg = load_config() or {}
     cfg['allowed_users'] = [{'uid': k['uid'], 'username': k.get('username', '')} for k in keys if k.get('uid')]
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
     _allowed_uids = set(u['uid'] for u in cfg['allowed_users'])
+    _keys_checksum = None  # stale — recomputed lazily by get_keys_checksum()
+
+
+# Cached sha256 checksum of the sorted local allowlist uids, reported on every
+# status heartbeat so the server can detect drift and republish cmd_sync.
+# Invalidated (set back to None) whenever set_uids() replaces the allowlist.
+_keys_checksum = None
+
+def _compute_checksum():
+    import uhashlib
+    import ubinascii
+    uids = sorted(_ensure_allowlist())
+    h = uhashlib.sha256(",".join(uids).encode())
+    return ubinascii.hexlify(h.digest()).decode()
+
+def get_keys_checksum():
+    global _keys_checksum
+    if _keys_checksum is None:
+        _keys_checksum = _compute_checksum()
+    return _keys_checksum
 
 if DEBUG:
     health_log.write_info("Config: debug mode", config=str(load_config()))

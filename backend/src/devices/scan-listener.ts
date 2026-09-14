@@ -1,9 +1,11 @@
 import mqtt from 'mqtt';
+import crypto from 'crypto';
 import { pool } from '@/db/pg';
 import { mutate } from '@/db/mutate';
 import { recordAction } from '@/db/actions';
-import { findActive, findActiveGlobal } from '@/db/entities';
-import type { ScanPayload } from '@/lib/mqtt-contract/mqtt-contract.generated';
+import { findActive, getActiveByIdGlobal } from '@/db/entities';
+import { pushRetainedSync } from '@/devices/device-service';
+import type { ScanPayload, StatusPayload } from '@/lib/mqtt-contract/mqtt-contract.generated';
 import { SCAN_WILDCARD, STATUS_WILDCARD } from '@/lib/mqtt-contract/mqtt-contract.generated';
 
 let initialized = false;
@@ -35,15 +37,19 @@ export function initializeScanListener(): void {
     const parts = topic.split('/');
     const subtopic = parts[2];
     if (subtopic === 'status') {
-      handleHeartbeat(parts[1]).catch(err => console.error('[scan-listener] heartbeat error:', err));
+      handleHeartbeat(parts[1], payload).catch(err => console.error('[scan-listener] heartbeat error:', err));
     } else if (subtopic === 'scan') {
       handleScan(parts[1], payload).catch(err => console.error('[scan-listener] scan error:', err));
     }
   });
 }
 
-export async function handleHeartbeat(deviceSlug: string): Promise<void> {
-  const device = await findActiveGlobal(pool, 'device', 'deviceSlug', deviceSlug);
+function computeKeysChecksum(uids: string[]): string {
+  return crypto.createHash('sha256').update([...uids].sort().join(',')).digest('hex');
+}
+
+export async function handleHeartbeat(deviceUuid: string, rawPayload: Buffer): Promise<void> {
+  const device = await getActiveByIdGlobal(pool, 'device', deviceUuid);
   if (!device) return;
 
   await mutate(device.workspaceId, async (client, seq) => {
@@ -55,18 +61,39 @@ export async function handleHeartbeat(deviceSlug: string): Promise<void> {
       [lastSeenAt, seq, device.id]
     );
   });
+
+  let payload: StatusPayload;
+  try {
+    payload = JSON.parse(rawPayload.toString());
+  } catch {
+    return;
+  }
+  if (typeof payload.keys_checksum !== 'string') return;
+
+  const { rows } = await pool.query<{ uid: string }>(
+    `SELECT k.data->>'uidHash' AS uid
+     FROM entities dk
+     JOIN entities k ON k.id = (dk.data->>'keyId')::uuid AND k.type = 'key' AND k.deleted = false
+     WHERE dk.type = 'keyAccess' AND dk.deleted = false AND dk.data->>'deviceId' = $1`,
+    [device.id],
+  );
+  const expected = computeKeysChecksum(rows.map((r) => r.uid));
+  if (expected !== payload.keys_checksum) {
+    console.log(`[scan-listener] keys_checksum mismatch for "${deviceUuid}" — pushing sync`);
+    await pushRetainedSync(deviceUuid);
+  }
 }
 
-async function handleScan(deviceSlug: string, rawPayload: Buffer): Promise<void> {
+async function handleScan(deviceUuid: string, rawPayload: Buffer): Promise<void> {
   let payload: ScanPayload;
   try {
     payload = JSON.parse(rawPayload.toString());
   } catch {
-    console.error(`[scan-listener] malformed scan payload from "${deviceSlug}"`);
+    console.error(`[scan-listener] malformed scan payload from "${deviceUuid}"`);
     return;
   }
 
-  const device = await findActiveGlobal(pool, 'device', 'deviceSlug', deviceSlug);
+  const device = await getActiveByIdGlobal(pool, 'device', deviceUuid);
   if (!device) return;
 
   const key = await findActive(pool, device.workspaceId, 'key', 'uidHash', payload.uid);

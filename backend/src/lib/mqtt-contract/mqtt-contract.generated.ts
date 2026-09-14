@@ -6,17 +6,14 @@ export const TOPIC_PREFIX = 'prismo';
 export const SUBTOPICS = {
 	scan: 'scan',
 	status: 'status',
-	logs: 'logs',
-	cmd_add_key: 'cmd/add_key',
-	cmd_remove_key: 'cmd/remove_key',
 	cmd_trigger: 'cmd/trigger',
 	cmd_sync: 'cmd/sync',
 } as const;
 
 export type SubtopicKey = keyof typeof SUBTOPICS;
 
-export function deviceTopic(deviceSlug: string, subtopic: string): string {
-	return `${TOPIC_PREFIX}/${deviceSlug}/${subtopic}`;
+export function deviceTopic(deviceId: string, subtopic: string): string {
+	return `${TOPIC_PREFIX}/${deviceId}/${subtopic}`;
 }
 
 export type ScanPayload = {
@@ -28,26 +25,7 @@ export type ScanPayload = {
 export type StatusPayload = {
 	online: boolean;
 	uptime_s?: number;
-};
-
-export type LogsLevel = 'INFO' | 'WARN' | 'ERROR';
-
-export type LogsPayload = {
-	log_version: string;
-	type: 'event';
-	level: 'INFO' | 'WARN' | 'ERROR';
-	msg: string;
-	device_id: string;
-	uptime_s: number;
-	timestamp_ms: number;
-};
-
-export type CmdAddKeyPayload = {
-	uid: string;
-};
-
-export type CmdRemoveKeyPayload = {
-	uid: string;
+	keys_checksum: string;
 };
 
 export type CmdTriggerAction = 'success' | 'error' | 'on' | 'off';

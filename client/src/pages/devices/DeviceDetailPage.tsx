@@ -74,7 +74,7 @@ export default observer(function DeviceDetailPage() {
             <Tag variant={device.online ? 'success' : 'error'}>{device.online ? 'Online' : 'Offline'}</Tag>
           </div>
           <span className="hidden rounded-lg border border-separator-secondary bg-fill-tertiary px-3 py-1 font-mono text-xs text-label-tertiary sm:inline">
-            {device.deviceSlug}
+            {device.id}
           </span>
         </nav>
       </header>
@@ -136,7 +136,7 @@ export default observer(function DeviceDetailPage() {
           </div>
         </div>
 
-        <DeviceDangerZone deviceId={device.id} deviceSlug={device.deviceSlug} deviceMode={device.mode} />
+        <DeviceDangerZone deviceId={device.id} deviceMode={device.mode} />
       </main>
     </>
   );

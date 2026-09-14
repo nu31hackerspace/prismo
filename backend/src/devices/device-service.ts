@@ -5,7 +5,7 @@ import { pool } from '@/db/pg';
 import { mutate } from '@/db/mutate';
 import { recordAction } from '@/db/actions';
 import {
-  findActiveGlobal,
+  getActiveByIdGlobal,
   getActiveById,
 } from '@/db/entities';
 import {
@@ -19,14 +19,14 @@ import {
   type CmdSyncPayload,
 } from '@/lib/mqtt-contract/mqtt-contract.generated';
 
-function deriveMqttPassword(tokenKey: string): string {
+export function deriveMqttPassword(tokenKey: string): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret) throw new Error('SESSION_SECRET env var is not set');
   return jwt.sign({ tokenKey }, secret, { noTimestamp: true });
 }
 
-export async function pushRetainedSync(deviceSlug: string): Promise<void> {
-  const device = await findActiveGlobal(pool, 'device', 'deviceSlug', deviceSlug);
+export async function pushRetainedSync(deviceUuid: string): Promise<void> {
+  const device = await getActiveByIdGlobal(pool, 'device', deviceUuid);
   if (!device) return;
 
   const { rows: keys } = await pool.query<{ uid: string; username: string }>(
@@ -38,7 +38,7 @@ export async function pushRetainedSync(deviceSlug: string): Promise<void> {
   );
 
   await publishToDevice(
-    deviceSlug,
+    deviceUuid,
     SUBTOPICS.cmd_sync,
     { keys: keys.map((k) => ({ uid: k.uid, username: k.username })) } satisfies CmdSyncPayload,
     { retain: true },
@@ -52,7 +52,7 @@ export async function triggerDevice(
 ): Promise<void> {
   const device = await getActiveById(pool, workspaceId, 'device', deviceId);
   if (!device) throw new Error('Device not found');
-  const deviceSlug = device.data.deviceSlug as string;
+  const deviceUuid = device.id;
 
   if (action === 'on' || action === 'off') {
     await mutate(workspaceId, async (client, seq) => {
@@ -66,7 +66,7 @@ export async function triggerDevice(
   }
 
   await publishToDevice(
-    deviceSlug,
+    deviceUuid,
     SUBTOPICS.cmd_trigger,
     { action } satisfies CmdTriggerPayload,
   );
@@ -85,8 +85,8 @@ export async function forceSyncDevice(
 ): Promise<void> {
   const device = await getActiveById(pool, workspaceId, 'device', deviceId);
   if (!device) throw new Error('Device not found');
-  const deviceSlug = device.data.deviceSlug as string;
-  await pushRetainedSync(deviceSlug);
+  const deviceUuid = device.id;
+  await pushRetainedSync(deviceUuid);
 
   recordAction({
     workspaceId,
@@ -101,16 +101,16 @@ export async function generateMqttCredentials(
 ) {
   const device = await getActiveById(pool, workspaceId, 'device', deviceId);
   if (!device) throw new Error('Device not found');
-  const deviceSlug = device.data.deviceSlug as string;
+  const deviceUuid = device.id;
 
   const tokenKey = crypto.randomBytes(4).toString('hex');
   const mqttPassword = deriveMqttPassword(tokenKey);
 
-  await updateDeviceMqttPassword(deviceSlug, mqttPassword);
+  await updateDeviceMqttPassword(deviceUuid, mqttPassword);
   await pool.query('UPDATE device_secrets SET token_key = $1 WHERE device_id = $2', [
     tokenKey,
     device.id,
   ]);
 
-  return { mqttUser: deviceSlug, mqttPass: mqttPassword };
+  return { mqttUser: deviceUuid, mqttPass: mqttPassword };
 }
