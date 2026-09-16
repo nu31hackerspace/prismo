@@ -49,4 +49,3 @@ This document outlines the MQTT messaging contract for the Prismo project.
 **Payload Properties:**
 * `keys` (array of objects, required):
   * `uid` (string, required)
-  * `username` (string, optional)

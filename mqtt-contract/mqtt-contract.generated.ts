@@ -37,7 +37,6 @@ export type CmdTriggerPayload = {
 export type CmdSyncPayload = {
 	keys: ({
 		uid: string;
-		username?: string;
 	})[];
 };
 

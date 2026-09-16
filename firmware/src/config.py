@@ -106,12 +106,12 @@ def is_user_allowed(uid):
 
 def set_uids(keys):
     """Replace the entire allowed_users list.
-    keys — list of dicts with at least a 'uid' field, e.g. [{'uid': 'abc', 'username': 'Alice'}]
+    keys — list of dicts with at least a 'uid' field, e.g. [{'uid': 'abc'}]
     """
     global _allowed_uids, _keys_checksum
     health_log.write_info('set_uids', count=len(keys))
     cfg = load_config() or {}
-    cfg['allowed_users'] = [{'uid': k['uid'], 'username': k.get('username', '')} for k in keys if k.get('uid')]
+    cfg['allowed_users'] = [{'uid': k['uid']} for k in keys if k.get('uid')]
     with open(RUN_TIME_CONFIG_FILE, 'w') as f:
         json.dump(cfg, f)
     _allowed_uids = set(u['uid'] for u in cfg['allowed_users'])

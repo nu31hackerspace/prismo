@@ -29,8 +29,8 @@ export async function pushRetainedSync(deviceUuid: string): Promise<void> {
   const device = await getActiveByIdGlobal(pool, 'device', deviceUuid);
   if (!device) return;
 
-  const { rows: keys } = await pool.query<{ uid: string; username: string }>(
-    `SELECT k.data->>'uidHash' AS uid, k.data->>'label' AS username
+  const { rows: keys } = await pool.query<{ uid: string }>(
+    `SELECT k.data->>'uidHash' AS uid
      FROM entities dk
      JOIN entities k ON k.id = (dk.data->>'keyId')::uuid AND k.type = 'key' AND k.deleted = false
      WHERE dk.type = 'keyAccess' AND dk.deleted = false AND dk.data->>'deviceId' = $1`,
@@ -40,7 +40,7 @@ export async function pushRetainedSync(deviceUuid: string): Promise<void> {
   await publishToDevice(
     deviceUuid,
     SUBTOPICS.cmd_sync,
-    { keys: keys.map((k) => ({ uid: k.uid, username: k.username })) } satisfies CmdSyncPayload,
+    { keys: keys.map((k) => ({ uid: k.uid })) } satisfies CmdSyncPayload,
     { retain: true },
   );
 }

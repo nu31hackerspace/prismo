@@ -24,7 +24,6 @@ export type CmdTriggerPayload = {
 export type CmdSyncPayload = {
     keys: ({
         uid: string;
-        username?: string;
     })[];
 };
 export declare const SCAN_WILDCARD: string;

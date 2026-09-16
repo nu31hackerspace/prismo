@@ -71,8 +71,7 @@
 						"items": {
 							"type": "object",
 							"properties": {
-								"uid": { "type": "string", "required": true },
-								"username": { "type": "string", "required": false }
+								"uid": { "type": "string", "required": true }
 							}
 						}
 					}
