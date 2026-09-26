@@ -2,7 +2,7 @@
 	local_certs
 }
 
-app.prismo.local.nu31.space {
+app.prismo.local.nu31.space, app.192.168.50.115.nip.io {
 	handle /api/* {
 		reverse_proxy backend:4000
 	}
@@ -14,10 +14,11 @@ app.prismo.local.nu31.space {
 	}
 }
 
-mqtt.prismo.local.nu31.space {
+mqtt.prismo.local.nu31.space, mqtt.192.168.50.115.nip.io {
 	reverse_proxy mqtt:9001
 }
 
-postgres-viewer.prismo.local.nu31.space {
+postgres-viewer.prismo.local.nu31.space, postgres-viewer.192.168.50.115.nip.io {
 	reverse_proxy postgres-viewer:80
 }
+

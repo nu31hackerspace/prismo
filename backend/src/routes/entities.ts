@@ -1,23 +1,35 @@
 import { Router } from 'express';
-import { requireAuth, type AuthedRequest } from '@/middleware/require-auth';
+import { requireAuth, authContext } from '@/middleware/require-auth';
 import { createEntity, deleteEntity } from '@/entities/entity-service';
+import { EntityError } from '@/entities/entity-error';
 
 export const entitiesRouter = Router();
 entitiesRouter.use(requireAuth);
 
 entitiesRouter.post('/', async (req, res) => {
-  const { workspaceId } = req as AuthedRequest;
+  const { workspaceId } = authContext(req);
   const { type, data } = req.body ?? {};
-  if (!type || !data) {
-    res.status(400).json({ error: 'Missing type or data' });
-    return;
+  try {
+    res.json(await createEntity(workspaceId, type, data));
+  } catch (err) {
+    if (err instanceof EntityError) {
+      res.status(err.status).json({ error: err.message });
+      return;
+    }
+    throw err;
   }
-  const entity = await createEntity(workspaceId, type, data);
-  res.json(entity);
 });
 
 entitiesRouter.delete('/:id', async (req, res) => {
-  const { workspaceId } = req as AuthedRequest;
-  await deleteEntity(workspaceId, req.params.id);
-  res.json({ success: true });
+  const { workspaceId } = authContext(req);
+  try {
+    await deleteEntity(workspaceId, req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    if (err instanceof EntityError) {
+      res.status(err.status).json({ error: err.message });
+      return;
+    }
+    throw err;
+  }
 });

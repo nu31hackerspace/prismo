@@ -6,9 +6,11 @@ import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { useStore } from "@/store/provider";
+import { draft } from "@/store/models/base";
 import DeviceActions from "./device-actions";
 import DeviceDangerZone from "./device-danger-zone";
 import DeviceHistory from "./device-history";
+import { workspaceHeader } from "@/store/workspace-id";
 
 export default observer(function DeviceDetailPage() {
   const { deviceId = "" } = useParams<{ deviceId: string }>();
@@ -35,23 +37,30 @@ export default observer(function DeviceDetailPage() {
   // device.activity rides in the same sync protocol as everything else —
   // history and the last-unauthorized-scan are both just derived views over it.
   const historyItems = device.activity;
-  const lastUnauth = device.activity.find((a) => a.kind === "scan" && a.allowed === false && a.keyId === null) ?? null;
+  const lastScan = device.activity.find((a) => a.kind === "scan" && a.uidHash) ?? null;
+  const workspaceKeys = store.allKeys.filter((k) => k.workspaceId === device.workspaceId);
+  const scannedKey = lastScan
+    ? workspaceKeys.find((k) => k.id === lastScan.keyId) ?? workspaceKeys.find((k) => k.uidHash === lastScan.uidHash)
+    : undefined;
+  const lastUnauth = lastScan && !device.keys.some((k) => k.id === scannedKey?.id) ? lastScan : null;
 
-  const handleAddKey = async () => {
+  const handleGrantKey = (keyId: string) => {
+    draft(store.entities, "keyAccess", { deviceId, keyId }).save();
+  };
+
+  const handleAddKey = () => {
     if (!newKeyName.trim() || !lastUnauth?.uidHash) return;
 
-    const keyRes = await fetch("/api/entities", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "key", data: { uidHash: lastUnauth.uidHash, label: newKeyName.trim() } }),
-    });
-    const { id: keyId } = await keyRes.json();
+    // The key's id is generated locally, so the keyAccess row linking it to
+    // this device can be created right alongside it, with no round trip to
+    // the backend in between — both show up in the UI immediately.
+    const key = draft(store.entities, "key", {
+      uidHash: lastUnauth.uidHash,
+      label: newKeyName.trim(),
+      createdAt: new Date().toISOString(),
+    }).save();
+    draft(store.entities, "keyAccess", { deviceId, keyId: key.id }).save();
 
-    await fetch("/api/entities", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "keyAccess", data: { deviceId, keyId } }),
-    });
     setNewKeyName("");
   };
 
@@ -59,7 +68,7 @@ export default observer(function DeviceDetailPage() {
     const keyAccess = device.store.allOf("keyAccess").find((ka) => ka.deviceId === device.id && ka.keyId === keyId);
     if (!keyAccess) return;
 
-    await fetch(`/api/entities/${keyAccess.id}`, { method: "DELETE" });
+    await fetch(`/api/entities/${keyAccess.id}`, { method: "DELETE", headers: workspaceHeader() });
   };
 
   return (
@@ -94,10 +103,16 @@ export default observer(function DeviceDetailPage() {
                   <div className="font-mono text-sm break-all text-label-primary">{lastUnauth.uidHash}</div>
                   <div className="mt-1 text-xs text-label-tertiary">{formatDate(lastUnauth.createdAt)}</div>
                 </div>
-                <div className="flex gap-2">
-                  <input type="text" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} placeholder="Name (e.g. Alice)" className="flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary" />
-                  <Button tag="device_add_key_from_scan" variant="primary" size="sm" icon="mdi:plus" onClick={handleAddKey}>Add</Button>
-                </div>
+                {scannedKey ? (
+                  <Button tag="device_grant_existing_key_from_scan" variant="primary" size="sm" icon="mdi:plus" onClick={() => handleGrantKey(scannedKey.id)}>
+                    Add key '{scannedKey.label}' to this device
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <input type="text" value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} placeholder="Name (e.g. Alice)" className="flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary" />
+                    <Button tag="device_add_key_from_scan" variant="primary" size="sm" icon="mdi:plus" onClick={handleAddKey}>Add</Button>
+                  </div>
+                )}
               </div>
             )}
 

@@ -1,30 +1,17 @@
 import { computed, makeObservable, observable, type AnnotationsMap } from 'mobx';
-import type { EntityName } from '@prismo/shared/entities';
+import type { EntityName, EntityMap } from '@prismo/shared/entities';
 import type { EntityStore } from '../entity-store';
+import type { ModelMap } from './index';
 
-// Base class for annotated entity models. Field values (id, name, ...) are
-// copied onto the instance as-is from the raw wire record; relation fields
-// (see relations.ts) are never part of `raw` — they're computed getters
-// installed by @OneToMany/@ManyToOne/@ManyToMany, resolved lazily against
-// `store`. Every concrete model (Device, Workspace, ...) extends this class,
-// so `makeAutoObservable` is off the table — it refuses to run on anything
-// with a superclass, since it can't safely auto-infer members it finds
-// further up the prototype chain. We build the same effect by hand instead:
-// annotate the raw data fields (assigned above) as `observable`, and walk
-// the prototype chain up to (but excluding) ModelBase, marking every getter
-// found there — TC39 accessor decorators compile relation fields down to
-// plain prototype get/set pairs, indistinguishable here from a hand-written
-// `get` — as `computed`. This is what makes a freshly `new Device(store,
-// data)` — e.g. a locally created, not-yet-synced draft, not just one
-// hydrated from the store — reactive out of the box: mutating a field on it
-// (`device.name = 'x'`) notifies observers immediately, without waiting for
-// a round trip through the wire protocol.
 export abstract class ModelBase {
+  #rawFields: string[];
+
   constructor(public readonly store: EntityStore, raw: object) {
     Object.assign(this, raw);
+    this.#rawFields = Object.keys(raw);
 
     const annotations: AnnotationsMap<this, never> = { store: false };
-    for (const key of Object.keys(raw)) (annotations as Record<string, unknown>)[key] = observable;
+    for (const key of this.#rawFields) (annotations as Record<string, unknown>)[key] = observable;
     for (
       let proto: object | null = Object.getPrototypeOf(this);
       proto && proto !== ModelBase.prototype;
@@ -37,17 +24,32 @@ export abstract class ModelBase {
 
     makeObservable(this, annotations);
   }
+
+  get entityKind(): EntityName {
+    return entityKindOf(this.constructor as ModelCtor);
+  }
+
+  toRaw(): Record<string, unknown> {
+    const out: Record<string, unknown> = {};
+    for (const key of this.#rawFields) out[key] = (this as unknown as Record<string, unknown>)[key];
+    return out;
+  }
+
+  save(): this {
+    this.store.put(this.entityKind, this.toRaw() as never);
+    return this;
+  }
 }
 
 type ModelCtor = new (store: EntityStore, raw: object) => ModelBase;
 
 const registry = new Map<EntityName, ModelCtor>();
+const entityNames = new Map<ModelCtor, EntityName>();
 
-// Class decorator: @Entity('device') registers the model class as the one
-// EntityStore hydrates wire records of that type into.
 export function Entity(name: EntityName) {
-  return function (target: ModelCtor) {
+  return function(target: ModelCtor) {
     registry.set(name, target);
+    entityNames.set(target, name);
   };
 }
 
@@ -56,3 +58,22 @@ export function modelFor(name: EntityName): ModelCtor {
   if (!ctor) throw new Error(`No @Entity model registered for "${name}"`);
   return ctor;
 }
+
+function entityKindOf(ctor: ModelCtor): EntityName {
+  const name = entityNames.get(ctor);
+  if (!name) throw new Error(`Model class "${ctor.name}" is missing @Entity(...)`);
+  return name;
+}
+
+export function draft<K extends EntityName>(
+  store: EntityStore,
+  type: K,
+  data: Omit<EntityMap[K], 'id' | 'workspaceId'>,
+): ModelMap[K] {
+  const workspaceId = store.workspaceId;
+  if (!workspaceId) throw new Error('Cannot create an entity before the workspace has loaded');
+
+  const raw = { id: crypto.randomUUID(), workspaceId, ...data };
+  return new (modelFor(type))(store, raw) as ModelMap[K];
+}
+

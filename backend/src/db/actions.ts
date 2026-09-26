@@ -2,11 +2,6 @@ import type { UUID, ActionKind } from '@prismo/shared/entities';
 import { mutate } from './mutate';
 import { insertEntity } from './entities';
 
-// Device activity (scan/trigger/key add-remove/sync) is an entity like any
-// other — one 'deviceActivity' row per event, inserted through mutate() so
-// it gets a real updated_rev and rides the same sync:batch broadcast as
-// device/key/keyAccess. Nothing ever updates or deletes these rows; the
-// append-only nature just means every write is an insert.
 export async function recordAction(params: {
   workspaceId: UUID;
   deviceId: UUID;

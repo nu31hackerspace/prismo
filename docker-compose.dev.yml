@@ -2,44 +2,8 @@
 # file, waits for the services to become healthy and prints the URLs.
 #
 # Host ports can be remapped in the root `.env` (see `.env.example`) when
-# something else on your machine already owns 3000 / 27017 / 1883 / 5000.
+# something else on your machine already owns 3000 / 1883 / 5432 / 5050.
 services:
-  mongo:
-    image: mongo:8
-    ports:
-      - '${MONGO_PORT:-27017}:27017'
-    command: --replSet rs0
-    volumes:
-      - mongo-dev-data:/data/db
-    healthcheck:
-      test: mongosh --eval "db.runCommand({ping:1})" --quiet
-      interval: 3s
-      timeout: 3s
-      retries: 10
-
-  mongo-init:
-    image: mongo:8
-    depends_on:
-      mongo:
-        condition: service_healthy
-    restart: 'no'
-    entrypoint: >
-      mongosh --host mongo --eval
-      "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
-
-  mongo-viewer:
-    image: haohanyang/compass-web:0.3.1
-    restart: unless-stopped
-    ports:
-      - '${MONGO_VIEWER_PORT:-5000}:8080'
-    depends_on:
-      mongo:
-        condition: service_healthy
-    environment:
-      - CW_MONGO_URI=mongodb://mongo:27017/?directConnection=true
-      - CW_BASIC_AUTH_USERNAME=admin
-      - CW_BASIC_AUTH_PASSWORD=admin
-
   postgres:
     image: postgres:16
     ports:
@@ -156,10 +120,6 @@ services:
     image: ghcr.io/nu31hackerspace/prismo-worker:latest
     profiles: [worker]
     depends_on:
-      mongo:
-        condition: service_healthy
-      mongo-init:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       mqtt:
@@ -168,7 +128,6 @@ services:
       - ./backend/worker/worker.py:/worker/worker.py:ro
       - ./backend/worker/build.sh:/worker/build.sh:ro
     environment:
-      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
       - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
     restart: on-failure
@@ -186,11 +145,9 @@ services:
     depends_on:
       - backend
       - client
-      - mongo-viewer
       - postgres-viewer
 
 volumes:
-  mongo-dev-data:
   postgres-dev-data:
   mqtt-dev-data:
   repo-node-modules:

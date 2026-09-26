@@ -5,14 +5,6 @@ export interface Workspace {
   name: string;
 }
 
-export interface User {
-  id: UUID;
-  k
-  email: string;
-  name: string;
-  workspaces: UUID[];
-}
-
 export interface Device {
   id: UUID;
   workspaceId: UUID;
@@ -55,13 +47,18 @@ export interface DeviceActivity {
   createdAt: string;
 }
 
-export type EntityName = 'user' | 'workspace' | 'device' | 'key' | 'keyAccess' | 'deviceActivity';
+export const ENTITY_NAMES = ['workspace', 'device', 'key', 'keyAccess', 'deviceActivity'] as const;
+
+export type EntityName = (typeof ENTITY_NAMES)[number];
 
 export interface EntityMap {
-  user: User;
   workspace: Workspace;
   device: Device;
   key: Key;
   keyAccess: KeyAccess;
   deviceActivity: DeviceActivity;
+}
+
+export function isEntityName(type: unknown): type is EntityName {
+  return ENTITY_NAMES.includes(type as EntityName);
 }

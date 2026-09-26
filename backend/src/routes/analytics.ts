@@ -23,3 +23,4 @@ analyticsRouter.post('/', async (req, res) => {
     console.error('Failed to record analytics event:', error);
   }
 });
+

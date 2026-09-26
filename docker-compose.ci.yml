@@ -1,27 +1,6 @@
 # Infrastructure for the CI E2E job — same services as docker-compose.dev.yml
 # minus the app container, which CI runs directly on the runner.
 services:
-  mongo:
-    image: mongo:8
-    ports:
-      - '27017:27017'
-    command: --replSet rs0
-    healthcheck:
-      test: mongosh --eval "db.runCommand({ping:1})" --quiet
-      interval: 3s
-      timeout: 3s
-      retries: 10
-
-  mongo-init:
-    image: mongo:8
-    depends_on:
-      mongo:
-        condition: service_healthy
-    restart: 'no'
-    entrypoint: >
-      mongosh --host mongo --eval
-      "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
-
   postgres:
     image: postgres:16
     ports:
@@ -54,16 +33,11 @@ services:
       context: .
       dockerfile: backend/worker/Dockerfile
     depends_on:
-      mongo:
-        condition: service_healthy
-      mongo-init:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       mqtt:
         condition: service_healthy
     environment:
-      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
       - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
     restart: on-failure

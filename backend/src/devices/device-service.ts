@@ -1,15 +1,11 @@
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
 import type { UUID } from '@prismo/shared/entities';
 import { pool } from '@/db/pg';
 import { mutate } from '@/db/mutate';
 import { recordAction } from '@/db/actions';
+import type { TypedEntityRow } from '@/db/entities';
 import {
-  getActiveByIdGlobal,
-  getActiveById,
-} from '@/db/entities';
-import {
-  updateDeviceMqttPassword,
+  provisionDeviceMqttUser,
   publishToDevice,
 } from './mqtt-admin';
 import {
@@ -19,22 +15,27 @@ import {
   type CmdSyncPayload,
 } from '@/lib/mqtt-contract/mqtt-contract.generated';
 
-export function deriveMqttPassword(tokenKey: string): string {
-  const secret = process.env.SESSION_SECRET;
-  if (!secret) throw new Error('SESSION_SECRET env var is not set');
-  return jwt.sign({ tokenKey }, secret, { noTimestamp: true });
-}
-
-export async function pushRetainedSync(deviceUuid: string): Promise<void> {
-  const device = await getActiveByIdGlobal(pool, 'device', deviceUuid);
+export async function pushDeviceSync(deviceUuid: string): Promise<void> {
+  const { rows: [device] } = await pool.query<TypedEntityRow & { workspaceId: UUID }>(
+    `SELECT id, type, workspace_id AS "workspaceId", data FROM entities
+     WHERE id = $1 AND type = $2 AND deleted = false`,
+    [deviceUuid, 'device'],
+  );
   if (!device) return;
 
-  const { rows: keys } = await pool.query<{ uid: string }>(
-    `SELECT k.data->>'uidHash' AS uid
-     FROM entities dk
-     JOIN entities k ON k.id = (dk.data->>'keyId')::uuid AND k.type = 'key' AND k.deleted = false
-     WHERE dk.type = 'keyAccess' AND dk.deleted = false AND dk.data->>'deviceId' = $1`,
+  const { rows: keyAccesses } = await pool.query<{ keyId: UUID }>(
+    `SELECT data->>'keyId' AS "keyId"
+     FROM entities
+     WHERE type = 'keyAccess' AND deleted = false AND data->>'deviceId' = $1`,
     [device.id],
+  );
+  const keyIds = keyAccesses.map((ka) => ka.keyId);
+
+  const { rows: keys } = await pool.query<{ uid: string }>(
+    `SELECT data->>'uidHash' AS uid
+     FROM entities
+     WHERE type = 'key' AND deleted = false AND id = ANY($1::uuid[])`,
+    [keyIds],
   );
 
   await publishToDevice(
@@ -50,7 +51,11 @@ export async function triggerDevice(
   workspaceId: UUID,
   action: CmdTriggerAction,
 ): Promise<void> {
-  const device = await getActiveById(pool, workspaceId, 'device', deviceId);
+  const { rows: [device] } = await pool.query<TypedEntityRow & { workspaceId: UUID }>(
+    `SELECT id, type, workspace_id AS "workspaceId", data FROM entities
+     WHERE id = $1 AND type = $2 AND workspace_id = $3 AND deleted = false`,
+    [deviceId, 'device', workspaceId],
+  );
   if (!device) throw new Error('Device not found');
   const deviceUuid = device.id;
 
@@ -83,10 +88,14 @@ export async function forceSyncDevice(
   deviceId: UUID,
   workspaceId: UUID,
 ): Promise<void> {
-  const device = await getActiveById(pool, workspaceId, 'device', deviceId);
+  const { rows: [device] } = await pool.query<TypedEntityRow & { workspaceId: UUID }>(
+    `SELECT id, type, workspace_id AS "workspaceId", data FROM entities
+     WHERE id = $1 AND type = $2 AND workspace_id = $3 AND deleted = false`,
+    [deviceId, 'device', workspaceId],
+  );
   if (!device) throw new Error('Device not found');
   const deviceUuid = device.id;
-  await pushRetainedSync(deviceUuid);
+  await pushDeviceSync(deviceUuid);
 
   recordAction({
     workspaceId,
@@ -99,18 +108,16 @@ export async function generateMqttCredentials(
   deviceId: UUID,
   workspaceId: UUID,
 ) {
-  const device = await getActiveById(pool, workspaceId, 'device', deviceId);
+  const { rows: [device] } = await pool.query<TypedEntityRow & { workspaceId: UUID }>(
+    `SELECT id, type, workspace_id AS "workspaceId", data FROM entities
+     WHERE id = $1 AND type = $2 AND workspace_id = $3 AND deleted = false`,
+    [deviceId, 'device', workspaceId],
+  );
   if (!device) throw new Error('Device not found');
   const deviceUuid = device.id;
 
-  const tokenKey = crypto.randomBytes(4).toString('hex');
-  const mqttPassword = deriveMqttPassword(tokenKey);
-
-  await updateDeviceMqttPassword(deviceUuid, mqttPassword);
-  await pool.query('UPDATE device_secrets SET token_key = $1 WHERE device_id = $2', [
-    tokenKey,
-    device.id,
-  ]);
+  const mqttPassword = crypto.randomBytes(24).toString('base64url');
+  await provisionDeviceMqttUser(deviceUuid, mqttPassword);
 
   return { mqttUser: deviceUuid, mqttPass: mqttPassword };
 }

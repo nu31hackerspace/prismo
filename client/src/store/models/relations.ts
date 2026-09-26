@@ -2,16 +2,10 @@ import type { UUID } from '@prismo/shared/entities';
 import type { ModelBase } from './base';
 import type { ModelMap } from './index';
 
-// Standard (TC39 stage-3) accessor decorators — TS 5.9 / esbuild 0.24 emit
-// these natively, no `experimentalDecorators`/`reflect-metadata` needed.
-// Both decorators discard the auto-accessor's own backing field and replace
-// it with a getter that queries the live EntityStore, so the relation is
-// always resolved against current data, never a stale snapshot.
-
 // @ManyToOne('workspace', 'workspaceId') on Device.workspace:
 // looks up the single parent by the FK value held on this record.
 export function ManyToOne<K extends keyof ModelMap, This extends ModelBase>(target: K, fk: string) {
-  return function (
+  return function(
     _init: ClassAccessorDecoratorTarget<This, ModelMap[K] | undefined>,
     _context: ClassAccessorDecoratorContext<This, ModelMap[K] | undefined>,
   ): ClassAccessorDecoratorResult<This, ModelMap[K] | undefined> {
@@ -30,7 +24,7 @@ export function ManyToOne<K extends keyof ModelMap, This extends ModelBase>(targ
 // @OneToMany('device', 'workspaceId') on Workspace.devices:
 // every record of `target` whose `fk` field points back at this id.
 export function OneToMany<K extends keyof ModelMap, This extends ModelBase & { id: UUID }>(target: K, fk: string) {
-  return function (
+  return function(
     _init: ClassAccessorDecoratorTarget<This, ModelMap[K][]>,
     _context: ClassAccessorDecoratorContext<This, ModelMap[K][]>,
   ): ClassAccessorDecoratorResult<This, ModelMap[K][]> {
@@ -56,7 +50,7 @@ export function ManyToMany<J extends keyof ModelMap, K extends keyof ModelMap, T
   target: K,
   targetFk: string,
 ) {
-  return function (
+  return function(
     _init: ClassAccessorDecoratorTarget<This, ModelMap[K][]>,
     _context: ClassAccessorDecoratorContext<This, ModelMap[K][]>,
   ): ClassAccessorDecoratorResult<This, ModelMap[K][]> {

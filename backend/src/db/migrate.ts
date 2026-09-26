@@ -39,24 +39,21 @@ export async function migrate() {
 
   await query('DROP INDEX IF EXISTS idx_entities_device_slug');
   await query('DROP INDEX IF EXISTS idx_entities_device_uuid');
+  await query('DROP INDEX IF EXISTS idx_entities_key_uid');
+  await query('DROP INDEX IF EXISTS idx_entities_key_access_pair');
 
   await query(`
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_key_uid
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_key_uid_active
       ON entities (workspace_id, (data->>'uidHash'))
-      WHERE type = 'key'
+      WHERE type = 'key' AND deleted = false
   `);
   await query(`
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_key_access_pair
-      ON entities ((data->>'deviceId'), (data->>'keyId'))
-      WHERE type = 'keyAccess'
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_entities_key_access_pair_active
+      ON entities (workspace_id, (data->>'deviceId'), (data->>'keyId'))
+      WHERE type = 'keyAccess' AND deleted = false
   `);
 
-  await query(`
-    CREATE TABLE IF NOT EXISTS device_secrets (
-      device_id uuid PRIMARY KEY REFERENCES entities ON DELETE CASCADE,
-      token_key text NOT NULL
-    )
-  `);
+  await query('DROP TABLE IF EXISTS device_secrets');
 
   await query(`
     CREATE TABLE IF NOT EXISTS analytics_event (

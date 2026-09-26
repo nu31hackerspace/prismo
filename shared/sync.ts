@@ -10,7 +10,7 @@ export interface SnapshotMessage {
 }
 
 export type Change =
-  | { op: 'upsert'; entity: EntityName; data: EntityMap[EntityName] }
+  | { [K in EntityName]: { op: 'upsert'; entity: K; id: UUID; data: EntityMap[K] } }[EntityName]
   | { op: 'delete'; entity: EntityName; id: UUID };
 
 export interface ChangeBatch {

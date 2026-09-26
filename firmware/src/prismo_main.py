@@ -1,4 +1,6 @@
 import _thread
+import time
+import utime
 from machine import WDT
 from src import wifi_manager
 from src import reader
@@ -96,25 +98,39 @@ health_log.write_info("Start reader", connected=mqtt_ok)
 ui.reset()
 ui.ready_to_read()
 
-# 20s watchdog, fed every reader iteration by on_tick. The reader thread no
-# longer does network I/O — WiFi/MQTT maintenance runs on the worker thread and
-# never gates a feed. The only thing that now delays a feed is the UI lock: a
-# card scan can wait out an in-flight remote-trigger hold (≤ SUCCESS/ERROR
-# signal duration) before taking its own hold. Two stacked holds stay well
-# under 20s.
+# 20s watchdog, fed every loop iteration below. The main thread no longer does
+# network I/O — WiFi/MQTT maintenance runs on the worker thread and never gates
+# a feed. The only thing that now delays a feed is the UI lock: a card scan can
+# wait out an in-flight remote-trigger hold (≤ SUCCESS/ERROR signal duration)
+# before taking its own hold. Two stacked holds stay well under 20s.
 wdt = WDT(timeout=20000)
-def on_tick():
-    # WiFi/MQTT maintenance now runs on the worker thread, so the reader loop
-    # feeds the watchdog every iteration regardless of network state.
-    wdt.feed()
 
 # Sole owner of the MQTT socket: runs WiFi/MQTT reconnection and drains the
-# scan queue off the reader thread. Extra stack for the TLS handshake.
+# scan queue off the main thread. Extra stack for the TLS handshake.
 _thread.stack_size(16 * 1024)
 _thread.start_new_thread(
     mqtt_worker.run,
     (mqtt, wifi_manager, scan_queue, config.ENABLE_MQTT),
 )
 
-reader.subscribe(callback=on_key_read, tick_callback=on_tick)
+# Main app loop: owns the NFC poll and the watchdog feed. If PN532 init fails
+# permanently, reader.init() returns None and this script simply ends here —
+# the watchdog, armed above and never fed again, resets the board so boot
+# retries the hardware init from scratch.
+nfc = reader.init()
+if nfc is not None:
+    health_log.write_info("Waiting for RFID/NFC card")
+    _last_log_ms = utime.ticks_ms()
+    while True:
+        uid_hash = reader.read_uid(nfc)
+        if uid_hash is not None:
+            on_key_read(uid_hash)
+            time.sleep(1)
+
+        wdt.feed()
+
+        now = utime.ticks_ms()
+        if utime.ticks_diff(now, _last_log_ms) >= 60_000:
+            health_log.write_log()
+            _last_log_ms = now
 

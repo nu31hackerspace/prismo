@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireAuth, type AuthedRequest } from '@/middleware/require-auth';
+import { requireAuth, authContext } from '@/middleware/require-auth';
 import {
   triggerDevice,
   generateMqttCredentials,
@@ -10,20 +10,20 @@ export const devicesRouter = Router();
 devicesRouter.use(requireAuth);
 
 devicesRouter.post('/:deviceId/trigger', async (req, res) => {
-  const { workspaceId } = req as AuthedRequest;
+  const { workspaceId } = authContext(req);
   const { action } = req.body ?? {};
   await triggerDevice(req.params.deviceId, workspaceId, action);
   res.json({ success: true });
 });
 
 devicesRouter.post('/:deviceId/token', async (req, res) => {
-  const { workspaceId } = req as AuthedRequest;
+  const { workspaceId } = authContext(req);
   const token = await generateMqttCredentials(req.params.deviceId, workspaceId);
   res.json({ token });
 });
 
 devicesRouter.post('/:deviceId/sync', async (req, res) => {
-  const { workspaceId } = req as AuthedRequest;
+  const { workspaceId } = authContext(req);
   await forceSyncDevice(req.params.deviceId, workspaceId);
   res.json({ success: true });
 });

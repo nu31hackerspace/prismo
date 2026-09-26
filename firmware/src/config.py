@@ -3,8 +3,10 @@ import machine
 import ubinascii
 from src import health_log
 
-# Source commit the firmware was built from
-GIT_COMMIT = "{{GIT_COMMIT}}"
+try:
+    from src.build_info import GIT_COMMIT
+except ImportError:
+    GIT_COMMIT = "dev-except"
 
 DEVICE_MODE_DOOR = "door"
 DEVICE_MODE_MACHINE = "machine"
@@ -48,9 +50,7 @@ def has_wifi():
     return ssid is not None
 
 def get_git_commit():
-    if GIT_COMMIT and not GIT_COMMIT.startswith("{{"):
-        return GIT_COMMIT
-    return "dev"
+    return GIT_COMMIT
 
 def get_mqtt_config():
     """Returns (host, port, user, password, ssl) or None if not configured."""
@@ -65,6 +65,8 @@ def get_mqtt_config():
     host = host_port[0]
     port = int(host_port[1]) if len(host_port) > 1 else (8883 if ssl else 1883)
     return host, port, cfg.get("mqtt_user", ""), cfg.get("mqtt_pass", ""), ssl
+
+DEVICE_MODE = DEVICE_MODE_MACHINE if load_config().get("mode") == DEVICE_MODE_MACHINE else DEVICE_MODE_DOOR
 
 def get_mac_suffix():
     return ubinascii.hexlify(machine.unique_id()).decode().upper()

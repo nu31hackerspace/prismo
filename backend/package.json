@@ -15,7 +15,6 @@
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "express": "^5.1.0",
-    "google-auth-library": "^11.0.2",
     "jsonwebtoken": "^9.0.3",
     "mqtt": "^5.15.2",
     "pg": "^8.23.0",

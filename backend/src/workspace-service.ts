@@ -9,14 +9,13 @@ export async function getWorkspaceForUser(userId: UUID): Promise<UUID | null> {
   return rows[0]?.workspaces?.[0] ?? null;
 }
 
-export async function requireMember(userId: UUID, workspaceId: UUID): Promise<void> {
+export async function resolveWorkspace(userId: UUID, requested: unknown): Promise<UUID | null> {
+  if (typeof requested !== 'string' || !requested) return null;
   const { rows } = await query(
-    'SELECT 1 FROM "user" WHERE id = $1 AND workspaces @> $2::jsonb',
-    [userId, JSON.stringify([workspaceId])]
+    'SELECT 1 FROM "user" WHERE id = $1 AND workspaces ? $2',
+    [userId, requested]
   );
-  if (rows.length === 0) {
-    throw Object.assign(new Error('Forbidden'), { status: 403 });
-  }
+  return rows.length ? requested : null;
 }
 
 export async function ensureUserAndMembership(googleId: string, email: string, name: string): Promise<string> {

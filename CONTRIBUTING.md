@@ -33,7 +33,7 @@ root:
 ./dev.sh
 ```
 
-This starts the web app, MongoDB and the MQTT broker, waits until everything is
+This starts the web app, Postgres and the MQTT broker, waits until everything is
 serving and prints the URLs. Sign in with the "Sign in with Google" button —
 locally it uses a mock account, so no OAuth credentials are needed. Use
 `./dev.sh emulator` to simulate a device when you don't have a board on the

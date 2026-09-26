@@ -3,8 +3,9 @@ import crypto from 'crypto';
 import { pool } from '@/db/pg';
 import { mutate } from '@/db/mutate';
 import { recordAction } from '@/db/actions';
-import { findActive, getActiveByIdGlobal } from '@/db/entities';
-import { pushRetainedSync } from '@/devices/device-service';
+import type { UUID } from '@prismo/shared/entities';
+import type { TypedEntityRow } from '@/db/entities';
+import { pushDeviceSync } from '@/devices/device-service';
 import type { ScanPayload, StatusPayload } from '@/lib/mqtt-contract/mqtt-contract.generated';
 import { SCAN_WILDCARD, STATUS_WILDCARD } from '@/lib/mqtt-contract/mqtt-contract.generated';
 
@@ -48,8 +49,12 @@ function computeKeysChecksum(uids: string[]): string {
   return crypto.createHash('sha256').update([...uids].sort().join(',')).digest('hex');
 }
 
-export async function handleHeartbeat(deviceUuid: string, rawPayload: Buffer): Promise<void> {
-  const device = await getActiveByIdGlobal(pool, 'device', deviceUuid);
+async function handleHeartbeat(deviceUuid: string, rawPayload: Buffer): Promise<void> {
+  const { rows: [device] } = await pool.query<TypedEntityRow & { workspaceId: UUID }>(
+    `SELECT id, type, workspace_id AS "workspaceId", data FROM entities
+     WHERE id = $1 AND type = $2 AND deleted = false`,
+    [deviceUuid, 'device'],
+  );
   if (!device) return;
 
   await mutate(device.workspaceId, async (client, seq) => {
@@ -80,7 +85,7 @@ export async function handleHeartbeat(deviceUuid: string, rawPayload: Buffer): P
   const expected = computeKeysChecksum(rows.map((r) => r.uid));
   if (expected !== payload.keys_checksum) {
     console.log(`[scan-listener] keys_checksum mismatch for "${deviceUuid}" — pushing sync`);
-    await pushRetainedSync(deviceUuid);
+    await pushDeviceSync(deviceUuid);
   }
 }
 
@@ -93,17 +98,23 @@ async function handleScan(deviceUuid: string, rawPayload: Buffer): Promise<void>
     return;
   }
 
-  const device = await getActiveByIdGlobal(pool, 'device', deviceUuid);
-  if (!device) return;
-
-  const key = await findActive(pool, device.workspaceId, 'key', 'uidHash', payload.uid);
+  const { rows: [scan] } = await pool.query<{ workspaceId: UUID; deviceId: UUID; keyId: UUID | null }>(
+    `SELECT d.workspace_id AS "workspaceId", d.id AS "deviceId", k.id AS "keyId"
+     FROM entities d
+     LEFT JOIN entities k
+       ON k.workspace_id = d.workspace_id AND k.type = 'key' AND k.deleted = false
+      AND k.data->>'uidHash' = $2
+     WHERE d.id = $1 AND d.type = 'device' AND d.deleted = false`,
+    [deviceUuid, payload.uid],
+  );
+  if (!scan) return;
 
   await recordAction({
-    workspaceId: device.workspaceId,
-    deviceId: device.id,
+    workspaceId: scan.workspaceId,
+    deviceId: scan.deviceId,
     kind: 'scan',
     uidHash: payload.uid,
-    keyId: key?.id ?? null,
+    keyId: scan.keyId,
     allowed: payload.allowed,
   });
 }

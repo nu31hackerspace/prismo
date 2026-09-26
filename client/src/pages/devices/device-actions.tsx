@@ -2,6 +2,7 @@ import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 
 import type { Device } from "@prismo/shared/entities";
+import { workspaceHeader } from "@/store/workspace-id";
 
 export default function DeviceActions({ deviceId, deviceMode, modeParams }: { deviceId: string, deviceMode: string, modeParams: Device['modeParams'] }) {
 
@@ -9,7 +10,7 @@ export default function DeviceActions({ deviceId, deviceMode, modeParams }: { de
     try {
       await fetch(`/api/devices/${deviceId}/trigger`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...workspaceHeader() },
         body: JSON.stringify({ action })
       });
     } catch (e) {
@@ -19,7 +20,7 @@ export default function DeviceActions({ deviceId, deviceMode, modeParams }: { de
 
   async function handleSync() {
     try {
-      await fetch(`/api/devices/${deviceId}/sync`, { method: "POST" });
+      await fetch(`/api/devices/${deviceId}/sync`, { method: "POST", headers: workspaceHeader() });
     } catch (e) {
       console.error(e);
     }

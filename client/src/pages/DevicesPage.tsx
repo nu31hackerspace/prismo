@@ -1,38 +1,25 @@
 import { useState } from "react";
 import { observer } from "mobx-react-lite";
+import { Link } from "react-router-dom";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
-import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useStore } from "@/store/provider";
-
-const DEVICE_MODE_OPTIONS = [
-  { value: "door", label: "Door Lock" },
-  { value: "machine", label: "Machine Access" },
-] as const;
+import { draft } from "@/store/models/base";
+import { trackEvent } from "@/lib/analytics";
 
 export default observer(function DevicesPage() {
   const store = useStore();
   const [newName, setNewName] = useState("");
-  const [newMode, setNewMode] = useState<(typeof DEVICE_MODE_OPTIONS)[number]["value"]>("door");
 
-  const handleAddDevice = async () => {
+  const handleAddDevice = () => {
     const name = newName.trim();
-    if (!name || !newMode) return;
+    if (!name) return;
 
-    try {
-      const res = await fetch("/api/entities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "device", data: { name, mode: newMode } }),
-      });
-      if (res.ok) {
-        setNewName("");
-        setNewMode("door");
-      }
-    } catch (err) {
-      console.error("Failed to add device", err);
-    }
+    // Created locally first: draft() puts it straight into the store (the
+    // card below renders immediately) and queues it to reach the backend.
+    draft(store.entities, "device", { name, mode: "door", modeParams: {}, lastSeenAt: null }).save();
+    setNewName("");
   };
 
   const devices = store.allDevices;
@@ -68,7 +55,6 @@ export default observer(function DevicesPage() {
               onChange={(e) => setNewName(e.target.value)}
               className="w-64 rounded-xl border border-separator-secondary bg-fill-tertiary px-4 py-2 text-label-primary outline-none focus:border-accent-primary sm:w-80"
             />
-            <SegmentedControl options={DEVICE_MODE_OPTIONS} value={newMode} onChange={setNewMode} />
             <Button tag="device_add" variant="primary" size="md" icon="mdi:plus" onClick={handleAddDevice}>
               Add Device
             </Button>
@@ -80,8 +66,10 @@ export default observer(function DevicesPage() {
         ) : devices.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {devices.map((device) => (
-              <div
+              <Link
                 key={device.id}
+                to={`/devices/${device.id}`}
+                onClick={() => trackEvent("click_device_card")}
                 className="group relative flex flex-col rounded-2xl border border-separator-secondary bg-fill-tertiary p-6 transition-all hover:border-separator-primary hover:shadow-lg"
               >
                 <div className="mb-4 flex items-center justify-between">
@@ -102,16 +90,11 @@ export default observer(function DevicesPage() {
                   {device.id}
                 </p>
 
-                <Button
-                  tag="device_manage"
-                  variant="ghost"
-                  size="md"
-                  icon="mdi:cog"
-                  to={`/devices/${device.id}`}
-                >
+                <span className="inline-flex h-12 items-center gap-2 rounded-md px-5 text-base font-medium text-label-primary transition-colors group-hover:bg-fill-secondary">
+                  <Icon name="mdi:cog" className="h-5 w-5" />
                   Manage
-                </Button>
-              </div>
+                </span>
+              </Link>
             ))}
           </div>
         ) : (

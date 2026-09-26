@@ -5,6 +5,7 @@ import { RootStore } from '@/store/root-store';
 import { StoreProvider } from '@/store/provider';
 import { ReconnectBanner } from '@/store/reconnect-banner';
 import { AppSidebarAndHeader } from '@/components/layout-client';
+import { setWorkspaceId } from '@/store/workspace-id';
 
 import Landing from '@/pages/Landing';
 import GoogleCallback from '@/pages/GoogleCallback';
@@ -38,7 +39,8 @@ function useAuth(): AuthState {
           setState({ status: 'anon' });
           return;
         }
-        const { user } = await res.json();
+        const { user, workspaceId } = await res.json();
+        setWorkspaceId(workspaceId);
         setState({ status: 'authed', user });
       })
       .catch(() => {

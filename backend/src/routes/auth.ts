@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import { createSession, getUserFromToken, SESSION_COOKIE } from '@/auth';
-import { ensureUserAndMembership } from '@/workspace-service';
+import { ensureUserAndMembership, getWorkspaceForUser } from '@/workspace-service';
+
+interface GoogleUserInfo {
+  sub?: string;
+  email?: string;
+  name?: string;
+  error_description?: string;
+}
 
 export const authRouter = Router();
 
@@ -15,7 +22,7 @@ authRouter.post('/google', async (req, res) => {
     const url = new URL('https://www.googleapis.com/oauth2/v3/userinfo');
     url.searchParams.append('access_token', googleAccessToken);
     const userInfoResponse = await fetch(url.toString());
-    const userInfo = await userInfoResponse.json();
+    const userInfo = (await userInfoResponse.json()) as GoogleUserInfo;
 
     if (!userInfoResponse.ok) {
       res.status(401).json({ error: userInfo.error_description || 'Invalid access token' });
@@ -55,6 +62,6 @@ authRouter.get('/me', async (req, res) => {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
-  res.json({ user });
+  res.json({ user, workspaceId: await getWorkspaceForUser(user.id) });
 });
 

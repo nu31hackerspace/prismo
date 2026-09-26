@@ -22,7 +22,6 @@ Find the object where `"name": "prismo-dev-vm"` and extract its `"address"` fiel
 ## 3. Configure /etc/hosts
 Ensure that the following domains map to the VM IP address (not 127.0.0.1) in `/etc/hosts`:
 - `app.prismo.local.nu31.space`
-- `mongo-viewer.prismo.local.nu31.space`
 - `mqtt.prismo.local.nu31.space`
 - `postgres-viewer.prismo.local.nu31.space`
 

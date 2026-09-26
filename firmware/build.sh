@@ -8,6 +8,8 @@ export PROJECT_DIR=$(pwd)
 
 echo "Starting build process in $PROJECT_DIR..."
 
+echo "GIT_COMMIT = \"$(git rev-parse --short HEAD)\"" > "$PROJECT_DIR/src/build_info.py"
+
 # ---------------------------------------------------------
 # Step A: Setup ESP-IDF (The Espressif Toolchain)
 # ---------------------------------------------------------

@@ -118,8 +118,8 @@ Use you favorite agent to start the dev environment, using `.agents/skills/prism
 The skill will setup a few domains:
 
 - `app.prismo.local.nu31.space`
-- `mongo-viewer.prismo.local.nu31.space`
 - `mqtt.prismo.local.nu31.space`
+- `postgres-viewer.prismo.local.nu31.space`
 
 ## Project CI
 

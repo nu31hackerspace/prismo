@@ -2,12 +2,10 @@ import { io, Socket } from 'socket.io-client';
 import { runInAction } from 'mobx';
 import type { ChangeBatch, ResyncRequest, ResyncResult } from '@prismo/shared/sync';
 import type { RootStore } from './root-store';
+import { workspaceId } from './workspace-id';
 
 const log = (...args: unknown[]) => console.log('[sync]', ...args);
 
-// Same-origin deployment (Caddy path-routes /socket.io/* to the backend)
-// means the browser sends the httpOnly session cookie with the handshake
-// automatically — no token to plumb through here.
 export function connectSync(store: RootStore): Socket {
   const queue: ChangeBatch[] = [];
   let ready = false;
@@ -15,11 +13,10 @@ export function connectSync(store: RootStore): Socket {
   const socket = io({
     path: '/socket.io',
     withCredentials: true,
+    auth: { workspaceId },
     autoConnect: false,
   });
 
-  // Log every inbound/outbound socket message so the sync protocol is
-  // visible in devtools without attaching a debugger.
   socket.onAny((event, ...args) => log('recv', event, ...args));
   socket.onAnyOutgoing((event, ...args) => log('send', event, ...args));
 
@@ -28,9 +25,6 @@ export function connectSync(store: RootStore): Socket {
     else queue.push(b);
   });
 
-  // On every connect (first load and every reconnect alike) ask the server
-  // to resync from our last known seq — 0 on first load gets a full
-  // snapshot back, anything else gets just the delta.
   socket.on('connect', () => {
     ready = false;
     queue.length = 0;
@@ -48,6 +42,7 @@ export function connectSync(store: RootStore): Socket {
       .forEach(b => store.applyBatch(b));
     ready = true;
     runInAction(() => { store.connected = true; });
+    void store.entities.outbox.flush();
   });
 
   socket.on('disconnect', (reason) => {

@@ -8,8 +8,9 @@ import { migrate } from '@/db/migrate';
 import { setBroadcast } from '@/db/mutate';
 import { readSnapshot, readDelta } from '@/db/snapshot';
 import { resolveSessionFromToken, SESSION_COOKIE } from '@/auth';
-import { getWorkspaceForUser } from '@/workspace-service';
+import { resolveWorkspace } from '@/workspace-service';
 import { initializeScanListener } from '@/devices/scan-listener';
+import { registerKeySyncReactions } from '@/devices/key-sync-reactions';
 import { deviceSession } from '@/middleware/device-session';
 
 import { healthRouter } from '@/routes/health';
@@ -46,7 +47,7 @@ async function main() {
     const token = cookieHeader ? parseCookies(cookieHeader)[SESSION_COOKIE] : undefined;
     const session = await resolveSessionFromToken(token);
     if (!session) return next(new Error('unauthorized'));
-    const workspaceId = await getWorkspaceForUser(session.userId);
+    const workspaceId = await resolveWorkspace(session.userId, socket.handshake.auth.workspaceId);
     if (!workspaceId) return next(new Error('no workspace'));
     socket.data.userId = session.userId;
     socket.data.workspaceId = workspaceId;
@@ -65,6 +66,7 @@ async function main() {
   });
 
   initializeScanListener();
+  registerKeySyncReactions();
 
   server.listen(port, '0.0.0.0', () => {
     console.log(`> Backend ready on http://0.0.0.0:${port}`);

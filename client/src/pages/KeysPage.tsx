@@ -3,7 +3,9 @@ import { observer } from "mobx-react-lite";
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/store/provider";
+import { draft } from "@/store/models/base";
 import type { Key, Device } from "@/store/models";
+import { workspaceHeader } from "@/store/workspace-id";
 
 const KeyCard = observer(function KeyCard({ keyItem, allDevices, onAttach, onDetach, onDelete }: {
   keyItem: Key,
@@ -64,13 +66,9 @@ const KeyCard = observer(function KeyCard({ keyItem, allDevices, onAttach, onDet
 export default observer(function KeysPage() {
   const store = useStore();
 
-  const attachDeviceSubmit = async (keyId: string, deviceId: string) => {
+  const attachDeviceSubmit = (keyId: string, deviceId: string) => {
     if (!keyId || !deviceId) return;
-    await fetch("/api/entities", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "keyAccess", data: { keyId, deviceId } }),
-    });
+    draft(store.entities, "keyAccess", { keyId, deviceId }).save();
   };
 
   const detachDeviceSubmit = async (keyId: string, deviceId: string) => {
@@ -78,12 +76,12 @@ export default observer(function KeysPage() {
     const keyAccess = store.entities.allOf("keyAccess").find((ka) => ka.keyId === keyId && ka.deviceId === deviceId);
     if (!keyAccess) return;
 
-    await fetch(`/api/entities/${keyAccess.id}`, { method: "DELETE" });
+    await fetch(`/api/entities/${keyAccess.id}`, { method: "DELETE", headers: workspaceHeader() });
   };
 
   const deleteKeySubmit = async (keyId: string) => {
     if (!keyId) return;
-    await fetch(`/api/entities/${keyId}`, { method: "DELETE" });
+    await fetch(`/api/entities/${keyId}`, { method: "DELETE", headers: workspaceHeader() });
   };
 
   const keys = store.allKeys;
