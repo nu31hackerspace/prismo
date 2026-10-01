@@ -82,23 +82,49 @@ export class TagEmulator {
 
   /**
    * Start emulating a 3-byte NFCID1 for `seconds` (the device runs the timer
-   * itself). Resolves once the emulator confirms it is radiating; the reader
-   * sees UID 0x08 + these bytes and may scan it several times in the window.
+   * itself) and resolve once the Prismo reader has actually read it over RF
+   * (the emulator prints "Activated by external reader"). The reader sees UID
+   * 0x08 + these bytes and may scan it several times in the window.
+   *
+   * RF coupling between the two PN532 antennas is physical, so a window can
+   * pass without the reader completing a poll; in that case a fresh window is
+   * opened, up to `attempts` times, and the test fails with an explicit
+   * "never activated" error rather than a downstream UI timeout.
    */
   async emulate(
     key: string,
     seconds: number = config.emulateSeconds,
+    attempts = 3,
   ): Promise<void> {
     if (!/^[0-9a-f]{6}$/i.test(key)) {
       throw new Error(`emulated key must be exactly 6 hex chars, got: ${key}`);
     }
     if (!this.port) throw new Error("TagEmulator not provisioned");
-    const confirmed = this.waitForLine(
-      `Now emulating NFCID1: ${key.toLowerCase()}`,
-      10_000,
+    const windowMs = (seconds + 5) * 1000;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      const confirmed = this.waitForLine(
+        `Now emulating NFCID1: ${key.toLowerCase()}`,
+        10_000,
+      );
+      const activated = this.waitForLine(
+        "Activated by external reader",
+        windowMs,
+      )
+        .then(() => true)
+        .catch(() => false);
+      const windowEnded = this.waitForLine("WAITING_FOR_SERIAL", windowMs)
+        .then(() => false)
+        .catch(() => false);
+      this.port.write(`${key.toLowerCase()}:${seconds}\n`);
+      await confirmed;
+      if (await Promise.race([activated, windowEnded])) return;
+      console.warn(
+        `[tag-emulator] reader did not activate tag ${key} in window ${attempt}/${attempts}`,
+      );
+    }
+    throw new Error(
+      `Prismo reader never activated the emulated tag ${key} over RF in ${attempts} windows`,
     );
-    this.port.write(`${key.toLowerCase()}:${seconds}\n`);
-    await confirmed;
   }
 
   /** Resolves when the current emulation window ends and the emulator idles. */
