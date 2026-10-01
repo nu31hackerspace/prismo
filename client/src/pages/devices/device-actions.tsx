@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { Device } from "@prismo/shared/entities";
 import { workspaceHeader } from "@/store/workspace-id";
 
-export default function DeviceActions({ deviceId, deviceMode, modeParams }: { deviceId: string, deviceMode: string, modeParams: Device['modeParams'] }) {
+export default function DeviceActions({ deviceId, deviceMode }: { deviceId: string, deviceMode: string, modeParams: Device['modeParams'] }) {
 
   async function handleTrigger(action: string) {
     try {

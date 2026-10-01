@@ -1,3 +1,5 @@
 package-lock.json
 node_modules
 mqtt-contract.generated.ts
+mqtt-contract.generated.d.ts
+mqtt-contract.generated.js

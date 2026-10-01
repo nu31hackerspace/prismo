@@ -12,7 +12,7 @@ import DeviceDangerZone from "./device-danger-zone";
 import DeviceHistory from "./device-history";
 import { workspaceHeader } from "@/store/workspace-id";
 
-export default observer(function DeviceDetailPage() {
+const DeviceDetailPage = observer(function DeviceDetailPage() {
   const { deviceId = "" } = useParams<{ deviceId: string }>();
   const navigate = useNavigate();
   const store = useStore();
@@ -156,3 +156,5 @@ export default observer(function DeviceDetailPage() {
     </>
   );
 });
+
+export default DeviceDetailPage;

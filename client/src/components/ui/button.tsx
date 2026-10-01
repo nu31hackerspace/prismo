@@ -128,4 +128,6 @@ export function Button(props: ButtonProps) {
   );
 }
 
+// Shared style helper for link-styled buttons; not a component.
+// eslint-disable-next-line react-refresh/only-export-components
 export { buttonVariants };

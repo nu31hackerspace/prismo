@@ -63,7 +63,7 @@ const KeyCard = observer(function KeyCard({ keyItem, allDevices, onAttach, onDet
   );
 });
 
-export default observer(function KeysPage() {
+const KeysPage = observer(function KeysPage() {
   const store = useStore();
 
   const attachDeviceSubmit = (keyId: string, deviceId: string) => {
@@ -135,3 +135,5 @@ export default observer(function KeysPage() {
     </section>
   );
 });
+
+export default KeysPage;
