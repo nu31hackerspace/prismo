@@ -17,23 +17,44 @@ type Response = {
   fields?: Record<string, string>;
 };
 
+// After esptool's hard reset the ESP32-C3's USB-Serial-JTAG port
+// re-enumerates, so the first open can hit a node that is going away. Retry
+// the open until the port settles. Clearing DTR/RTS is best-effort: some
+// kernels/cdc-acm builds reject the modem-line ioctl ("Operation not
+// supported"), and the board runs fine with the default line state (mpremote
+// talks to it the same way).
+async function openSettledPort(): Promise<SerialPort> {
+  const deadline = Date.now() + 30_000;
+  for (;;) {
+    const port = new SerialPort({
+      path: config.serialPort,
+      baudRate: 115200,
+      hupcl: false,
+      autoOpen: false,
+    });
+    try {
+      await new Promise<void>((resolve, reject) =>
+        port.open((err) => (err ? reject(err) : resolve())),
+      );
+    } catch (err) {
+      if (Date.now() > deadline) throw err;
+      await new Promise((r) => setTimeout(r, 1_000));
+      continue;
+    }
+    await new Promise<void>((resolve) =>
+      port.set({ dtr: false, rts: false }, (err) => {
+        if (err) console.warn(`Serial: cannot clear DTR/RTS (${err.message})`);
+        resolve();
+      }),
+    );
+    return port;
+  }
+}
+
 export async function configureDevice(
   values: Record<string, string>,
 ): Promise<void> {
-  const port = new SerialPort({
-    path: config.serialPort,
-    baudRate: 115200,
-    hupcl: false,
-    autoOpen: false,
-  });
-  await new Promise<void>((resolve, reject) =>
-    port.open((err) => (err ? reject(err) : resolve())),
-  );
-  await new Promise<void>((resolve, reject) =>
-    port.set({ dtr: false, rts: false }, (err) =>
-      err ? reject(err) : resolve(),
-    ),
-  );
+  const port = await openSettledPort();
 
   const pending = new Map<number, (res: Response) => void>();
   port.pipe(new ReadlineParser({ delimiter: "\n" })).on("data", (raw) => {
