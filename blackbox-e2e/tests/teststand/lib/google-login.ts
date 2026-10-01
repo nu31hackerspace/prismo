@@ -49,26 +49,58 @@ export async function googleLogin(page: Page): Promise<void> {
   await password.fill(googlePassword);
   await page.locator("#passwordNext").click();
 
-  if (googleTotpSecret) {
-    const totpInput = page.locator('input[name="totpPin"]');
-    await totpInput.waitFor({ timeout: 30_000 });
-    await totpInput.fill(await freshTotp(googleTotpSecret));
-    await page.locator("#totpNext").click();
-  }
-
+  // Google asks for the second factor only when it decides the sign-in is
+  // risky, so the TOTP prompt is optional: handle whatever page shows up
+  // (authenticator challenge, method picker, consent) until we land back on
+  // the app.
   const appOrigin = new URL(config.baseUrl).origin;
+  const totpInput = page.locator('input[name="totpPin"]');
+  const authenticatorOption = page.getByText(/Google Authenticator/i);
+  const tryAnotherWay = page.getByRole("button", { name: /Try another way/i });
   const consent = page.getByRole("button", { name: /^(Continue|Allow)$/ });
-  const deadline = Date.now() + 60_000;
+  const visible = (l: { first(): { isVisible(): Promise<boolean> } }) =>
+    l
+      .first()
+      .isVisible()
+      .catch(() => false);
+  let totpSubmitted = false;
+  const deadline = Date.now() + 90_000;
   while (!page.url().startsWith(appOrigin)) {
     if (Date.now() > deadline) {
       throw new Error(`Google login stuck at ${page.url()}`);
     }
-    if (
-      await consent
-        .first()
-        .isVisible()
-        .catch(() => false)
+    if (!totpSubmitted && (await visible(totpInput))) {
+      if (!googleTotpSecret) {
+        throw new Error(
+          "Google asked for an authenticator code: set TESTSTAND_GOOGLE_TOTP_SECRET",
+        );
+      }
+      await totpInput.fill(await freshTotp(googleTotpSecret));
+      await page.locator("#totpNext").click();
+      totpSubmitted = true;
+    } else if (
+      googleTotpSecret &&
+      !totpSubmitted &&
+      (await visible(authenticatorOption))
     ) {
+      // Challenge method picker: choose the authenticator app.
+      await authenticatorOption
+        .first()
+        .click()
+        .catch(() => {});
+    } else if (
+      googleTotpSecret &&
+      !totpSubmitted &&
+      page.url().includes("/challenge/") &&
+      !page.url().includes("/challenge/totp") &&
+      (await visible(tryAnotherWay))
+    ) {
+      // Google defaulted to another factor (phone prompt, SMS…).
+      await tryAnotherWay
+        .first()
+        .click()
+        .catch(() => {});
+    } else if (await visible(consent)) {
       await consent
         .first()
         .click()
