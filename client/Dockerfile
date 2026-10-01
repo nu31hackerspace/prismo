@@ -1,9 +1,11 @@
 # Build context is the repo root (`docker build -f client/Dockerfile .`) so
-# this can resolve the `@prismo/shared` workspace dependency.
+# this can resolve the `@prismo/shared` workspace dependency and the
+# `mqtt-contract` file dependency.
 FROM node:22-alpine AS build
 WORKDIR /repo
 COPY package.json package-lock.json* ./
 COPY shared ./shared
+COPY mqtt-contract ./mqtt-contract
 COPY client ./client
 RUN npm install --workspace=client
 # Vite inlines VITE_* variables into the bundle at build time, so the
