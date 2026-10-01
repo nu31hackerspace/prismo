@@ -1,11 +1,13 @@
 /**
  * Full device lifecycle + connectivity-recovery e2e test (hardware-in-the-loop).
  *
- * Drives the production web app exactly as a user would — create a device, set
- * its WiFi credentials, build the firmware on the Pi worker, download it and
- * flash the real ESP32-C3 with esptool — then verifies the live device:
+ * Drives the production web app as a user would — create a device, generate
+ * its MQTT credentials, download the app's firmware.bin and flash the real
+ * ESP32-C3 with esptool, then write WiFi/MQTT settings over the serial @cfg
+ * protocol (what "Setup Device" does over Web Serial) — and verifies the live
+ * device:
  *
- *   1. comes Online and the "Trigger Success" button drives the physical pin;
+ *   1. comes Online and the "Open Door" button drives the physical pin;
  *   2. denies an unknown NFC tag presented over real RF by the PN532 tag
  *      emulator (second ESP32-C3, see blackbox-e2e/tag-emulator), surfaces it
  *      in the UI, and opens the door once the operator adds the key — the
@@ -21,8 +23,7 @@
  *
  * "Without rebooting" is proven by the uptime_s field in the device heartbeat
  * staying monotonic across each outage (a watchdog reset would restart it).
- * The whole run uses one firmware build + flash — the phases share the flashed
- * device, so the ~10 min build is paid once.
+ * The whole run uses one flash — the phases share the flashed device.
  */
 import { test, expect } from "./fixtures";
 import {
@@ -43,16 +44,17 @@ import {
   expectReconnectCycle,
 } from "./lib/reconnect-helpers";
 import { TagEmulator } from "./lib/tag-emulator";
+import { configureDevice } from "./lib/device-config";
 import { config } from "./lib/env";
 import { run } from "./lib/exec";
 import { execSync } from "child_process";
+import { writeFileSync } from "node:fs";
 
-test("device lifecycle: build, flash, online, trigger, NFC tag access, and reconnect after WiFi/broker/boot outages", async ({
+test("device lifecycle: flash, configure, online, trigger, NFC tag access, and reconnect after WiFi/broker/boot outages", async ({
   page,
 }) => {
-  // Worker firmware build (up to 10 min) + esptool flash + boot/online waits +
-  // three reconnection cycles.
-  test.setTimeout(1_500_000);
+  // esptool flash + boot/online waits + three reconnection cycles.
+  test.setTimeout(900_000);
 
   let watcher: StatusWatcher | undefined;
   let emulator: TagEmulator | undefined;
@@ -66,53 +68,44 @@ test("device lifecycle: build, flash, online, trigger, NFC tag access, and recon
   try {
     const creds =
       await test.step("Create device and generate MQTT credentials", async () => {
-        await createDevice(
-          page,
-          deviceName,
-          config.deviceMode as "door" | "machine",
-        );
-        await navigateToDevice(page, deviceName);
+        await createDevice(page, deviceName);
+        const deviceId = await navigateToDevice(page, deviceName);
         await expect(page.getByText("Offline", { exact: true })).toBeVisible({
           timeout: 5_000,
         });
-        return generateMqttCredentials(page);
+        return generateMqttCredentials(page, deviceId);
       });
 
     // Watch the device's heartbeats from the broker's published port (this
     // path never crosses wlan0, so it survives the AP outages below).
     watcher = await watchDeviceStatus(creds);
 
-    const fwPath =
-      await test.step("Set WiFi credentials and build + download firmware", async () => {
-        await page.getByPlaceholder("WiFi SSID").fill(config.wifiSsid);
-        await page.getByPlaceholder("WiFi Password").fill(config.wifiPass);
-        await page.getByRole("button", { name: "Build Firmware" }).click();
-        await expect(page.getByText("Building firmware…")).toBeVisible();
-        // Matches the worker's BUILD_TIMEOUT (600s).
-        await expect(page.getByText("Firmware ready!")).toBeVisible({
-          timeout: 600_000,
-        });
+    await test.step("Download the app's firmware and flash it via esptool", async () => {
+      const res = await page.request.get("/firmware.bin");
+      expect(res.ok(), "app does not serve /firmware.bin").toBe(true);
+      const fwPath = test.info().outputPath("firmware.bin");
+      writeFileSync(fwPath, await res.body());
 
-        const downloadPromise = page.waitForEvent("download");
-        await page.getByRole("link", { name: "Download Firmware" }).click();
-        const download = await downloadPromise;
-        const p = await download.path();
-        if (!p) throw new Error("Failed to save downloaded firmware");
-        return p;
-      });
-
-    await test.step("Flash the device via esptool", async () => {
       console.log(`Flashing ${fwPath} to ${config.serialPort} via esptool…`);
       execSync(
         `${config.esptoolBin} --chip esp32c3 --port ${config.serialPort} erase_flash`,
-        {
-          stdio: "inherit",
-        },
+        { stdio: "inherit" },
       );
       execSync(
         `${config.esptoolBin} --chip esp32c3 --port ${config.serialPort} --baud 460800 write_flash 0x0 ${fwPath}`,
         { stdio: "inherit" },
       );
+    });
+
+    await test.step("Write WiFi + MQTT settings over serial", async () => {
+      await configureDevice({
+        wifi_ssid: config.wifiSsid,
+        wifi_pass: config.wifiPass,
+        mqtt_url: `mqtt://${config.deviceMqttHost}:${config.deviceMqttPort}`,
+        mqtt_user: creds.mqttUser,
+        mqtt_pass: creds.mqttPass,
+        mode: "door",
+      });
     });
 
     await test.step("Provision the PN532 tag emulator", async () => {
@@ -132,7 +125,7 @@ test("device lifecycle: build, flash, online, trigger, NFC tag access, and recon
       await test.step("Unknown tag is denied and surfaces in the UI", async () => {
         expect(await waitForSignalInactive(10_000)).toBe(true);
         await emulator!.emulate(tagUid);
-        // The device publishes the denied scan; it reaches the page via SSE.
+        // The device publishes the denied scan; it reaches the page via the sync socket.
         await expect(
           page.getByRole("heading", { name: "Last Unauthorized Scan" }),
         ).toBeVisible({

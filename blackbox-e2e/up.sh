@@ -43,7 +43,7 @@ done
 echo ""
 echo "Stack is up:"
 echo "  Web app (production build, via Caddy) → http://localhost:13000"
-echo "  MongoDB                               → mongodb://localhost:27017/prismo"
+echo "  Postgres                              → postgresql://admin:admin@localhost:5432/prismo"
 echo "  MQTT broker                           → mqtt://admin:admin@localhost:1883"
 echo ""
 echo "Tail logs:  docker compose -f blackbox-e2e/docker-compose.yml logs -f backend client"

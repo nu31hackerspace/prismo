@@ -7,7 +7,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: nu31hackerspace/prismo-web-admin
-  WORKER_IMAGE_NAME: nu31hackerspace/prismo-worker
 
 jobs:
   build-test-images:
@@ -24,13 +23,10 @@ jobs:
           - name: client
             file: client/Dockerfile
             image: nu31hackerspace/prismo-web-admin-client
-            # This run drives the genuine Google OAuth flow (not the
-            # TEST_MODE mock), so the client needs the real client ID baked
-            # in — Vite inlines VITE_* vars at build time, not read at runtime.
+            # This run drives the genuine Google OAuth flow, so the client
+            # needs the real client ID baked in — Vite inlines VITE_* vars at
+            # build time, not read at runtime.
             build-args: VITE_GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
-          - name: worker
-            file: backend/worker/Dockerfile
-            image: nu31hackerspace/prismo-worker
     steps:
       - uses: actions/checkout@v4
       - name: Log in to registry
@@ -50,9 +46,6 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ matrix.image }}:test-${{ github.sha }}
           build-args: ${{ matrix.build-args }}
-          # Registry layer cache: the worker image's ESP-IDF/MicroPython layers
-          # take ~8 min to build but only change when the Dockerfile does, so
-          # repeat runs that only touch test/firmware code rebuild in seconds.
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache,mode=max
 
@@ -66,13 +59,14 @@ jobs:
       TESTSTAND_SERIAL_PORT: /dev/ttyESP32C3
       TESTSTAND_EMULATOR_PORT: /dev/ttyTagEmulator
       COMPOSE_FILES: -f docker-compose.yml -f docker-compose.teststand.yml
+      TESTSTAND_GOOGLE_EMAIL: ${{ secrets.TESTSTAND_GOOGLE_EMAIL }}
+      TESTSTAND_GOOGLE_PASSWORD: ${{ secrets.TESTSTAND_GOOGLE_PASSWORD }}
+      TESTSTAND_GOOGLE_TOTP_SECRET: ${{ secrets.TESTSTAND_GOOGLE_TOTP_SECRET }}
 
     steps:
       - name: Free up disk space on runner
         # Only dangling images here. Old test-<sha> images are removed in Tear
-        # down instead — deleting them *before* the pull would also delete the
-        # ~6GB of ESP-IDF layers the new worker image shares with them, forcing
-        # a full re-pull (observed: 33 min) instead of a small delta.
+        # down instead, so the pull can reuse their shared layers.
         run: docker image prune -f || true
 
       - uses: actions/checkout@v4
@@ -106,7 +100,6 @@ jobs:
       - name: Set up .env with Image Tags
         run: |
           echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> blackbox-e2e/.env
-          echo "WORKER_IMAGE_NAME=${{ env.WORKER_IMAGE_NAME }}" >> blackbox-e2e/.env
           echo "IMAGE_TAG=test-${{ github.sha }}" >> blackbox-e2e/.env
           echo "COMMIT_SHA=${{ github.sha }}" >> blackbox-e2e/.env
 
@@ -119,7 +112,7 @@ jobs:
         working-directory: blackbox-e2e
         run: |
           docker compose $COMPOSE_FILES build mqtt
-          docker compose $COMPOSE_FILES pull backend client worker
+          docker compose $COMPOSE_FILES pull backend client
           docker compose $COMPOSE_FILES up --no-build -d
           echo "Waiting for backend and client to become healthy…"
           for service in backend client; do
@@ -148,8 +141,6 @@ jobs:
           (cd blackbox-e2e && docker compose $COMPOSE_FILES logs backend) || true
           echo "--- client logs ---"
           (cd blackbox-e2e && docker compose $COMPOSE_FILES logs client) || true
-          echo "--- worker logs ---"
-          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs worker) || true
           echo "--- gpio read ---"
           gpioget -c gpiochip4 17 || true
           echo "--- mpremote devs ---"
@@ -181,8 +172,7 @@ jobs:
           sudo nmcli connection down prismo-ap || true
           # Drop test images from other commits, keeping this run's images so
           # the next pull reuses their shared layers. Tagged images are never
-          # "dangling", so without this the Pi's SD card fills up (~6GB/run,
-          # observed ENOSPC mid-job).
+          # "dangling", so without this the Pi's SD card fills up.
           docker images --format '{{.Repository}}:{{.Tag}}' \
             | grep ':test-' | grep -v ':test-${{ github.sha }}' \
             | xargs -r docker rmi || true

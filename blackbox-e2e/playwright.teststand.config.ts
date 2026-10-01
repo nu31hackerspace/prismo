@@ -1,10 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
-import { config as standConfig } from "./tests/teststand/lib/env";
+import { existsSync } from "node:fs";
 
-// NOTE: deliberately no dotenv here. Unlike playwright.config.ts, this suite is
-// configured explicitly via the orchestrator / shell env (see lib/env.ts), so a
-// developer's web/.env (which points at their dev VM with a different
-// SESSION_SECRET) can't silently override the stand's settings.
+if (existsSync(".env")) process.loadEnvFile(".env");
+
+const { config: standConfig } = await import("./tests/teststand/lib/env");
 
 /**
  * Playwright config for the hardware test-stand suite.
@@ -27,6 +26,9 @@ export default defineConfig({
   use: {
     baseURL: standConfig.baseUrl,
     headless: true,
+    // Local runs hit the dev stack's Caddy, which serves a self-signed cert.
+    ignoreHTTPSErrors: true,
+    locale: "en-US",
     // Keep video + trace for every run (pass or fail) for max diagnostics.
     video: "on",
     trace: "on",

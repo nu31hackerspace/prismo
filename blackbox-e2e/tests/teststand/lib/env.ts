@@ -16,21 +16,11 @@ export const config = {
   // blackbox-e2e publishes the production app on host port 13000.
   baseUrl: envStr("TESTSTAND_BASE_URL", "http://localhost:13000"),
 
-  // ── Mongo (auth seeding — the one allowed DB exception) ───────────────
-  // Connect straight to the published port — directConnection avoids replica-set
-  // discovery, which would otherwise chase the internal `mongo:27017` host.
-  mongodbUrl: envStr(
-    "MONGODB_URL",
-    "mongodb://localhost:27017/prismo?directConnection=true",
-  ),
-  mongodbDatabase: envStr("MONGODB_DATABASE", "prismo"),
-  // Must match SESSION_SECRET of the running app so the minted JWT validates.
-  sessionSecret: envStr("SESSION_SECRET", "blackbox-secret-not-for-production"),
-
-  // Seeded user (stands in for a real Google account).
-  seedUserGoogleId: envStr("TESTSTAND_USER_GOOGLE_ID", "teststand-user"),
-  seedUserEmail: envStr("TESTSTAND_USER_EMAIL", "teststand@nu31.space"),
-  seedUserName: envStr("TESTSTAND_USER_NAME", "Test Stand"),
+  // ── Real Google account used to sign in (2-step verification via TOTP) ──
+  googleEmail: envStr("TESTSTAND_GOOGLE_EMAIL", ""),
+  googlePassword: envStr("TESTSTAND_GOOGLE_PASSWORD", ""),
+  // Base32 secret shown as "Can't scan it?" when adding an authenticator app.
+  googleTotpSecret: envStr("TESTSTAND_GOOGLE_TOTP_SECRET", ""),
 
   // ── WiFi hotspot the Pi serves and the device joins ───────────────────
   // Defaults MUST match firmware/tests/real_hardware/start-ap.sh (the proven
@@ -47,7 +37,6 @@ export const config = {
   // ── ESP32-C3 flashing ─────────────────────────────────────────────────
   serialPort: envStr("TESTSTAND_SERIAL_PORT", "/dev/ttyESP32C3"),
   mpremoteBin: envStr("TESTSTAND_MPREMOTE_BIN", "mpremote"),
-  deviceMode: envStr("TESTSTAND_DEVICE_MODE", "door"),
   esptoolBin: envStr("TESTSTAND_ESPTOOL_BIN", "esptool"),
 
   // ── PN532 tag emulator (second ESP32-C3, see blackbox-e2e/tag-emulator) ─
@@ -86,11 +75,11 @@ export const config = {
   // Time allowed for the device to boot, join WiFi, connect MQTT and appear
   // Online after the config is injected and the board soft-resets.
   onlineTimeoutMs: Number(envStr("TESTSTAND_ONLINE_TIMEOUT_MS", "60000")),
-  // Window to observe the success pin after clicking Trigger Success.
+  // Window to observe the success pin after clicking Open Door.
   // Firmware holds the pin for SUCCESS_SIGNAL_DURATION (5s); allow MQTT latency.
   signalTimeoutMs: Number(envStr("TESTSTAND_SIGNAL_TIMEOUT_MS", "8000")),
-  // Badge flips Offline once heartbeats (5s) stop and the page's 10s timer
-  // fires; 30s gives 2x margin over the worst case.
+  // Badge flips Offline 15s after the last heartbeat (re-checked every 5s);
+  // 30s leaves margin over the ~20s worst case.
   offlineTimeoutMs: Number(envStr("TESTSTAND_OFFLINE_TIMEOUT_MS", "30000")),
   // Worst-case recovery: WiFi backoff cap 60s + 15s attempt window +
   // association/DHCP + immediate MQTT reconnect + heartbeat + UI update.

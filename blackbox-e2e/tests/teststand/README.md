@@ -8,9 +8,9 @@ to the Raspberry Pi, and asserts on the **physical** success output pin.
 ┌── Raspberry Pi (test stand) ─────────────────────────────────────────────┐
 │                                                                           │
 │  WiFi hotspot (nmcli, 2.4 GHz)            docker compose (blackbox-e2e)    │
-│        ▲                                   mongo · mqtt · web (prod build) │
+│        ▲                                postgres · mqtt · web (prod build) │
 │        │ joins                                   ▲                         │
-│        │                            Playwright   │ seeds session + clicks  │
+│        │                            Playwright   │ Google login + clicks   │
 │   ESP32-C3 ──USB──► /dev/ttyESP32C3   (this suite)│                         │
 │    │   │ GPIO 5 (success)                                                  │
 │    │   ▼                                                                   │
@@ -23,17 +23,23 @@ to the Raspberry Pi, and asserts on the **physical** success output pin.
 ## What it does
 
 There is a single spec, `device-lifecycle.spec.ts`, that runs the whole
-journey against the real device (one firmware build + flash, shared by every
-phase):
+journey against the real device (one flash, shared by every phase):
 
-1. **Seed auth** — inserts a user + session into Mongo and mints the session
-   cookie (the _only_ black-box exception, to skip Google OAuth). See
-   `lib/seed-auth.ts`.
-2. **Create device** through the UI, **Setup Device** (real MQTT creds), set
-   the WiFi credentials, **Build Firmware** on the Pi worker, **Download** it.
-3. **Flash** the ESP32-C3 with `esptool` (erase + write the downloaded binary).
-4. Assert the UI shows **Online** (real MQTT heartbeats) and that **Trigger
-   Success** → MQTT `cmd/trigger` → firmware drives GPIO 5 HIGH → relay closes
+1. **Google login** — signs in through the real Google OAuth flow with a
+   dedicated test account (email, password, TOTP second factor). See
+   `lib/google-login.ts`. The account's only 2FA method must be an
+   authenticator app, and `<base url>/google/callback` must be an authorized
+   redirect URI of the OAuth client (`http://localhost:13000` on the stand,
+   `https://app.prismo.local.nu31.space` for local runs against the dev stack —
+   set `TESTSTAND_BASE_URL` in `blackbox-e2e/.env`).
+2. **Create device** through the UI and generate its MQTT credentials (the
+   same `POST /api/devices/:id/token` the "Fill MQTT credentials" button uses).
+3. **Flash** the app's `/firmware.bin` onto the ESP32-C3 with `esptool`, then
+   write WiFi + MQTT settings over the serial `@cfg` protocol — what "Setup
+   Device" does over Web Serial, which Playwright can't drive
+   (`lib/device-config.ts`).
+4. Assert the UI shows **Online** (real MQTT heartbeats) and that **Open
+   Door** → MQTT `cmd/trigger` → firmware drives GPIO 5 HIGH → relay closes
    → Pi reads the line active (`lib/gpio.ts`).
 5. **Real NFC access** — the PN532 **tag emulator** (a second ESP32-C3, see
    `../../tag-emulator/`) radiates a tag at the reader over real RF. The
@@ -77,7 +83,7 @@ port, which a wlan0 outage does not affect). Each phase is a Playwright
   `firmware/tests/real_hardware/start-ap.sh` (SSID `PrismoTest`, `192.168.10.1`).
 - The runner must reach GitHub over a link **other than `wlan0`** (e.g. Ethernet),
   since `wlan0` is turned into the AP.
-- Install on the Pi: Node + `npm ci` in `web/`, `docker`, `mpremote`, `esptool`,
+- Install on the Pi: Node + `npm ci` in `blackbox-e2e/`, `docker`, `mpremote`, `esptool`,
   `libgpiod` (`gpioget`), and NetworkManager (`nmcli`, passwordless `sudo`).
 
 ## Running
@@ -100,25 +106,27 @@ TESTSTAND_MANAGE_HOTSPOT=false TESTSTAND_MANAGE_INFRA=false npm run teststand:te
 
 All knobs live in `lib/env.ts`, overridable via env vars. Common ones:
 
-| Env var                           | Default                              | Meaning                                    |
-| --------------------------------- | ------------------------------------ | ------------------------------------------ |
-| `TESTSTAND_BASE_URL`              | `http://localhost:13000`             | Web app URL                                |
-| `TESTSTAND_WIFI_SSID`             | `PrismoTest`                         | Hotspot SSID the device joins              |
-| `TESTSTAND_WIFI_PASS`             | `prismotest123`                      | Hotspot password                           |
-| `TESTSTAND_WIFI_IFACE`            | `wlan0`                              | Pi WiFi interface for the hotspot          |
-| `TESTSTAND_MQTT_HOST`             | `192.168.10.1`                       | Broker IP as the _device_ reaches it       |
-| `TESTSTAND_SERIAL_PORT`           | `/dev/ttyESP32C3`                    | ESP32-C3 serial port                       |
-| `TESTSTAND_EMULATOR_PORT`         | `/dev/ttyTagEmulator`                | PN532 tag-emulator serial port             |
-| `TESTSTAND_EMULATE_SECONDS`       | `10`                                 | One tag-emulation window                   |
-| `TESTSTAND_GPIO_CHIP`             | `gpiochip4`                          | libgpiod chip for the success line         |
-| `TESTSTAND_GPIO_LINE`             | `17`                                 | BCM line wired to the relay                |
-| `SESSION_SECRET`                  | `blackbox-secret-not-for-production` | Must match the running app                 |
-| `TESTSTAND_LOCAL_MQTT_URL`        | `mqtt://localhost:1883`              | Broker as the _test host_ reaches it       |
-| `TESTSTAND_AP_PROFILE`            | `prismo-ap`                          | NetworkManager hotspot profile name        |
-| `TESTSTAND_MQTT_CONTAINER`        | `blackbox-e2e-mqtt-1`                | Broker container (broker-outage spec)      |
-| `TESTSTAND_OFFLINE_TIMEOUT_MS`    | `30000`                              | Wait for the Offline badge after an outage |
-| `TESTSTAND_RECONNECT_TIMEOUT_MS`  | `120000`                             | Wait for Online after restoring AP/broker  |
-| `TESTSTAND_BOOT_OFFLINE_GRACE_MS` | `25000`                              | Boot-with-no-AP settling time              |
+| Env var                           | Default                  | Meaning                                    |
+| --------------------------------- | ------------------------ | ------------------------------------------ |
+| `TESTSTAND_BASE_URL`              | `http://localhost:13000` | Web app URL                                |
+| `TESTSTAND_WIFI_SSID`             | `PrismoTest`             | Hotspot SSID the device joins              |
+| `TESTSTAND_WIFI_PASS`             | `prismotest123`          | Hotspot password                           |
+| `TESTSTAND_WIFI_IFACE`            | `wlan0`                  | Pi WiFi interface for the hotspot          |
+| `TESTSTAND_MQTT_HOST`             | `192.168.10.1`           | Broker IP as the _device_ reaches it       |
+| `TESTSTAND_SERIAL_PORT`           | `/dev/ttyESP32C3`        | ESP32-C3 serial port                       |
+| `TESTSTAND_EMULATOR_PORT`         | `/dev/ttyTagEmulator`    | PN532 tag-emulator serial port             |
+| `TESTSTAND_EMULATE_SECONDS`       | `10`                     | One tag-emulation window                   |
+| `TESTSTAND_GPIO_CHIP`             | `gpiochip4`              | libgpiod chip for the success line         |
+| `TESTSTAND_GPIO_LINE`             | `17`                     | BCM line wired to the relay                |
+| `TESTSTAND_GOOGLE_EMAIL`          | —                        | Google test account (required)             |
+| `TESTSTAND_GOOGLE_PASSWORD`       | —                        | Its password (required)                    |
+| `TESTSTAND_GOOGLE_TOTP_SECRET`    | —                        | Its authenticator base32 secret (required) |
+| `TESTSTAND_LOCAL_MQTT_URL`        | `mqtt://localhost:1883`  | Broker as the _test host_ reaches it       |
+| `TESTSTAND_AP_PROFILE`            | `prismo-ap`              | NetworkManager hotspot profile name        |
+| `TESTSTAND_MQTT_CONTAINER`        | `blackbox-e2e-mqtt-1`    | Broker container (broker-outage spec)      |
+| `TESTSTAND_OFFLINE_TIMEOUT_MS`    | `30000`                  | Wait for the Offline badge after an outage |
+| `TESTSTAND_RECONNECT_TIMEOUT_MS`  | `120000`                 | Wait for Online after restoring AP/broker  |
+| `TESTSTAND_BOOT_OFFLINE_GRACE_MS` | `25000`                  | Boot-with-no-AP settling time              |
 
 > The hotspot must be **2.4 GHz** — the ESP32-C3 has no 5 GHz radio. On
 > dual-band adapters force the band if `nmcli` picks 5 GHz.

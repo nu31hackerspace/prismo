@@ -3,7 +3,7 @@
  *
  * One command to run the full hardware black-box e2e on the Raspberry Pi:
  *   1. bring up the WiFi hotspot the device joins (nmcli),
- *   2. start the production stack (Mongo / MQTT / web) via docker compose,
+ *   2. start the production stack (Postgres / MQTT / web) via docker compose,
  *   3. wait for the app to report healthy,
  *   4. run the Playwright hardware suite,
  *   5. tear everything down.
@@ -22,7 +22,6 @@ import { run, spawnStream } from "./lib/exec";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "../../..");
-const webDir = path.join(repoRoot, "web");
 const composeDir = path.join(repoRoot, "blackbox-e2e");
 
 const flag = (name: string, fallback: string) =>
@@ -66,10 +65,8 @@ async function hotspotDown(): Promise<void> {
 }
 
 async function infraUp(): Promise<void> {
-  console.log("\n▶ Starting production stack (Mongo / MQTT / web)…");
-  // Only app + its deps (mongo, mongo-init, mqtt); the worker isn't needed and
-  // its image is multi-GB.
-  await run("docker", [...composeArgs, "up", "--build", "-d", "app"], {
+  console.log("\n▶ Starting production stack (Postgres / MQTT / web)…");
+  await run("docker", [...composeArgs, "up", "--build", "-d"], {
     cwd: composeDir,
     timeoutMs: 600_000,
   });
@@ -78,7 +75,7 @@ async function infraUp(): Promise<void> {
   for (let i = 0; i < 60; i++) {
     const { stdout } = await run(
       "docker",
-      [...composeArgs, "ps", "app", "--format", "{{.Health}}"],
+      [...composeArgs, "ps", "backend", "--format", "{{.Health}}"],
       {
         cwd: composeDir,
         check: false,
@@ -107,7 +104,7 @@ async function runTests(): Promise<number> {
     "npx",
     ["playwright", "test", "--config", "playwright.teststand.config.ts"],
     {
-      cwd: webDir,
+      cwd: composeDir,
       env: process.env,
     },
   );

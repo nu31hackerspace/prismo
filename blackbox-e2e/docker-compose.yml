@@ -5,39 +5,15 @@
 # production: `backend` and `client` are the images built from
 # backend/Dockerfile and client/Dockerfile — the exact artifacts that get
 # deployed — fronted by the same same-origin Caddy routing docker-stack.yml
-# uses. Infrastructure (Mongo replica set, Mosquitto, worker) mirrors
-# docker-stack.yml.
+# uses. Infrastructure (Postgres, Mosquitto) mirrors docker-stack.yml.
 #
-# The only production deviation is TEST_MODE=1, which swaps the real Google
-# OAuth client for the in-app mock (see backend/src/google-auth.ts) so
-# "Sign In" works without real Google credentials. Everything else is the
-# production build.
+# Login goes through the real Google OAuth flow, so the client is built with
+# the real client ID: set GOOGLE_CLIENT_ID in blackbox-e2e/.env.
 #
-# Mongo (27017) and MQTT (1883) are published to the host so the black-box test
-# runner can reset the database and publish device messages.
+# Postgres (5432) and MQTT (1883) are published to the host so the test runner
+# can watch device messages.
 
 services:
-  mongo:
-    image: mongo:8
-    ports:
-      - "27017:27017"
-    command: --replSet rs0
-    healthcheck:
-      test: mongosh --eval "db.runCommand({ping:1})" --quiet
-      interval: 3s
-      timeout: 3s
-      retries: 10
-
-  mongo-init:
-    image: mongo:8
-    depends_on:
-      mongo:
-        condition: service_healthy
-    restart: "no"
-    entrypoint: >
-      mongosh --host mongo --eval
-      "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
-
   postgres:
     image: postgres:16
     ports:
@@ -72,10 +48,6 @@ services:
       dockerfile: backend/Dockerfile
     image: prismo-backend:blackbox
     depends_on:
-      mongo:
-        condition: service_healthy
-      mongo-init:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       mqtt:
@@ -87,8 +59,6 @@ services:
       - SESSION_SECRET=blackbox-secret-not-for-production
       - USERNAME=admin
       - PASSWORD=admin
-      # Mock Google OAuth so the test runner can sign in without real credentials.
-      - TEST_MODE=1
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
       interval: 5s
@@ -101,7 +71,7 @@ services:
       context: ..
       dockerfile: client/Dockerfile
       args:
-        VITE_GOOGLE_CLIENT_ID: unused
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     image: prismo-client:blackbox
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/"]
@@ -124,22 +94,3 @@ services:
         condition: service_healthy
       client:
         condition: service_healthy
-
-  worker:
-    # Use the published production worker image rather than building the multi-GB
-    # ESP-IDF / MicroPython image locally (matches docker-compose.dev.yml).
-    image: ghcr.io/nu31hackerspace/prismo-worker:latest
-    depends_on:
-      mongo:
-        condition: service_healthy
-      mongo-init:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_healthy
-      mqtt:
-        condition: service_healthy
-    environment:
-      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
-      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
-      - MQTT_URL=mqtt://admin:admin@mqtt:1883
-    restart: on-failure

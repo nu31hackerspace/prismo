@@ -3,29 +3,14 @@
 # Layer on top of docker-compose.yml:
 #   docker compose -f docker-compose.yml -f docker-compose.teststand.yml up -d
 #
-# Difference from the local blackbox stack: Google OAuth is NOT mocked here.
-# The test seeds a session directly (its one allowed DB shortcut) and drives the
-# genuine production auth path, so we turn TEST_MODE off. The browser reaches
+# Difference from the local blackbox stack: backend and client are the images
+# CI built for this commit instead of local builds. The browser reaches
 # everything through Caddy on the published port 13000 — same-origin, so
 # there's no ORIGIN/CORS setting to override here.
 
 services:
   backend:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-nu31hackerspace/prismo-web-admin}-backend:${IMAGE_TAG:-latest}
-    environment:
-      # Empty string is falsy in google-auth.ts → real OAuth client.
-      - TEST_MODE=
 
   client:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME:-nu31hackerspace/prismo-web-admin}-client:${IMAGE_TAG:-latest}
-
-  worker:
-    image: ${REGISTRY:-ghcr.io}/${WORKER_IMAGE_NAME:-nu31hackerspace/prismo-worker}:${IMAGE_TAG:-latest}
-    environment:
-      # The worker bakes MQTT_URL into the firmware it builds (same role as
-      # PUBLIC_MQTT_URL in docker-stack.yml), so it must be the broker address
-      # as the *device* reaches it — the AP's gateway IP, not the docker-network
-      # hostname `mqtt` from the base compose file.
-      - MQTT_URL=mqtt://${TESTSTAND_MQTT_HOST:-192.168.10.1}:${TESTSTAND_MQTT_PORT:-1883}
-      # Baked into the firmware so the device's boot log identifies the build.
-      - COMMIT_SHA=${COMMIT_SHA:-dev}
