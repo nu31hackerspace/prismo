@@ -27,6 +27,7 @@ import utime
 import ubinascii
 import json
 import _thread
+from src import console
 
 # Serialises the uptime accumulator and log-file writes now that the MQTT
 # worker thread logs concurrently with the reader thread. Held only for the
@@ -291,7 +292,10 @@ def write_event(level, msg, **kwargs):
     entry.update(kwargs)
 
     # Always echo to serial so a connected developer can see it live
-    print("[{}] {}".format(level, msg), kwargs if kwargs else "")
+    if kwargs:
+        console.write("[{}] {} {}\n".format(level, msg, kwargs))
+    else:
+        console.write("[{}] {}\n".format(level, msg))
 
     line = json.dumps(entry) + "\n"
     try:

@@ -71,27 +71,54 @@ mpremote cp src/config.py :src/config.py + reset
 > git config core.hooksPath .githooks
 > ```
 
-## Local Dev Credentials
+## Device Settings over USB
 
-`src/config.py` ships with `{{…}}` placeholder templates that the build worker replaces at CI time. For **local development**, create a `src/config_dev.py` file (already gitignored) to override them:
+WiFi, MQTT and device mode are stored in NVS (namespace `cfg`) and edited from the
+browser over the USB serial port. No Python code is sent to the device; the page
+and the firmware speak a small line protocol that coexists with the log output.
 
-```python
-# src/config_dev.py
-WIFI_SSID = "MyNetwork"
-WIFI_PASS = "MyPassword"
-MQTT_HOST = "mqtt.example.com:8883"
-MQTT_USER = "device_id"
-MQTT_PASS = "device_secret"
-MQTT_SSL  = "true"
-```
+**Opening the page:** plug the board in over USB, open the device's page in the
+Prismo web app, and click **Connect to Device** in *Setup Device*. This needs
+Chrome, Edge or Opera on desktop (Web Serial), served over HTTPS or
+`http://localhost`. Anyone with physical USB access can read and change the
+settings (except secrets, which can only be overwritten). Physical access
+counts as authorization.
 
-Then push to the device:
+### Protocol (`src/serial_cfg.py`, proto 1)
 
-```bash
-mpremote cp src/config_dev.py :src/config_dev.py + reset
-```
+Every protocol line, in both directions, is `@cfg ` + one JSON object + `\n` (max
+1024 bytes). The device and the page both ignore any other line. The page shows
+those lines in its *Device log* pane.
 
-> **How it works:** `config.py` does `from src.config_dev import *` inside a `try/except ImportError`. When the file exists, its values override the `{{…}}` defaults. In production builds the file is absent, so the templates remain and the worker replaces them as usual.
+| Request | Response `data` |
+| --- | --- |
+| `{"id":1,"cmd":"info"}` | `{"fw","model","mac","proto"}` |
+| `{"id":2,"cmd":"schema"}` | the settings table from `src/config.py` |
+| `{"id":3,"cmd":"get"}` | current values; secrets as `{"set":true\|false}` |
+| `{"id":4,"cmd":"set","values":{...}}` | `reboot_required`; or `err:"validation"` + `fields` |
+| `{"id":5,"cmd":"status"}` | `health_log.collect()` snapshot |
+| `{"id":6,"cmd":"reboot"}` / `{"id":7,"cmd":"factory_reset"}` | replies, then resets after ~200 ms |
+
+- `set` is atomic and accepts partial updates: every key is validated first, and
+  if any key fails, nothing is written. Unknown keys are errors.
+- For a secret, `""` leaves the stored value unchanged and `null` clears it.
+- On start the device sends the unsolicited event `{"evt":"boot","proto":1}`.
+- `factory_reset` erases the settings but keeps the key allowlist in `config.json`.
+- Settings found in a legacy `config.json` are moved into NVS once at boot.
+
+### Adding a setting
+
+Add an entry to `SETTINGS` in `src/config.py`. The key doubles as the NVS key, so
+it can be at most 15 characters. The supported types are `string` (`max_len`),
+`int` (`min`/`max`), `bool` and `enum` (`options`). Read the value with
+`config.get("key")`. The web form is built from the schema, so no client change
+is needed.
+
+### Using mpremote on a running device
+
+The config reader stops as soon as the app is interrupted, so `mpremote` can
+still reach the REPL. If `mpremote` reports "could not enter raw repl" because it
+raced the reader, run it again.
 
 ---
 

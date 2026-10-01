@@ -22,7 +22,7 @@ mpremote cp src/*.py :src/ + reset
 
 ## Boot Sequence
 
-`boot.py` → `src/prismo_boot.py` (LED start animation, buzzer check) → `main.py` → `src/prismo_main.py` (WiFi connection, MQTT, NFC reader loop)
+`boot.py` → `src/prismo_boot.py` (LED start animation, buzzer check) → `main.py` (starts `serial_cfg`) → `src/prismo_main.py` (WiFi connection, MQTT, NFC reader loop)
 
 ## Key Modules
 
@@ -30,7 +30,9 @@ mpremote cp src/*.py :src/ + reset
 - `src/wifi_manager.py` — blocking boot connect (LED feedback callbacks) + non-blocking runtime `maintain()` reconnect state machine
 - `src/mqtt_client.py` — MQTT client with tick-driven runtime reconnection (capped backoff, resubscribes command topics)
 - `src/reader.py` + `src/reader_ui.py` — PN532 NFC reading + LED/buzzer feedback
-- `src/config.py` — device configuration with `{{…}}` templates for production, overridden by `config_dev.py` for local dev
+- `src/config.py` — settings table (schema, validation, NVS storage) plus compile-time flags and the key allowlist
+- `src/serial_cfg.py` — `@cfg` JSON line protocol on the USB serial port, used by the web setup page (see README)
+- `src/console.py` — locked stdout writer so protocol lines and logs never interleave
 - `src/color.py` — RGB LED control and animations (start, WiFi pulse, MQTT pulse)
 - `src/buzzer.py` — buzzer control
 - `src/health_log.py` — structured logging with optional MQTT publishing
