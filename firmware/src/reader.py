@@ -1,7 +1,6 @@
 import time
 import uhashlib
 import ubinascii
-import utime
 from machine import SPI, Pin
 from src import config
 from src import health_log
