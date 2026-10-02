@@ -45,6 +45,14 @@ export const config = {
   // (500ms poll + 1s post-read sleep), so 10s guarantees several reads.
   emulateSeconds: Number(envStr("TESTSTAND_EMULATE_SECONDS", "10")),
 
+  // ── Many-keys spec ────────────────────────────────────────────────────
+  // How many keys the many-keys spec grants to the device at once.
+  manyKeysCount: Number(envStr("TESTSTAND_MANY_KEYS_COUNT", "50")),
+  // Every grant/revoke republishes the full cmd/sync list, and the device
+  // rewrites its allowlist on flash for each one; allow the burst to drain
+  // and a drift-triggered resync to land.
+  keySyncTimeoutMs: Number(envStr("TESTSTAND_KEY_SYNC_TIMEOUT_MS", "90000")),
+
   // ── Pi GPIO that reads the relay-isolated success channel ─────────────
   // See test-stand/README.md: success fires → relay closes NO → Pi pin LOW.
   gpioChip: envStr("TESTSTAND_GPIO_CHIP", "gpiochip4"),

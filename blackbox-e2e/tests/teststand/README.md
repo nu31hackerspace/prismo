@@ -22,8 +22,8 @@ to the Raspberry Pi, and asserts on the **physical** success output pin.
 
 ## What it does
 
-There is a single spec, `device-lifecycle.spec.ts`, that runs the whole
-journey against the real device (one flash, shared by every phase):
+`device-lifecycle.spec.ts` runs the whole journey against the real device
+(one flash, shared by every phase):
 
 1. **Google login** — signs in through the real Google OAuth flow with a
    dedicated test account (email, password, TOTP second factor). See
@@ -60,6 +60,24 @@ journey against the real device (one flash, shared by every phase):
    and assert the device makes its **first** connection and the trigger works.
 9. **Key removal** — remove the key through the UI; the same tag is denied
    again (history shows the denied scan, pin stays quiet).
+
+`many-keys.spec.ts` flashes the device again and stresses it with a large
+allowlist (`TESTSTAND_MANY_KEYS_COUNT`, default 50):
+
+1. **Bulk grant** — creates the keys and grants them to the device through
+   the same `POST /api/entities` calls the UI makes; every grant republishes
+   the full `cmd/sync` list. The device page must list every key, and the
+   device must converge on the full set — asserted via the `keys_checksum` in
+   its heartbeat (sha256 of the sorted allowlist), which must then hold steady.
+2. **Access across the list** — tags from the start, middle and end of the
+   list open the door over real RF; a tag outside the list is denied.
+3. **Bulk revoke** — a fifth of the keys are detached; the device's checksum
+   follows, a revoked tag is denied and a remaining tag still opens the door.
+4. **Persistence** — the board is reset with the AP down; a remaining tag
+   opens the door from the allowlist reloaded from flash, and after the AP
+   returns the heartbeat reports the expected checksum.
+
+Run just this spec with `npm run teststand:test -- many-keys`.
 
 Mechanics: the AP is toggled with `sudo nmcli connection down/up prismo-ap`
 (`lib/wifi.ts`; requires passwordless sudo — the CI runner has it, locally use
@@ -127,6 +145,8 @@ All knobs live in `lib/env.ts`, overridable via env vars. Common ones:
 | `TESTSTAND_OFFLINE_TIMEOUT_MS`    | `30000`                  | Wait for the Offline badge after an outage |
 | `TESTSTAND_RECONNECT_TIMEOUT_MS`  | `120000`                 | Wait for Online after restoring AP/broker  |
 | `TESTSTAND_BOOT_OFFLINE_GRACE_MS` | `25000`                  | Boot-with-no-AP settling time              |
+| `TESTSTAND_MANY_KEYS_COUNT`       | `50`                     | Keys granted by `many-keys.spec.ts`        |
+| `TESTSTAND_KEY_SYNC_TIMEOUT_MS`   | `90000`                  | Wait for the device allowlist to converge  |
 
 > The hotspot must be **2.4 GHz** — the ESP32-C3 has no 5 GHz radio. On
 > dual-band adapters force the band if `nmcli` picks 5 GHz.

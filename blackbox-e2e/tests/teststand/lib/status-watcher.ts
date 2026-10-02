@@ -20,6 +20,7 @@ export interface StatusSample {
   receivedAt: number;
   online: boolean;
   uptimeS?: number;
+  keysChecksum?: string;
 }
 
 export interface StatusWatcher {
@@ -27,6 +28,11 @@ export interface StatusWatcher {
   latest(): StatusSample | undefined;
   /** First heartbeat received at/after the given wall-clock ms. */
   waitForSample(afterMs: number, timeoutMs: number): Promise<StatusSample>;
+  /** First heartbeat whose keys_checksum (local allowlist) equals `expected`. */
+  waitForKeysChecksum(
+    expected: string,
+    timeoutMs: number,
+  ): Promise<StatusSample>;
   close(): Promise<void>;
 }
 
@@ -50,6 +56,7 @@ export async function watchDeviceStatus(
         receivedAt: Date.now(),
         online: !!data.online,
         uptimeS: data.uptime_s,
+        keysChecksum: data.keys_checksum,
       });
     } catch {
       // Ignore malformed payloads — the spec assertions will time out loudly.
@@ -95,6 +102,22 @@ export async function watchDeviceStatus(
         if (Date.now() > deadline) {
           throw new Error(
             `No status heartbeat on ${topic} within ${timeoutMs}ms (samples seen: ${samples.length})`,
+          );
+        }
+        await new Promise((r) => setTimeout(r, 200));
+      }
+    },
+    async waitForKeysChecksum(
+      expected: string,
+      timeoutMs: number,
+    ): Promise<StatusSample> {
+      const deadline = Date.now() + timeoutMs;
+      for (;;) {
+        const last = samples[samples.length - 1];
+        if (last?.keysChecksum === expected) return last;
+        if (Date.now() > deadline) {
+          throw new Error(
+            `Device allowlist checksum never reached ${expected} within ${timeoutMs}ms (last reported: ${last?.keysChecksum ?? "none"})`,
           );
         }
         await new Promise((r) => setTimeout(r, 200));

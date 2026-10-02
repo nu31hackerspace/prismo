@@ -44,11 +44,9 @@ import {
   expectReconnectCycle,
 } from "./lib/reconnect-helpers";
 import { TagEmulator } from "./lib/tag-emulator";
-import { configureDevice } from "./lib/device-config";
+import { flashAppFirmware, configureForStand } from "./lib/stand-device";
 import { config } from "./lib/env";
 import { run } from "./lib/exec";
-import { execSync } from "child_process";
-import { writeFileSync } from "node:fs";
 
 test("device lifecycle: flash, configure, online, trigger, NFC tag access, and reconnect after WiFi/broker/boot outages", async ({
   page,
@@ -81,31 +79,11 @@ test("device lifecycle: flash, configure, online, trigger, NFC tag access, and r
     watcher = await watchDeviceStatus(creds);
 
     await test.step("Download the app's firmware and flash it via esptool", async () => {
-      const res = await page.request.get("/firmware.bin");
-      expect(res.ok(), "app does not serve /firmware.bin").toBe(true);
-      const fwPath = test.info().outputPath("firmware.bin");
-      writeFileSync(fwPath, await res.body());
-
-      console.log(`Flashing ${fwPath} to ${config.serialPort} via esptool…`);
-      execSync(
-        `${config.esptoolBin} --chip esp32c3 --port ${config.serialPort} erase_flash`,
-        { stdio: "inherit" },
-      );
-      execSync(
-        `${config.esptoolBin} --chip esp32c3 --port ${config.serialPort} --baud 460800 write_flash 0x0 ${fwPath}`,
-        { stdio: "inherit" },
-      );
+      await flashAppFirmware(page, test.info());
     });
 
     await test.step("Write WiFi + MQTT settings over serial", async () => {
-      await configureDevice({
-        wifi_ssid: config.wifiSsid,
-        wifi_pass: config.wifiPass,
-        mqtt_url: `mqtt://${config.deviceMqttHost}:${config.deviceMqttPort}`,
-        mqtt_user: creds.mqttUser,
-        mqtt_pass: creds.mqttPass,
-        mode: "door",
-      });
+      await configureForStand(creds);
     });
 
     await test.step("Provision the PN532 tag emulator", async () => {
