@@ -8,7 +8,7 @@ import { useStore } from "@/store/provider";
 import { draft } from "@/store/models/base";
 import { trackEvent } from "@/lib/analytics";
 
-export default observer(function DevicesPage() {
+const DevicesPage = observer(function DevicesPage() {
   const store = useStore();
   const [newName, setNewName] = useState("");
 
@@ -107,3 +107,5 @@ export default observer(function DevicesPage() {
     </section>
   );
 });
+
+export default DevicesPage;

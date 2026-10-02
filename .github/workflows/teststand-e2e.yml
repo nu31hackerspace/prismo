@@ -61,7 +61,7 @@ jobs:
       COMPOSE_FILES: -f docker-compose.yml -f docker-compose.teststand.yml
       TESTSTAND_GOOGLE_EMAIL: ${{ secrets.TESTSTAND_GOOGLE_EMAIL }}
       TESTSTAND_GOOGLE_PASSWORD: ${{ secrets.TESTSTAND_GOOGLE_PASSWORD }}
-      TESTSTAND_GOOGLE_TOTP_SECRET: ${{ secrets.TESTSTAND_GOOGLE_TOTP_SECRET }}
+      TESTSTAND_GOOGLE_TOTP_SECRET: ${{ secrets.TESTSTAND_GOOGLE_OTP_TOKEN }}
 
     steps:
       - name: Free up disk space on runner

@@ -5,6 +5,8 @@ import { connectSync } from './sync-client';
 
 const StoreContext = createContext<RootStore | null>(null);
 
+// The hook lives next to its context on purpose; it is not a component.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useStore(): RootStore {
   const store = useContext(StoreContext);
   if (!store) throw new Error('useStore must be used within StoreProvider');

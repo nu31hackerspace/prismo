@@ -11,6 +11,8 @@ RUN npm run build --workspace=backend
 RUN npm prune --omit=dev
 
 FROM node:22-alpine
+# curl backs the /api/health container healthcheck (compose + docker-stack).
+RUN apk add --no-cache curl
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /repo/node_modules ./node_modules
