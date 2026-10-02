@@ -138,9 +138,9 @@ jobs:
         continue-on-error: true
         run: |
           echo "--- backend logs ---"
-          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs backend) || true
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 300 backend) || true
           echo "--- client logs ---"
-          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs client) || true
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 100 client) || true
           echo "--- gpio read ---"
           gpioget -c gpiochip4 17 || true
           echo "--- mpremote devs ---"
