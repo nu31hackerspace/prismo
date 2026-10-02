@@ -32,10 +32,22 @@ export async function generateMqttCredentials(
 ): Promise<MqttCredentials> {
   const me = await page.request.get("/api/auth/me");
   const { workspaceId } = await me.json();
-  const res = await page.request.post(`/api/devices/${deviceId}/token`, {
-    headers: { "X-Workspace": workspaceId },
-  });
+  // The client creates the device locally and syncs it to the backend in the
+  // background, so right after "Add Device" the backend may not know it yet
+  // ("Device not found"). Retry until the sync lands.
+  let res = await requestToken(page, deviceId, workspaceId);
+  const deadline = Date.now() + 15_000;
+  while (!res.ok() && Date.now() < deadline) {
+    await page.waitForTimeout(500);
+    res = await requestToken(page, deviceId, workspaceId);
+  }
   expect(res.ok(), "failed to generate MQTT credentials").toBe(true);
   const { token } = await res.json();
   return { mqttUser: token.mqttUser, mqttPass: token.mqttPass };
+}
+
+function requestToken(page: Page, deviceId: string, workspaceId: string) {
+  return page.request.post(`/api/devices/${deviceId}/token`, {
+    headers: { "X-Workspace": workspaceId },
+  });
 }
