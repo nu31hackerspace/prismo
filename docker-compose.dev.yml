@@ -107,6 +107,7 @@ services:
         condition: service_healthy
     environment:
       - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - VITE_PUBLIC_MQTT_URL=${PUBLIC_MQTT_URL}
     command:
       - bash
       - -c

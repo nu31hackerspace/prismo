@@ -8,6 +8,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: nu31hackerspace/prismo-web-admin
+  STACK_NAME: prismo2
   HOST: ${{ vars.HOST }}
   SSH_KEY: ${{ secrets.ROOT_SSH_PRIVATE_KEY }}
   COMMIT_SHA: ${{ github.sha }}
@@ -90,6 +91,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client:${{ env.COMMIT_SHA }}
           build-args: |
             VITE_GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
+            VITE_PUBLIC_MQTT_URL=${{ vars.PUBLIC_MQTT_URL }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client:latest
           cache-to: type=inline
 
@@ -107,7 +109,7 @@ jobs:
         run: |
           echo "IMAGE_NAME='${{ env.IMAGE_NAME }}'" >> .env
           echo "COMMIT_SHA='${{ env.COMMIT_SHA }}'" >> .env
-          echo "MONGODB_URL='mongodb://${{ env.USERNAME }}:${{ env.PASSWORD }}@mongo-rs-1:27017/prismo?replicaSet=rs0&authSource=admin'" >> .env
+          echo "POSTGRES_URL='postgresql://${{ env.USERNAME }}:${{ env.PASSWORD }}@postgres:5432/prismo'" >> .env
           echo "SESSION_SECRET='${{ secrets.SESSION_SECRET }}'" >> .env
           echo "MQTT_URL='${{ vars.MQTT_URL }}'" >> .env
           echo "PUBLIC_MQTT_URL='${{ vars.PUBLIC_MQTT_URL }}'" >> .env
@@ -115,7 +117,7 @@ jobs:
       - name: Deploy Docker Stack
         uses: cssnr/stack-deploy-action@v1
         with:
-          name: prismo
+          name: ${{ env.STACK_NAME }}
           file: docker-stack.yml
           host: ${{ env.HOST }}
           port: 22

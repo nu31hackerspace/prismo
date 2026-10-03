@@ -4,6 +4,7 @@ import { Icon } from "@/components/ui/icon";
 import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
 import DeviceSetup from "./device-setup";
+import DeviceFlash from "./device-flash";
 import { workspaceHeader } from "@/store/workspace-id";
 
 export default function DeviceDangerZone({ deviceId, deviceMode }: { deviceId: string, deviceMode: string }) {
@@ -36,6 +37,8 @@ export default function DeviceDangerZone({ deviceId, deviceMode }: { deviceId: s
 
         <div className="divide-y divide-separator-secondary overflow-hidden rounded-xl border border-separator-secondary bg-background-primary">
           <DeviceSetup deviceId={deviceId} deviceMode={deviceMode} />
+          
+          <DeviceFlash />
 
           <div className="p-5">
             <div className="flex flex-wrap items-center justify-between gap-4">

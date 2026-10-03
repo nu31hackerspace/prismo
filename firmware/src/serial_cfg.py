@@ -70,10 +70,6 @@ def _dispatch(msg):
     elif cmd == "reboot":
         send({"id": rid, "ok": True})
         _reboot_after_reply()
-    elif cmd == "factory_reset":
-        config.factory_reset()
-        send({"id": rid, "ok": True})
-        _reboot_after_reply()
     else:
         send({"id": rid, "ok": False, "err": "unknown_cmd"})
 

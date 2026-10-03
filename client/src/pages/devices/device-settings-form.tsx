@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Icon } from "@/components/ui/icon";
 import type { DeviceValues, SettingDef } from "@/client/device-serial";
 import type { Draft } from "./device-settings";
 
@@ -11,6 +13,8 @@ function SettingInput({ def, value, secretSet, onChange }: {
   onChange: (value: string | boolean) => void;
 }) {
   const id = `setting-${def.key}`;
+  const [showSecret, setShowSecret] = useState(false);
+
   switch (def.type) {
     case "bool":
       return (
@@ -27,14 +31,36 @@ function SettingInput({ def, value, secretSet, onChange }: {
         <input id={id} type="number" min={def.min} max={def.max} step={1} value={String(value)} onChange={(e) => onChange(e.target.value)} className={inputClass} />
       );
     case "string":
+      if (def.secret) {
+        return (
+          <div className="relative">
+            <input
+              id={id}
+              type={showSecret ? "text" : "password"}
+              autoComplete="new-password"
+              maxLength={def.max_len}
+              value={String(value)}
+              placeholder={secretSet ? "••• (unchanged)" : ""}
+              onChange={(e) => onChange(e.target.value)}
+              className={inputClass + " pr-10"}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-label-secondary hover:text-label-primary"
+              onClick={() => setShowSecret(!showSecret)}
+            >
+              <Icon name={showSecret ? "mdi:eye-off" : "mdi:eye"} className="h-5 w-5" />
+            </button>
+          </div>
+        );
+      }
       return (
         <input
           id={id}
-          type={def.secret ? "password" : "text"}
-          autoComplete={def.secret ? "new-password" : "off"}
+          type="text"
+          autoComplete="off"
           maxLength={def.max_len}
           value={String(value)}
-          placeholder={def.secret && secretSet ? "••• (unchanged)" : ""}
           onChange={(e) => onChange(e.target.value)}
           className={inputClass}
         />

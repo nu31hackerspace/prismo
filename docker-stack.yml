@@ -16,7 +16,7 @@ services:
       - PORT=4000
     networks:
       - infra_reverse-proxy
-      - infra_mongo-rs-net
+      - infra_postgres-net
       - infra_mqtt-net
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:4000/api/health']
@@ -42,7 +42,7 @@ services:
 networks:
   infra_reverse-proxy:
     external: true
-  infra_mongo-rs-net:
+  infra_postgres-net:
     external: true
   infra_mqtt-net:
     external: true

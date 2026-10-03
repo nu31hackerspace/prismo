@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { Tag } from "@/components/ui/tag";
 import { Button } from "@/components/ui/button";
-import { flashFirmware } from "@/client/flasher";
 import {
   appendLogLine,
   connectDevice,
@@ -75,6 +74,20 @@ export default function DeviceSetup({ deviceId, deviceMode }: { deviceId: string
     serialRef.current = null;
     void serial?.close();
   }, []);
+
+  useEffect(() => {
+    if (phase !== "ready" || !serialRef.current) return;
+    const interval = setInterval(async () => {
+      if (phase !== "ready" || !serialRef.current) return;
+      try {
+        const nextStatus = await serialRef.current.status();
+        setStatus(nextStatus);
+      } catch (e) {
+        console.error("Failed to poll status", e);
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [phase]);
 
   async function load(serial: DeviceSerial, deviceInfo: DeviceInfo) {
     serialRef.current = serial;
@@ -181,25 +194,6 @@ export default function DeviceSetup({ deviceId, deviceMode }: { deviceId: string
     });
   }
 
-  function handleFactoryReset() {
-    if (!window.confirm("Reset all device settings to defaults? The device will reboot and lose its WiFi and MQTT configuration.")) return;
-    return run("Resetting...", async () => {
-      await serialRef.current?.factoryReset();
-      const port = await detach();
-      setRebootRequired(false);
-      if (port) await waitForReboot(port);
-    });
-  }
-
-  function handleFlash() {
-    return run("Flashing...", async () => {
-      const target = (await detach()) ?? port;
-      if (!target) return;
-      await flashFirmware(target, "/firmware.bin", setBusyLabel);
-      await waitForReboot(target);
-      setNotice("Firmware flashed.");
-    });
-  }
 
   function handleFillFromServer() {
     return run("Generating credentials...", async () => {
@@ -207,8 +201,10 @@ export default function DeviceSetup({ deviceId, deviceMode }: { deviceId: string
       if (!res.ok) throw new Error("Failed to generate MQTT credentials.");
       const { token } = await res.json();
       const known = new Set(schema.map((d) => d.key));
+      const defaultMqttUrl = import.meta.env.VITE_PUBLIC_MQTT_URL;
       setDraft((d) => ({
         ...d,
+        ...(known.has("mqtt_url") && defaultMqttUrl && { mqtt_url: defaultMqttUrl }),
         ...(known.has("mqtt_user") && { mqtt_user: token.mqttUser }),
         ...(known.has("mqtt_pass") && { mqtt_pass: token.mqttPass }),
         ...(known.has("mode") && deviceMode && { mode: deviceMode }),
@@ -312,11 +308,9 @@ export default function DeviceSetup({ deviceId, deviceMode }: { deviceId: string
                   <Icon name="mdi:chip" className="h-4 w-4 text-label-secondary" />
                   <h4 className="font-display text-sm font-bold text-label-primary">Maintenance</h4>
                 </div>
-                <p className="text-sm text-label-secondary">{connected || phase === "connecting" ? "Upload the latest Prismo firmware, restart the device, or erase its settings." : "The device doesn't respond to setup commands. Flash the latest Prismo firmware to recover it."}</p>
+                <p className="text-sm text-label-secondary">{connected || phase === "connecting" ? "Restart the device." : "The device doesn't respond to setup commands."}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Button tag="device_setup_flash" variant="primary" size="sm" icon="mdi:flash" onClick={handleFlash} disabled={busy}>Flash Firmware</Button>
                   <Button tag="device_setup_reboot" variant="ghost" size="sm" icon="mdi:restart" onClick={handleReboot} disabled={busy || !connected}>Reboot</Button>
-                  <Button tag="device_setup_factory_reset" variant="ghost" size="sm" icon="mdi:backup-restore" onClick={handleFactoryReset} disabled={busy || !connected} className="text-red-500 hover:bg-red-500/10">Factory Reset</Button>
                 </div>
               </div>
 

@@ -223,14 +223,6 @@ def set_many(values):
     return {}, reboot
 
 
-def factory_reset():
-    for d in SETTINGS:
-        _nvs_erase(d["key"])
-    _nvs.commit()
-    for d in SETTINGS:
-        _values[d["key"]] = d["default"]
-    health_log.write_info("Settings reset to defaults")
-
 
 init()
 

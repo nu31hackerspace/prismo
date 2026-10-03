@@ -181,10 +181,6 @@ export class DeviceSerial {
     await this.call("reboot");
   }
 
-  async factoryReset() {
-    await this.call("factory_reset");
-  }
-
   async close(): Promise<void> {
     if (this.closed) return;
     this.closed = true;

@@ -12,6 +12,8 @@ RUN npm install --workspace=client
 # Google client ID has to be supplied here, not as a runtime container env.
 ARG VITE_GOOGLE_CLIENT_ID
 ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+ARG VITE_PUBLIC_MQTT_URL
+ENV VITE_PUBLIC_MQTT_URL=$VITE_PUBLIC_MQTT_URL
 RUN npm run build --workspace=client
 
 FROM node:22-alpine
