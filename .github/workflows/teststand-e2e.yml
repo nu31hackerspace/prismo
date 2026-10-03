@@ -7,7 +7,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: nu31hackerspace/prismo-web-admin
-  WORKER_IMAGE_NAME: nu31hackerspace/prismo-worker
 
 jobs:
   build-test-images:
@@ -18,12 +17,16 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: web
-            file: web/Dockerfile
-            image: nu31hackerspace/prismo-web-admin
-          - name: worker
-            file: web/worker/Dockerfile
-            image: nu31hackerspace/prismo-worker
+          - name: backend
+            file: backend/Dockerfile
+            image: nu31hackerspace/prismo-web-admin-backend
+          - name: client
+            file: client/Dockerfile
+            image: nu31hackerspace/prismo-web-admin-client
+            # This run drives the genuine Google OAuth flow, so the client
+            # needs the real client ID baked in — Vite inlines VITE_* vars at
+            # build time, not read at runtime.
+            build-args: VITE_GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
     steps:
       - uses: actions/checkout@v4
       - name: Log in to registry
@@ -42,9 +45,7 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ matrix.image }}:test-${{ github.sha }}
-          # Registry layer cache: the worker image's ESP-IDF/MicroPython layers
-          # take ~8 min to build but only change when the Dockerfile does, so
-          # repeat runs that only touch test/firmware code rebuild in seconds.
+          build-args: ${{ matrix.build-args }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ matrix.image }}:buildcache,mode=max
 
@@ -58,13 +59,14 @@ jobs:
       TESTSTAND_SERIAL_PORT: /dev/ttyESP32C3
       TESTSTAND_EMULATOR_PORT: /dev/ttyTagEmulator
       COMPOSE_FILES: -f docker-compose.yml -f docker-compose.teststand.yml
+      TESTSTAND_GOOGLE_EMAIL: ${{ secrets.TESTSTAND_GOOGLE_EMAIL }}
+      TESTSTAND_GOOGLE_PASSWORD: ${{ secrets.TESTSTAND_GOOGLE_PASSWORD }}
+      TESTSTAND_GOOGLE_TOTP_SECRET: ${{ secrets.TESTSTAND_GOOGLE_OTP_TOKEN }}
 
     steps:
       - name: Free up disk space on runner
         # Only dangling images here. Old test-<sha> images are removed in Tear
-        # down instead — deleting them *before* the pull would also delete the
-        # ~6GB of ESP-IDF layers the new worker image shares with them, forcing
-        # a full re-pull (observed: 33 min) instead of a small delta.
+        # down instead, so the pull can reuse their shared layers.
         run: docker image prune -f || true
 
       - uses: actions/checkout@v4
@@ -98,7 +100,6 @@ jobs:
       - name: Set up .env with Image Tags
         run: |
           echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> blackbox-e2e/.env
-          echo "WORKER_IMAGE_NAME=${{ env.WORKER_IMAGE_NAME }}" >> blackbox-e2e/.env
           echo "IMAGE_TAG=test-${{ github.sha }}" >> blackbox-e2e/.env
           echo "COMMIT_SHA=${{ github.sha }}" >> blackbox-e2e/.env
 
@@ -111,16 +112,20 @@ jobs:
         working-directory: blackbox-e2e
         run: |
           docker compose $COMPOSE_FILES build mqtt
-          docker compose $COMPOSE_FILES pull app worker
+          docker compose $COMPOSE_FILES pull backend client
           docker compose $COMPOSE_FILES up --no-build -d
-          echo "Waiting for the app to become healthy…"
-          for i in $(seq 1 60); do
-            status=$(docker compose $COMPOSE_FILES ps app --format '{{.Health}}' 2>/dev/null || true)
-            if [ "$status" = "healthy" ]; then echo "App healthy."; exit 0; fi
-            sleep 3
+          echo "Waiting for backend and client to become healthy…"
+          for service in backend client; do
+            for i in $(seq 1 60); do
+              status=$(docker compose $COMPOSE_FILES ps "$service" --format '{{.Health}}' 2>/dev/null || true)
+              if [ "$status" = "healthy" ]; then echo "$service healthy."; break; fi
+              if [ "$i" -eq 60 ]; then
+                echo "$service did not become healthy:"; docker compose $COMPOSE_FILES logs --tail 60 "$service"
+                exit 1
+              fi
+              sleep 3
+            done
           done
-          echo "App did not become healthy:"; docker compose $COMPOSE_FILES logs --tail 60 app
-          exit 1
 
       - name: Run hardware e2e suite
         working-directory: blackbox-e2e
@@ -132,10 +137,10 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          echo "--- app logs ---"
-          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs app) || true
-          echo "--- worker logs ---"
-          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs worker) || true
+          echo "--- backend logs ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 300 backend) || true
+          echo "--- client logs ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 100 client) || true
           echo "--- gpio read ---"
           gpioget -c gpiochip4 17 || true
           echo "--- mpremote devs ---"
@@ -167,8 +172,7 @@ jobs:
           sudo nmcli connection down prismo-ap || true
           # Drop test images from other commits, keeping this run's images so
           # the next pull reuses their shared layers. Tagged images are never
-          # "dangling", so without this the Pi's SD card fills up (~6GB/run,
-          # observed ENOSPC mid-job).
+          # "dangling", so without this the Pi's SD card fills up.
           docker images --format '{{.Repository}}:{{.Tag}}' \
             | grep ':test-' | grep -v ':test-${{ github.sha }}' \
             | xargs -r docker rmi || true

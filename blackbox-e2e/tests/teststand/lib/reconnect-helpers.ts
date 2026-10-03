@@ -39,10 +39,10 @@ export async function expectNoReboot(
   ).toBeGreaterThan(before.uptimeS! + wallDeltaS - 15);
 }
 
-/** Click Trigger Success and assert the physical pin fires — proves the command topics are live. */
+/** Click Open Door and assert the physical pin fires — proves the command topics are live. */
 export async function expectTriggerReachesPin(page: Page): Promise<void> {
   expect(await waitForSignalInactive(10_000)).toBe(true);
-  await page.getByRole("button", { name: "Trigger Success" }).click();
+  await page.getByRole("button", { name: "Open Door" }).click();
   expect(
     await waitForSignalActive(),
     "success pin did not fire — command topics are not subscribed on the current connection",

@@ -4,7 +4,7 @@ on:
   pull_request:
 
 jobs:
-  web-lint:
+  backend-lint:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
 
@@ -15,75 +15,29 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: web
-        run: npm ci
+        run: npm install --workspace=backend
 
       - name: Lint
-        working-directory: web
-        run: npm run lint
+        run: npm run lint --workspace=backend
 
-  web-e2e-tests:
+  client-lint:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Start test infrastructure
-        run: |
-          docker compose -f docker-compose.ci.yml up -d --build
-          timeout 60 bash -c '
-            until docker inspect --format "{{.State.Health.Status}}" prismo-mongo-1 2>/dev/null | grep -q healthy \
-               && docker inspect --format "{{.State.Health.Status}}" prismo-mqtt-1  2>/dev/null | grep -q healthy; do
-              sleep 2
-            done
-          '
-          timeout 30 bash -c '
-            until docker inspect --format "{{.State.Status}}" prismo-worker-1 2>/dev/null | grep -q running; do
-              sleep 2
-            done
-          '
-          docker compose -f docker-compose.ci.yml ps
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: web/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: web
-        run: npm ci
+        run: npm install --workspace=client
 
-      - name: Install Playwright browsers
-        working-directory: web
-        run: npx playwright install --with-deps chromium
-
-      - name: Run E2E tests
-        working-directory: web
-        env:
-          CI: true
-          MONGODB_URL: mongodb://localhost:27017/prismo?directConnection=true&replicaSet=rs0
-          MQTT_URL: mqtt://localhost:1883
-          USERNAME: admin
-          PASSWORD: admin
-          SESSION_SECRET: ci-test-secret
-          GOOGLE_CLIENT_ID: fake-client-id
-          GOOGLE_CLIENT_SECRET: fake-client-secret
-          ORIGIN: http://localhost:4173
-        run: npx playwright test
-
-      - name: Show infra logs on failure
-        if: failure()
-        run: docker compose -f docker-compose.ci.yml logs
-
-      - name: Upload test report
-        uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
-        with:
-          name: playwright-report
-          path: web/playwright-report/
-          retention-days: 14
+      - name: Lint
+        run: npm run lint --workspace=client

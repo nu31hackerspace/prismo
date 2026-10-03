@@ -27,6 +27,7 @@ import utime
 import ubinascii
 import json
 import _thread
+from src import console
 
 # Serialises the uptime accumulator and log-file writes now that the MQTT
 # worker thread logs concurrently with the reader thread. Held only for the
@@ -166,8 +167,8 @@ def _get_firmware_label():
 def get_git_commit():
     """Source commit the firmware was built from.
 
-    The worker substitutes config.GIT_COMMIT at build time; locally it can be
-    set in config_dev.py. Falls back to "dev" when left as the template.
+    build.sh writes src/build_info.py with the short hash; locally it can be
+    set in config_dev.py. Falls back to "dev" when build_info is missing.
     Imported lazily to avoid a circular import (config imports health_log).
     """
     try:
@@ -216,6 +217,13 @@ def collect():
     except Exception:
         pass
 
+    mqtt_connected = False
+    try:
+        from src import state as _state
+        mqtt_connected = _state.is_connected
+    except Exception:
+        pass
+
     snapshot = {
         "log_version":       LOG_VERSION,
         "device_id":         device_id,
@@ -230,6 +238,7 @@ def collect():
         "heap_total_bytes":  heap_free + heap_alloc,
         "cpu_freq_mhz":      machine.freq() // 1_000_000,
         "nfc_reader_ok":     nfc_ok,
+        "mqtt_connected":    mqtt_connected,
         "gc_runs":           _gc_runs,
     }
     snapshot.update(_get_wifi_info())
@@ -283,7 +292,10 @@ def write_event(level, msg, **kwargs):
     entry.update(kwargs)
 
     # Always echo to serial so a connected developer can see it live
-    print("[{}] {}".format(level, msg), kwargs if kwargs else "")
+    if kwargs:
+        console.write("[{}] {} {}\n".format(level, msg, kwargs))
+    else:
+        console.write("[{}] {}\n".format(level, msg))
 
     line = json.dumps(entry) + "\n"
     try:

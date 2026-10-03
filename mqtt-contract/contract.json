@@ -34,46 +34,12 @@
 						"type": "integer",
 						"required": false,
 						"description": "Seconds since device boot (lets tests distinguish a runtime reconnect from a reboot)"
+					},
+					"keys_checksum": {
+						"type": "string",
+						"required": true,
+						"description": "sha256_hex(sorted(local allowlist uids).join(',')) — lets the server detect drift and republish cmd_sync"
 					}
-				}
-			}
-		},
-		"logs": {
-			"direction": "device_to_server",
-			"subtopic": "logs",
-			"description": "Structured log entry forwarded from the device health logger.",
-			"payload": {
-				"type": "object",
-				"properties": {
-					"log_version": { "type": "string", "required": true },
-					"type": { "type": "string", "required": true, "const": "event" },
-					"level": { "type": "string", "required": true, "enum": ["INFO", "WARN", "ERROR"] },
-					"msg": { "type": "string", "required": true },
-					"device_id": { "type": "string", "required": true },
-					"uptime_s": { "type": "integer", "required": true },
-					"timestamp_ms": { "type": "integer", "required": true }
-				}
-			}
-		},
-		"cmd_add_key": {
-			"direction": "server_to_device",
-			"subtopic": "cmd/add_key",
-			"description": "Server instructs device to add a key to the local allowlist.",
-			"payload": {
-				"type": "object",
-				"properties": {
-					"uid": { "type": "string", "required": true }
-				}
-			}
-		},
-		"cmd_remove_key": {
-			"direction": "server_to_device",
-			"subtopic": "cmd/remove_key",
-			"description": "Server instructs device to remove a key from the local allowlist.",
-			"payload": {
-				"type": "object",
-				"properties": {
-					"uid": { "type": "string", "required": true }
 				}
 			}
 		},
@@ -105,8 +71,7 @@
 						"items": {
 							"type": "object",
 							"properties": {
-								"uid": { "type": "string", "required": true },
-								"username": { "type": "string", "required": false }
+								"uid": { "type": "string", "required": true }
 							}
 						}
 					}

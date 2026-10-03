@@ -3,6 +3,7 @@
 This document outlines the MQTT messaging contract for the Prismo project.
 
 * **Global Topic Prefix:** `prismo`
+* **Topic shape:** `prismo/<deviceUuid>/<subtopic>` — the identity segment is each device's UUID (also its MQTT username and DynSec ACL scope), not a human-readable slug.
 
 ---
 
@@ -26,28 +27,11 @@ This document outlines the MQTT messaging contract for the Prismo project.
 **Payload Properties:**
 * `online` (boolean, required)
 * `uptime_s` (integer, optional): Seconds since device boot (lets tests distinguish a runtime reconnect from a reboot)
+* `keys_checksum` (string, required): `sha256_hex(sorted(local allowlist uids).join(','))` — lets the server detect drift and republish `cmd_sync`
 
 ---
 
 ## Server to Device Messages
-
-### `cmd_add_key`
-* **Subtopic:** `cmd/add_key`
-* **Description:** Server instructs device to add a key to the local allowlist.
-
-**Payload Properties:**
-* `uid` (string, required)
-
----
-
-### `cmd_remove_key`
-* **Subtopic:** `cmd/remove_key`
-* **Description:** Server instructs device to remove a key from the local allowlist.
-
-**Payload Properties:**
-* `uid` (string, required)
-
----
 
 ### `cmd_trigger`
 * **Subtopic:** `cmd/trigger`
@@ -65,4 +49,3 @@ This document outlines the MQTT messaging contract for the Prismo project.
 **Payload Properties:**
 * `keys` (array of objects, required):
   * `uid` (string, required)
-  * `username` (string, optional)

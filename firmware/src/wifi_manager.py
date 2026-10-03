@@ -58,10 +58,7 @@ class WiFiManager:
         """Blocking boot connect: bounded attempts with LED feedback.
         Runtime recovery is handled by maintain(). Returns True if connected."""
         if not config.has_wifi():
-            # Surface the raw baked value so we can tell apart an empty
-            # substitution ("") from an un-substituted template
-            # ("{{WIFI_SSID}}") when the device reports no WiFi.
-            health_log.write_error("No WiFi configured", raw_ssid=repr(config.WIFI_SSID))
+            health_log.write_error("No WiFi configured")
             return False
 
         wlan_sta = self._ensure_wlan()

@@ -6,9 +6,10 @@ import gc
 from umqtt.simple import MQTTClient as _SimpleClient
 from src import health_log
 from src.mqtt_contract import (
-    device_topic, SUBTOPIC_SCAN, SUBTOPIC_STATUS, SUBTOPIC_CMD_ADD_KEY, SUBTOPIC_CMD_REMOVE_KEY, SUBTOPIC_CMD_TRIGGER,
+    device_topic, SUBTOPIC_SCAN, SUBTOPIC_STATUS, SUBTOPIC_CMD_TRIGGER,
     SUBTOPIC_CMD_SYNC,
 )
+from src import config
 
 # Hard ceiling on any single blocking socket operation (connect, CONNACK read,
 # publish, ping). Keeps a poor link from stalling the shared loop for long. A
@@ -64,8 +65,6 @@ class PrismoMQTT:
         # Cached broker IP so repeated reconnects skip a blocking DNS lookup.
         self._resolved_host = None
 
-        self._on_add_key = None
-        self._on_remove_key = None
         self._on_trigger = None
         self._on_sync_keys = None
 
@@ -164,24 +163,16 @@ class PrismoMQTT:
         except Exception:
             data = {}
 
-        if topic_str == device_topic(self._user, SUBTOPIC_CMD_ADD_KEY):
-            if self._on_add_key:
-                self._on_add_key(data.get("uid", ""))
-        elif topic_str == device_topic(self._user, SUBTOPIC_CMD_REMOVE_KEY):
-            if self._on_remove_key:
-                self._on_remove_key(data.get("uid", ""))
-        elif topic_str == device_topic(self._user, SUBTOPIC_CMD_TRIGGER):
+        if topic_str == device_topic(self._user, SUBTOPIC_CMD_TRIGGER):
             if self._on_trigger:
                 self._on_trigger(data.get("action", ""))
         elif topic_str == device_topic(self._user, SUBTOPIC_CMD_SYNC):
             if self._on_sync_keys:
                 self._on_sync_keys(data.get("keys", []))
 
-    def set_command_callbacks(self, on_add_key, on_remove_key, on_trigger, on_sync_keys=None):
+    def set_command_callbacks(self, on_trigger, on_sync_keys=None):
         """Store the command handlers. Topic subscription happens on every
         (re)connect in _establish(), so callbacks survive connection churn."""
-        self._on_add_key = on_add_key
-        self._on_remove_key = on_remove_key
         self._on_trigger = on_trigger
         self._on_sync_keys = on_sync_keys
 
@@ -200,7 +191,11 @@ class PrismoMQTT:
             return
         topic = device_topic(self._user, SUBTOPIC_STATUS)
         try:
-            self._client.publish(topic, ujson.dumps({"online": True, "uptime_s": health_log.uptime_s()}))
+            self._client.publish(topic, ujson.dumps({
+                "online": True,
+                "uptime_s": health_log.uptime_s(),
+                "keys_checksum": config.get_keys_checksum(),
+            }))
             self._last_heartbeat_ms = utime.ticks_ms()
             self._consecutive_failures = 0
         except Exception as e:

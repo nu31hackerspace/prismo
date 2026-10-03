@@ -2,43 +2,35 @@
 # file, waits for the services to become healthy and prints the URLs.
 #
 # Host ports can be remapped in the root `.env` (see `.env.example`) when
-# something else on your machine already owns 3000 / 27017 / 1883 / 5000.
+# something else on your machine already owns 3000 / 1883 / 5432 / 5050.
 services:
-  mongo:
-    image: mongo:8
+  postgres:
+    image: postgres:16
     ports:
-      - '${MONGO_PORT:-27017}:27017'
-    command: --replSet rs0
+      - '${POSTGRES_PORT:-5432}:5432'
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=prismo
     volumes:
-      - mongo-dev-data:/data/db
+      - postgres-dev-data:/var/lib/postgresql/data
     healthcheck:
-      test: mongosh --eval "db.runCommand({ping:1})" --quiet
+      test: ["CMD-SHELL", "pg_isready -U admin -d prismo"]
       interval: 3s
       timeout: 3s
       retries: 10
 
-  mongo-init:
-    image: mongo:8
-    depends_on:
-      mongo:
-        condition: service_healthy
-    restart: 'no'
-    entrypoint: >
-      mongosh --host mongo --eval
-      "try { rs.status() } catch(e) { rs.initiate({_id:'rs0', members:[{_id:0, host:'mongo:27017'}]}) }"
-
-  mongo-viewer:
-    image: haohanyang/compass-web:0.3.1
+  postgres-viewer:
+    image: dpage/pgadmin4
     restart: unless-stopped
     ports:
-      - '${MONGO_VIEWER_PORT:-5000}:8080'
-    depends_on:
-      mongo:
-        condition: service_healthy
+      - '${POSTGRES_VIEWER_PORT:-5050}:80'
     environment:
-      - CW_MONGO_URI=mongodb://mongo:27017/?directConnection=true
-      - CW_BASIC_AUTH_USERNAME=admin
-      - CW_BASIC_AUTH_PASSWORD=admin
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   mqtt:
     build: ./mosquitto
@@ -56,31 +48,31 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
+  # backend and client are two independent apps sharing the `@prismo/shared`
+  # npm workspace, so both mount the whole repo root (not just their own
+  # subfolder) — that's what lets `npm install` at the root see and link the
+  # workspace, the same way the production Dockerfiles build them.
+  backend:
     image: node:22
-    working_dir: /app
+    working_dir: /repo
     ports:
-      - '${WEB_PORT:-3000}:3000'
-      - '24678:24678'
+      - '${BACKEND_PORT:-4000}:4000'
     volumes:
-      - ./web:/app
-      - app-node-modules:/app/node_modules
+      - .:/repo
+      - repo-node-modules:/repo/node_modules
       - ./mosquitto:/mqtt
       - mqtt-tools-node-modules:/mqtt/node_modules
-      - ./mqtt-contract:/mqtt-contract:ro
       - playwright-browsers:/root/.cache/ms-playwright
     depends_on:
-      mongo:
+      postgres:
         condition: service_healthy
-      mongo-init:
-        condition: service_completed_successfully
       mqtt:
         condition: service_healthy
     environment:
-      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - PORT=4000
+      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
       - SESSION_SECRET=dev-secret-not-for-production
-      - ORIGIN=${ORIGIN:-https://app.prismo.local.nu31.space}
       - USERNAME=admin
       - PASSWORD=admin
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -89,7 +81,7 @@ services:
       - MQTT_USER=admin
       - MQTT_PASSWORD=admin
     healthcheck:
-      test: node -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      test: node -e "fetch('http://localhost:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
       interval: 5s
       timeout: 5s
       retries: 40
@@ -99,25 +91,29 @@ services:
       - -c
       - |
         npm install
-        cd /mqtt && npm install && cd /app
-        npm run dev -- --host 0.0.0.0
+        npm run dev --workspace=backend
 
-  mqtt-viewer:
-    build: ./mqtt-viewer
+  client:
+    image: node:22
+    working_dir: /repo
     ports:
-      - '${MQTT_VIEWER_PORT:-5173}:5173'
+      - '${WEB_PORT:-3000}:5173'
+      - '24678:24678'
     volumes:
-      - ./mqtt-viewer:/app
-      - mqtt-viewer-node-modules:/app/node_modules
-      - ./mqtt-contract:/mqtt-contract:ro
+      - .:/repo
+      - repo-node-modules:/repo/node_modules
     depends_on:
-      mqtt:
+      backend:
         condition: service_healthy
     environment:
-      - VITE_MQTT_URL=wss://mqtt.prismo.local.nu31.space
-      - VITE_MQTT_USER=admin
-      - VITE_MQTT_PASSWORD=admin
-    command: npm run dev -- --host 0.0.0.0
+      - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - VITE_PUBLIC_MQTT_URL=${PUBLIC_MQTT_URL}
+    command:
+      - bash
+      - -c
+      - |
+        npm install
+        npm run dev --workspace=client -- --host 0.0.0.0
 
   # Firmware build worker. Heavy (~several GB image) and only needed when you
   # work on /flasher builds, so it is opt-in: `./dev.sh up --with-worker`.
@@ -125,17 +121,15 @@ services:
     image: ghcr.io/nu31hackerspace/prismo-worker:latest
     profiles: [worker]
     depends_on:
-      mongo:
+      postgres:
         condition: service_healthy
-      mongo-init:
-        condition: service_completed_successfully
       mqtt:
         condition: service_healthy
     volumes:
-      - ./web/worker/worker.py:/worker/worker.py:ro
-      - ./web/worker/build.sh:/worker/build.sh:ro
+      - ./backend/worker/worker.py:/worker/worker.py:ro
+      - ./backend/worker/build.sh:/worker/build.sh:ro
     environment:
-      - MONGODB_URL=mongodb://mongo:27017/prismo?directConnection=true&replicaSet=rs0
+      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
       - MQTT_URL=mqtt://admin:admin@mqtt:1883
     restart: on-failure
 
@@ -150,16 +144,15 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - app
-      - mongo-viewer
-      - mqtt-viewer
+      - backend
+      - client
+      - postgres-viewer
 
 volumes:
-  mongo-dev-data:
+  postgres-dev-data:
   mqtt-dev-data:
-  app-node-modules:
+  repo-node-modules:
   mqtt-tools-node-modules:
   playwright-browsers:
-  mqtt-viewer-node-modules:
   caddy_data:
   caddy_config:
