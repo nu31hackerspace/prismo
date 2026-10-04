@@ -3,7 +3,7 @@ import { writeFileSync } from "node:fs";
 import path from "node:path";
 
 const distDir = path.resolve(import.meta.dirname, "../dist");
-const port = process.env.PORT ?? "80";
+const port = process.env.PORT ?? "5173";
 
 const runtimeEnv = {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "",

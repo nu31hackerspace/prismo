@@ -34,6 +34,7 @@ services:
       - COMMIT_SHA=${COMMIT_SHA}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - PUBLIC_MQTT_URL=${PUBLIC_MQTT_URL}
+      - PORT=5173
     networks:
       - infra_reverse-proxy
 

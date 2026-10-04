@@ -74,7 +74,7 @@ services:
         VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     image: prismo-client:blackbox
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:5173/"]
       interval: 5s
       timeout: 10s
       retries: 10

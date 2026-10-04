@@ -17,5 +17,5 @@ WORKDIR /app
 RUN npm install -g serve
 COPY --from=build /repo/client/dist ./dist
 COPY client/server ./server
-EXPOSE 80
+EXPOSE 5173
 CMD ["node", "--experimental-strip-types", "server/start.ts"]
