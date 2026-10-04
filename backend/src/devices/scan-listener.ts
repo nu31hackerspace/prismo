@@ -30,8 +30,15 @@ export function initializeScanListener(): void {
 
   client.on('connect', () => {
     console.log(`[scan-listener] connect`);
-    client.subscribe([SCAN_WILDCARD, STATUS_WILDCARD], { qos: 1 });
+    client.subscribe([SCAN_WILDCARD, STATUS_WILDCARD], { qos: 1 }, (err, granted) => {
+      if (err) console.error('[scan-listener] subscribe error:', err);
+      else console.log('[scan-listener] subscribed:', granted?.map((g) => `${g.topic}=${g.qos}`).join(', '));
+    });
   });
+  client.on('reconnect', () => console.log('[scan-listener] reconnecting'));
+  client.on('close', () => console.log('[scan-listener] connection closed'));
+  client.on('offline', () => console.warn('[scan-listener] offline'));
+  client.on('error', (err) => console.error('[scan-listener] error:', err));
 
   client.on('message', (topic, payload) => {
     console.log(`[scan-listener] message on "${topic}": ${payload.toString()}`);

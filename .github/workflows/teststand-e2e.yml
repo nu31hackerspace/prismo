@@ -139,6 +139,16 @@ jobs:
         run: |
           echo "--- backend logs ---"
           (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 300 backend) || true
+          # The cmd/sync key dumps above push the scan listener out of the
+          # tail, so pull its lines (heartbeats, scans, reconnects) separately.
+          echo "--- backend scan-listener ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --timestamps backend | grep scan-listener | tail -150) || true
+          # Broker side of the same story: who connected/dropped, what was
+          # subscribed, and whether device scans were received and denied.
+          echo "--- mqtt broker ---"
+          (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --timestamps mqtt \
+            | grep -E 'New client|disconnect|Client .* closed|already connected|SUBSCRIBE|/scan|Denied|denied|kick' \
+            | tail -200) || true
           echo "--- client logs ---"
           (cd blackbox-e2e && docker compose $COMPOSE_FILES logs --tail 100 client) || true
           echo "--- gpio read ---"
