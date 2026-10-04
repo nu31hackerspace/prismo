@@ -109,7 +109,7 @@ jobs:
         run: |
           echo "IMAGE_NAME='${{ env.IMAGE_NAME }}'" >> .env
           echo "COMMIT_SHA='${{ env.COMMIT_SHA }}'" >> .env
-          echo "POSTGRES_URL='postgresql://${{ env.USERNAME }}:${{ env.PASSWORD }}@postgres:5432/prismo'" >> .env
+          echo "POSTGRES_URL='postgresql://${{ env.USERNAME }}:${{ env.PASSWORD }}@postgres-1:5432/prismo'" >> .env
           echo "SESSION_SECRET='${{ secrets.SESSION_SECRET }}'" >> .env
           echo "MQTT_URL='${{ vars.MQTT_URL }}'" >> .env
           echo "PUBLIC_MQTT_URL='${{ vars.PUBLIC_MQTT_URL }}'" >> .env
