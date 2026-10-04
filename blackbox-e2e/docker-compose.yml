@@ -79,4 +79,3 @@ services:
         condition: service_healthy
       client:
         condition: service_healthy
-
