@@ -121,6 +121,9 @@ The skill will setup a few domains:
 - `mqtt.prismo.local.nu31.space`
 - `postgres-viewer.prismo.local.nu31.space`
 
+Over `mqtt.prismo.local.nu31.space` in your browser and accept the security permision
+
+
 ## Project CI
 
 The project uses GitHub Actions for CI. Every change is built, linted, and — for the firmware — tested on **real ESP32-C3 hardware** running on a Raspberry Pi rig before it lands on `main`. The CI also builds the firmware `*.bin` that the web flasher serves.

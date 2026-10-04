@@ -57,6 +57,7 @@ type ButtonAsLink = ButtonBaseProps & {
   to?: undefined;
   target?: React.HTMLAttributeAnchorTarget;
   rel?: string;
+  download?: string | boolean;
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 };
 
@@ -106,6 +107,7 @@ export function Button(props: ButtonProps) {
         className={classes}
         target={props.target}
         rel={props.rel}
+        download={props.download}
         onClick={(e) => { trackEvent(`click_${tag}`); props.onClick?.(e); }}
         aria-label={props['aria-label']}
       >

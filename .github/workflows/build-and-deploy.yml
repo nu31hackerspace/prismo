@@ -32,6 +32,10 @@ jobs:
           done
           exit $FAIL
 
+  build-firmware:
+    needs: check-dev-flags
+    uses: ./.github/workflows/build-firmware.yml
+
   build-backend-image:
     runs-on: ubuntu-24.04
     needs: check-dev-flags
@@ -65,13 +69,19 @@ jobs:
 
   build-client-image:
     runs-on: ubuntu-24.04
-    needs: check-dev-flags
+    needs: build-firmware
     permissions:
       contents: read
       packages: write
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download firmware built from this commit
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware
+          path: client/public
 
       - name: Log in to registry
         uses: docker/login-action@v2

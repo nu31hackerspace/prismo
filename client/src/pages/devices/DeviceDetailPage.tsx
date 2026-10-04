@@ -9,6 +9,7 @@ import { useStore } from "@/store/provider";
 import { draft } from "@/store/models/base";
 import DeviceActions from "./device-actions";
 import DeviceDangerZone from "./device-danger-zone";
+import DeviceFirmwareDownload from "./device-firmware-download";
 import DeviceHistory from "./device-history";
 import { workspaceHeader } from "@/store/workspace-id";
 
@@ -150,6 +151,8 @@ const DeviceDetailPage = observer(function DeviceDetailPage() {
             <DeviceHistory items={historyItems} />
           </div>
         </div>
+
+        <DeviceFirmwareDownload />
 
         <DeviceDangerZone deviceId={device.id} deviceMode={device.mode} />
       </main>

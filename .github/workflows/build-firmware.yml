@@ -1,0 +1,43 @@
+name: Build firmware
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build-firmware:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    container: espressif/idf:v5.5.1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install host compiler for mpy-cross
+        run: apt-get update && apt-get install -y --no-install-recommends build-essential
+
+      - name: Cache MicroPython checkout
+        uses: actions/cache@v4
+        with:
+          path: |
+            firmware/build/micropython
+            !firmware/build/micropython/ports/esp32/build-*
+            !firmware/build/micropython/mpy-cross/build
+          key: micropython-v1.27.0-esp32c3-${{ hashFiles('firmware/build.sh') }}
+          restore-keys: micropython-v1.27.0-esp32c3-
+
+      - name: Build firmware
+        working-directory: firmware
+        shell: bash
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          ./build.sh
+          ls -l dist/firmware.bin
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: firmware/dist/firmware.bin
+          if-no-files-found: error
+          retention-days: 7
