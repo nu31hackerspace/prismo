@@ -18,7 +18,8 @@ RUN npm run build --workspace=client
 
 FROM node:22-alpine
 WORKDIR /app
-RUN npm install -g serve
+RUN apk add --no-cache curl && npm install -g serve
 COPY --from=build /repo/client/dist ./dist
 EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:80/ || exit 1
 CMD ["serve", "-s", "dist", "-l", "80"]
