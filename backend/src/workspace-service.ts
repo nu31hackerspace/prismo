@@ -27,10 +27,8 @@ export async function ensureUserAndMembership(googleId: string, email: string, n
   );
   const userId = userRows[0].id;
 
-  // Ensure workspace + membership exist
   const existingWs = await getWorkspaceForUser(userId);
   if (!existingWs) {
-    // Create a default workspace for this user
     const { rows: wsRows } = await query(
       `INSERT INTO workspace (name) VALUES ($1) RETURNING id`,
       [`${name}'s workspace`]

@@ -47,7 +47,17 @@ export interface DeviceActivity {
   createdAt: string;
 }
 
-export const ENTITY_NAMES = ['workspace', 'device', 'key', 'keyAccess', 'deviceActivity'] as const;
+export type HookKind = 'discord';
+
+export interface Hook {
+  id: UUID;
+  workspaceId: UUID;
+  deviceId: UUID;
+  kind: HookKind;
+  url: string;
+}
+
+export const ENTITY_NAMES = ['workspace', 'device', 'key', 'keyAccess', 'deviceActivity', 'hook'] as const;
 
 export type EntityName = (typeof ENTITY_NAMES)[number];
 
@@ -57,6 +67,7 @@ export interface EntityMap {
   key: Key;
   keyAccess: KeyAccess;
   deviceActivity: DeviceActivity;
+  hook: Hook;
 }
 
 export function isEntityName(type: unknown): type is EntityName {

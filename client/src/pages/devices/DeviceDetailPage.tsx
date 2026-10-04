@@ -10,6 +10,7 @@ import { draft } from "@/store/models/base";
 import DeviceActions from "./device-actions";
 import DeviceDangerZone from "./device-danger-zone";
 import DeviceHistory from "./device-history";
+import DeviceHooks from "./device-hooks";
 import { workspaceHeader } from "@/store/workspace-id";
 
 const DeviceDetailPage = observer(function DeviceDetailPage() {
@@ -144,6 +145,7 @@ const DeviceDetailPage = observer(function DeviceDetailPage() {
             </div>
 
             <DeviceActions deviceId={device.id} deviceMode={device.mode} modeParams={device.modeParams} />
+            <DeviceHooks device={device} />
           </div>
 
           <div className="flex flex-col gap-6">
