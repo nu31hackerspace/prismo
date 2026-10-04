@@ -23,10 +23,6 @@ jobs:
           - name: client
             file: client/Dockerfile
             image: nu31hackerspace/prismo-web-admin-client
-            # This run drives the genuine Google OAuth flow, so the client
-            # needs the real client ID baked in — Vite inlines VITE_* vars at
-            # build time, not read at runtime.
-            build-args: VITE_GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
     steps:
       - uses: actions/checkout@v4
       - name: Log in to registry
@@ -102,6 +98,7 @@ jobs:
           echo "IMAGE_NAME=${{ env.IMAGE_NAME }}" >> blackbox-e2e/.env
           echo "IMAGE_TAG=test-${{ github.sha }}" >> blackbox-e2e/.env
           echo "COMMIT_SHA=${{ github.sha }}" >> blackbox-e2e/.env
+          echo "GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}" >> blackbox-e2e/.env
 
       - name: Start WiFi access point (wlan0)
         # No outer sudo: start-ap.sh sudo's its own nmcli/rfkill calls, which the
