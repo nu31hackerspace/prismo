@@ -28,16 +28,3 @@ services:
       timeout: 5s
       retries: 10
 
-  worker:
-    build:
-      context: .
-      dockerfile: backend/worker/Dockerfile
-    depends_on:
-      postgres:
-        condition: service_healthy
-      mqtt:
-        condition: service_healthy
-    environment:
-      - POSTGRES_URL=postgresql://admin:admin@postgres:5432/prismo
-      - MQTT_URL=mqtt://admin:admin@mqtt:1883
-    restart: on-failure
