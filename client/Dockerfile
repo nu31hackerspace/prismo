@@ -8,17 +8,14 @@ COPY shared ./shared
 COPY mqtt-contract ./mqtt-contract
 COPY client ./client
 RUN npm install --workspace=client
-# Vite inlines VITE_* variables into the bundle at build time, so the
-# Google client ID has to be supplied here, not as a runtime container env.
-ARG VITE_GOOGLE_CLIENT_ID
-ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
-ARG VITE_PUBLIC_MQTT_URL
-ENV VITE_PUBLIC_MQTT_URL=$VITE_PUBLIC_MQTT_URL
 RUN npm run build --workspace=client
 
+# GOOGLE_CLIENT_ID and PUBLIC_MQTT_URL are read from the container env at
+# startup and written to dist/env.js, so one image works for any deployment.
 FROM node:22-alpine
 WORKDIR /app
 RUN npm install -g serve
 COPY --from=build /repo/client/dist ./dist
+COPY client/server ./server
 EXPOSE 80
-CMD ["serve", "-s", "dist", "-l", "80"]
+CMD ["node", "--experimental-strip-types", "server/start.ts"]

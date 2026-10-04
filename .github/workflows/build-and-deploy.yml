@@ -89,9 +89,6 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client:${{ env.COMMIT_SHA }}
-          build-args: |
-            VITE_GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
-            VITE_PUBLIC_MQTT_URL=${{ vars.PUBLIC_MQTT_URL }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client:latest
           cache-to: type=inline
 
@@ -113,6 +110,7 @@ jobs:
           echo "SESSION_SECRET='${{ secrets.SESSION_SECRET }}'" >> .env
           echo "MQTT_URL='${{ vars.MQTT_URL }}'" >> .env
           echo "PUBLIC_MQTT_URL='${{ vars.PUBLIC_MQTT_URL }}'" >> .env
+          echo "GOOGLE_CLIENT_ID='${{ env.GOOGLE_CLIENT_ID }}'" >> .env
 
       - name: Deploy Docker Stack
         uses: cssnr/stack-deploy-action@v1

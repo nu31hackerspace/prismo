@@ -28,6 +28,6 @@ export default defineConfig({
     // Requests arrive proxied through Caddy under this hostname, not
     // localhost:5173 — Vite's dev-server Host check would otherwise reject
     // them.
-    allowedHosts: ['app.prismo.local.nu31.space'],
+    allowedHosts: ['app.prismo.local.nu31.space', 'prismo.nu31.space'],
   },
 });

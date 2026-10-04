@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { env } from "@/lib/env";
 
 const githubUrl = "https://github.com/nu31hackerspace/prismo";
 const instructionUrl = "https://github.com/nu31hackerspace/prismo";
@@ -93,7 +94,7 @@ function StepCard({ step, icon, title, description }: { step: number; icon: stri
 }
 
 export default function Landing() {
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+  const clientId = env.googleClientId;
   const redirectUri = `${window.location.origin}/google/callback`;
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=openid email profile&prompt=consent`;
 

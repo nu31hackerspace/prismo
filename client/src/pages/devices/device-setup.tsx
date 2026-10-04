@@ -15,6 +15,7 @@ import {
   type SettingDef,
 } from "@/client/device-serial";
 import { workspaceHeader } from "@/store/workspace-id";
+import { env } from "@/lib/env";
 import { DeviceSettingsForm } from "./device-settings-form";
 import { changedValues, draftFromValues, type Draft } from "./device-settings";
 
@@ -201,7 +202,7 @@ export default function DeviceSetup({ deviceId, deviceMode }: { deviceId: string
       if (!res.ok) throw new Error("Failed to generate MQTT credentials.");
       const { token } = await res.json();
       const known = new Set(schema.map((d) => d.key));
-      const defaultMqttUrl = import.meta.env.VITE_PUBLIC_MQTT_URL;
+      const defaultMqttUrl = env.publicMqttUrl;
       setDraft((d) => ({
         ...d,
         ...(known.has("mqtt_url") && defaultMqttUrl && { mqtt_url: defaultMqttUrl }),
