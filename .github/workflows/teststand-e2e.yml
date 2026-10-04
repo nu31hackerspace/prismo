@@ -9,7 +9,11 @@ env:
   IMAGE_NAME: nu31hackerspace/prismo-web-admin
 
 jobs:
+  build-firmware:
+    uses: ./.github/workflows/build-firmware.yml
+
   build-test-images:
+    needs: build-firmware
     runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
@@ -25,6 +29,12 @@ jobs:
             image: nu31hackerspace/prismo-web-admin-client
     steps:
       - uses: actions/checkout@v4
+      - name: Download firmware built from this commit
+        if: matrix.name == 'client'
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware
+          path: client/public
       - name: Log in to registry
         uses: docker/login-action@v2
         with:

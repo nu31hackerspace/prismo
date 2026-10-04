@@ -16,20 +16,22 @@ echo "GIT_COMMIT = \"$(git rev-parse --short HEAD)\"" > "$PROJECT_DIR/src/build_
 mkdir -p build
 cd build
 
-# Only clone and install if the esp-idf folder doesn't already exist
-if [ ! -d "esp-idf" ]; then
-    echo "Cloning ESP-IDF..."
-    git clone -b v5.5.1 --recursive https://github.com/espressif/esp-idf.git
+if [ -n "$IDF_PATH" ] && [ -f "$IDF_PATH/export.sh" ]; then
+    echo "Using preinstalled ESP-IDF at $IDF_PATH"
+    . "$IDF_PATH/export.sh"
 else
-    echo "ESP-IDF already exists, skipping clone."
+    if [ ! -d "esp-idf" ]; then
+        echo "Cloning ESP-IDF..."
+        git clone -b v5.5.1 --recursive https://github.com/espressif/esp-idf.git
+    else
+        echo "ESP-IDF already exists, skipping clone."
+    fi
+
+    cd esp-idf
+    ./install.sh esp32c3
+    . ./export.sh
+    cd ..
 fi
-
-cd esp-idf
-./install.sh esp32c3
-
-# Activate ESP-IDF environment (In CI/CD, do this for every job step)
-. ./export.sh
-cd ..
 
 # ---------------------------------------------------------
 # Step B: Setup MicroPython
