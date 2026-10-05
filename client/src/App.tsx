@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 
 import { RootStore } from '@/store/root-store';
 import { StoreProvider } from '@/store/provider';
@@ -59,6 +59,11 @@ function useAuth(): AuthState {
 // session turned out not to be signed in.
 function RequireAuth({ store }: { store: RootStore }) {
   const auth = useContext(AuthContext);
+  const { pathname } = useLocation();
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   if (auth.status !== 'authed') return <Navigate to="/" replace />;
 
   return (
@@ -88,7 +93,7 @@ export default function App() {
     <AuthContext value={auth}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={auth.status === 'authed' ? <Navigate to="/devices" replace /> : <Landing />} />
           <Route path="/google/callback" element={<GoogleCallback />} />
           <Route path="/system/design-system" element={<DesignSystemPage />} />
 

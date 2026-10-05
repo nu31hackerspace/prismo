@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { flashFirmware } from "@/client/flasher";
+import { outlineClass } from "./panel";
 
-export default function DeviceFlash() {
-  const supported = typeof navigator !== "undefined" && "serial" in navigator;
+export default function DeviceFlash({ compact = false }: { compact?: boolean }) {
   const [phase, setPhase] = useState<"idle" | "flashing">("idle");
   const [busyLabel, setBusyLabel] = useState("");
   const [error, setError] = useState("");
@@ -27,32 +27,43 @@ export default function DeviceFlash() {
     }
   }
 
-  return (
-    <div className="p-5">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="min-w-64 flex-1">
-          <h3 className="font-display text-base font-bold text-label-primary">Flash Firmware</h3>
-          <p className="mt-1 text-sm text-label-secondary">Upload the latest Prismo firmware to the device over USB.</p>
-        </div>
-      </div>
+  const messages = (
+    <>
+      {error && <p className="text-sm text-status-error">{error}</p>}
+      {notice && <p className="text-sm text-status-success">{notice}</p>}
+      {busyLabel && <p className="text-sm text-label-tertiary">{busyLabel}</p>}
+    </>
+  );
+  const button = (
+    <Button tag="device_flash_start" variant="ghost" size={compact ? "sm" : "md"} icon="mdi:flash" onClick={handleFlash} disabled={busy} className={outlineClass}>
+      {busy ? "Flashing..." : "Flash Firmware"}
+    </Button>
+  );
+  const description = <p className="text-sm text-label-secondary">Upload the latest Prismo firmware to the device over USB.</p>;
 
-      {!supported ? (
-        <p className="text-sm text-label-tertiary">
-          Plug the device into this computer with a USB cable and open this page in Chrome or Edge on a desktop to flash it.
-        </p>
-      ) : (
-        <div className="flex flex-col gap-5">
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          {notice && <p className="text-sm text-accent-primary">{notice}</p>}
-          {busyLabel && <p className="text-sm text-label-tertiary">{busyLabel}</p>}
-
-          <div>
-            <Button tag="device_flash_start" variant="primary" size="md" icon="mdi:flash" onClick={handleFlash} disabled={busy}>
-              {busy ? "Flashing..." : "Flash Firmware"}
-            </Button>
+  if (compact) {
+    return (
+      <div className="flex flex-col gap-2 rounded-xl border border-separator-secondary bg-background-primary py-3 pr-3 pl-4">
+        <div className="flex items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold text-label-primary">Flash Firmware</div>
+            {description}
           </div>
+          {button}
         </div>
-      )}
+        {messages}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-start gap-4 rounded-xl border border-separator-secondary bg-background-primary p-5">
+      <div>
+        <h3 className="font-display text-base font-bold text-label-primary">Flash Firmware</h3>
+        <div className="mt-1">{description}</div>
+      </div>
+      {messages}
+      {button}
     </div>
   );
 }

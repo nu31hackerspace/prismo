@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { observer } from "mobx-react-lite";
-import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
 import { draft } from "@/store/models/base";
 import type { Device } from "@/store/models";
 import { workspaceHeader } from "@/store/workspace-id";
+import { inputClass, listClass, Panel } from "./panel";
 
 const DISCORD_WEBHOOK_PATTERN = "https://(canary\\.|ptb\\.)?discord(app)?\\.com/api/webhooks/.+";
 
@@ -21,33 +21,29 @@ const DeviceHooks = observer(function DeviceHooks({ device }: { device: Device }
     fetch(`/api/entities/${hookId}`, { method: "DELETE", headers: workspaceHeader() });
 
   return (
-    <div className="rounded-2xl border border-separator-secondary bg-fill-tertiary p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="rounded-xl bg-background-primary p-2 text-label-secondary">
-          <Icon name="mdi:webhook" className="h-5 w-5" />
-        </div>
-        <h2 className="font-display text-lg font-bold text-label-primary">Discord Notifications</h2>
-      </div>
-      <p className="mb-4 text-sm text-label-tertiary">
+    <Panel icon="mdi:webhook" title="Discord Notifications">
+      <p className="mb-4 hidden text-sm text-label-tertiary md:block">
         Posts to a Discord channel whenever this door is opened. Create a webhook in Discord under Channel Settings → Integrations → Webhooks, then paste its URL here.
       </p>
 
       {device.hooks.length > 0 && (
-        <div className="mb-4 grid grid-cols-1 gap-2">
+        <div className={listClass + " mb-4"}>
           {device.hooks.map((hook) => (
-            <div key={hook.id} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-separator-secondary bg-background-primary px-4 py-3">
+            <div key={hook.id} className="grid grid-cols-[1fr_auto] items-center gap-3 py-1 pr-1 pl-3 md:py-3 md:pr-2 md:pl-4">
               <div className="truncate font-mono text-xs text-label-tertiary">{hook.url.replace(/[^/]+$/, "•••")}</div>
-              <Button tag="device_remove_hook" variant="ghost" size="sm" icon="mdi:delete-outline" onClick={() => handleRemove(hook.id)}>Remove</Button>
+              <Button tag="device_remove_hook" variant="ghost" size="sm" icon="mdi:delete-outline" aria-label="Remove" onClick={() => handleRemove(hook.id)} className="h-11 w-11 px-0 md:h-9 md:w-auto md:px-3">
+                <span className="hidden md:inline">Remove</span>
+              </Button>
             </div>
           ))}
         </div>
       )}
 
       <form onSubmit={handleAdd} className="flex gap-2">
-        <input type="url" required pattern={DISCORD_WEBHOOK_PATTERN} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://discord.com/api/webhooks/…" aria-label="Discord webhook URL" className="min-w-0 flex-1 rounded-xl border border-separator-secondary bg-background-primary px-3 py-2 text-sm text-label-primary outline-none focus:border-accent-primary" />
-        <Button tag="device_add_hook" type="submit" variant="primary" size="sm" icon="mdi:plus">Add</Button>
+        <input type="url" required pattern={DISCORD_WEBHOOK_PATTERN} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://discord.com/api/webhooks/…" aria-label="Discord webhook URL" className={inputClass + " flex-1"} />
+        <Button tag="device_add_hook" type="submit" variant="primary" size="sm" icon="mdi:plus" className="h-12 rounded-md text-base md:h-9 md:rounded md:text-sm">Add</Button>
       </form>
-    </div>
+    </Panel>
   );
 });
 

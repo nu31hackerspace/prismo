@@ -144,7 +144,7 @@ test("many keys: bulk grant, device allowlist convergence, NFC access, bulk revo
       expect(await waitForSignalInactive(10_000)).toBe(true);
       await emulator!.emulate(unknownTagUid);
       await expect(
-        page.getByRole("heading", { name: "Last Unauthorized Scan" }),
+        page.getByRole("heading", { name: "Unknown key scanned" }),
       ).toBeVisible({ timeout: 30_000 });
       await emulator!.waitForStop();
       expect(await signalStayedInactive(6_000)).toBe(true);

@@ -43,8 +43,8 @@ to the Raspberry Pi, and asserts on the **physical** success output pin.
    → Pi reads the line active (`lib/gpio.ts`).
 5. **Real NFC access** — the PN532 **tag emulator** (a second ESP32-C3, see
    `../../tag-emulator/`) radiates a tag at the reader over real RF. The
-   unknown tag is **denied** (pin stays quiet) and surfaces in the UI's "Last
-   Unauthorized Scan" panel; the test names it and clicks **Add**; the same
+   unknown tag is **denied** (pin stays quiet) and surfaces in the UI's "Unknown
+   key scanned" callout; the test names it and clicks **Grant access**; the same
    tag then **opens the door** (pin active) and the history logs the allowed
    scan with the name. The emulator is provisioned fresh each run over
    `/dev/ttyTagEmulator` (`lib/tag-emulator.ts`).

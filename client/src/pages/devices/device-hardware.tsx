@@ -18,6 +18,8 @@ import { workspaceHeader } from "@/store/workspace-id";
 import { env } from "@/lib/env";
 import { DeviceSettingsForm } from "./device-settings-form";
 import { changedValues, draftFromValues, type Draft } from "./device-settings";
+import DeviceFlash from "./device-flash";
+import { outlineClass, Panel } from "./panel";
 
 type Phase = "idle" | "connecting" | "ready" | "busy";
 
@@ -25,21 +27,31 @@ function errorMessage(e: unknown, fallback: string) {
   return e instanceof Error ? e.message : fallback;
 }
 
-function StatusRow({ icon, label, value, onLabel, offLabel }: { icon: string; label: string; value: boolean | null | undefined; onLabel: string; offLabel: string }) {
+function Row({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-separator-secondary bg-background-primary px-3 py-2">
+    <div className="flex items-center justify-between gap-3 px-4 py-2.5">
       <div className="flex items-center gap-2 text-sm text-label-primary">
         <Icon name={icon} className="h-4 w-4 text-label-secondary" />
         {label}
       </div>
-      <Tag variant={value == null ? "primary" : value ? "success" : "error"}>
-        {value == null ? "Unknown" : value ? onLabel : offLabel}
-      </Tag>
+      {children}
     </div>
   );
 }
 
-export default function DeviceSetup({ deviceId, deviceMode }: { deviceId: string; deviceMode: string }) {
+function StatusRow({ icon, label, value, onLabel, offLabel }: { icon: string; label: string; value: boolean | null | undefined; onLabel: string; offLabel: string }) {
+  return (
+    <Row icon={icon} label={label}>
+      <Tag variant={value == null ? "primary" : value ? "success" : "error"}>
+        {value == null ? "Unknown" : value ? onLabel : offLabel}
+      </Tag>
+    </Row>
+  );
+}
+
+const cardClass = "rounded-xl border border-separator-secondary bg-background-primary";
+
+export default function DeviceHardware({ deviceId, deviceMode }: { deviceId: string; deviceMode: string }) {
   const supported = typeof navigator !== "undefined" && "serial" in navigator;
 
   const serialRef = useRef<DeviceSerial | null>(null);
@@ -217,118 +229,108 @@ export default function DeviceSetup({ deviceId, deviceMode }: { deviceId: string
   const connected = phase === "ready" || phase === "busy";
   const busy = phase === "busy" || phase === "connecting";
 
-  return (
-    <div className="p-5">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="min-w-64 flex-1">
-          <h3 className="font-display text-base font-bold text-label-primary">Setup Device</h3>
-          <p className="mt-1 text-sm text-label-secondary">Connect over USB to view and change this device's settings.</p>
-        </div>
-        {connected && <Tag variant="success">Connected</Tag>}
-      </div>
-
-      {!supported ? (
+  if (!supported) {
+    return (
+      <Panel icon="mdi:usb-port" title="Hardware">
         <p className="text-sm text-label-tertiary">
-          Plug the device into this computer with a USB cable and open this page in Chrome or Edge on a desktop to set it up.
+          Plug the device into this computer with a USB cable and open this page in Chrome or Edge on a desktop to set it up or flash firmware.
         </p>
-      ) : (
-        <div className="flex flex-col gap-5">
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          {notice && <p className="text-sm text-accent-primary">{notice}</p>}
+      </Panel>
+    );
+  }
+
+  const aside = port ? (
+    <>
+      {connected && <Tag variant="success">Connected</Tag>}
+      {info?.mac && <span className="font-mono text-xs text-label-tertiary">USB · {info.mac}</span>}
+      <Button tag="device_setup_disconnect" variant="ghost" size="sm" icon="mdi:close" onClick={handleDisconnect} disabled={busy} className="ml-auto">Disconnect</Button>
+    </>
+  ) : (
+    <span className="ml-auto text-xs text-label-tertiary">Requires USB · Chrome or Edge on desktop</span>
+  );
+
+  return (
+    <Panel icon="mdi:usb-port" title="Hardware" aside={aside}>
+      {(error || notice || busyLabel) && (
+        <div className="mb-3 flex flex-col gap-1">
+          {error && <p className="text-sm text-status-error">{error}</p>}
+          {notice && <p className="text-sm text-status-success">{notice}</p>}
           {busyLabel && <p className="text-sm text-label-tertiary">{busyLabel}</p>}
-
-          {!port ? (
-            <div>
-              <Button tag="device_setup_connect" variant="ghost" size="md" icon="mdi:usb-port" onClick={handleConnect} disabled={busy}>
-                {phase === "connecting" ? "Connecting..." : "Connect to Device"}
-              </Button>
-            </div>
-          ) : (
-            <>
-              {connected && (
-                <>
-                  <div className="rounded-xl border border-separator-secondary bg-fill-tertiary p-4">
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Icon name="mdi:list-status" className="h-4 w-4 text-label-secondary" />
-                        <h4 className="font-display text-sm font-bold text-label-primary">Device Status</h4>
-                      </div>
-                      <Button tag="device_setup_check_status" variant="ghost" size="sm" icon="mdi:refresh" onClick={handleRefresh} disabled={busy}>Refresh</Button>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between gap-3 rounded-lg border border-separator-secondary bg-background-primary px-3 py-2">
-                        <div className="flex items-center gap-2 text-sm text-label-primary">
-                          <Icon name="mdi:chip" className="h-4 w-4 text-label-secondary" />
-                          Firmware
-                        </div>
-                        <Tag variant="primary"><span className="font-mono">{info?.fw ?? "Unknown"}</span></Tag>
-                      </div>
-                      <div className="flex items-center justify-between gap-3 rounded-lg border border-separator-secondary bg-background-primary px-3 py-2">
-                        <div className="flex items-center gap-2 text-sm text-label-primary">
-                          <Icon name="mdi:identifier" className="h-4 w-4 text-label-secondary" />
-                          MAC
-                        </div>
-                        <Tag variant="primary"><span className="font-mono">{info?.mac ?? "Unknown"}</span></Tag>
-                      </div>
-                      <StatusRow icon="mdi:wifi" label="WiFi" value={status?.wifi_connected} onLabel="Connected" offLabel="Disconnected" />
-                      <StatusRow icon="mdi:server-network" label="MQTT" value={status?.mqtt_connected} onLabel="Connected" offLabel="Disconnected" />
-                      <StatusRow icon="mdi:nfc" label="PN532 Reader" value={status?.nfc_reader_ok} onLabel="Connected" offLabel="Not Detected" />
-                    </div>
-                  </div>
-    
-                  <div className="rounded-xl border border-separator-secondary bg-fill-tertiary p-4">
-                    <div className="mb-3 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Icon name="mdi:cog" className="h-4 w-4 text-label-secondary" />
-                        <h4 className="font-display text-sm font-bold text-label-primary">Settings</h4>
-                      </div>
-                      <Button tag="device_setup_generate_mqtt_creds" variant="ghost" size="sm" icon="mdi:key-variant" onClick={handleFillFromServer} disabled={busy}>
-                        Fill MQTT credentials
-                      </Button>
-                    </div>
-                    <DeviceSettingsForm
-                      schema={schema}
-                      values={values}
-                      draft={draft}
-                      errors={fieldErrors}
-                      disabled={busy}
-                      onChange={(key, value) => setDraft((d) => ({ ...d, [key]: value }))}
-                    />
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Button tag="device_setup_save" variant="primary" size="sm" icon="mdi:content-save" onClick={handleSave} disabled={busy}>Save</Button>
-                      {rebootRequired && (
-                        <Button tag="device_setup_reboot_to_apply" variant="primary" size="sm" icon="mdi:restart" onClick={handleReboot} disabled={busy}>Reboot to apply</Button>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <div className="rounded-xl border border-separator-secondary bg-fill-tertiary p-4">
-                <div className="mb-3 flex items-center gap-2">
-                  <Icon name="mdi:chip" className="h-4 w-4 text-label-secondary" />
-                  <h4 className="font-display text-sm font-bold text-label-primary">Maintenance</h4>
-                </div>
-                <p className="text-sm text-label-secondary">{connected || phase === "connecting" ? "Restart the device." : "The device doesn't respond to setup commands."}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button tag="device_setup_reboot" variant="ghost" size="sm" icon="mdi:restart" onClick={handleReboot} disabled={busy || !connected}>Reboot</Button>
-                </div>
-              </div>
-
-              <div>
-                <Button tag="device_setup_disconnect" variant="ghost" size="sm" icon="mdi:close" onClick={handleDisconnect} disabled={busy}>Disconnect</Button>
-              </div>
-            </>
-          )}
-
-          {log.length > 0 && (
-            <details className="rounded-xl border border-separator-secondary bg-fill-tertiary p-4">
-              <summary className="cursor-pointer text-sm font-bold text-label-primary">Device log ({log.length})</summary>
-              <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap break-all font-mono text-xs text-label-secondary">{log.join("\n")}</pre>
-            </details>
-          )}
         </div>
       )}
-    </div>
+
+      {!port ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className={cardClass + " flex flex-col items-start gap-4 p-5"}>
+            <div>
+              <h3 className="font-display text-base font-bold text-label-primary">Setup Device</h3>
+              <p className="mt-1 text-sm text-label-secondary">Connect over USB to view and change this device's settings.</p>
+            </div>
+            <Button tag="device_setup_connect" variant="ghost" size="md" icon="mdi:usb-port" onClick={handleConnect} disabled={busy} className={outlineClass}>
+              {phase === "connecting" ? "Connecting..." : "Connect to Device"}
+            </Button>
+          </div>
+          <DeviceFlash />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {connected ? (
+            <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+              <div className={cardClass + " divide-y divide-separator-secondary overflow-hidden"}>
+                <div className="flex items-center justify-between gap-2 py-3 pr-2 pl-4">
+                  <h3 className="font-display text-sm font-bold text-label-primary">Device Status</h3>
+                  <Button tag="device_setup_check_status" variant="ghost" size="sm" icon="mdi:refresh" onClick={handleRefresh} disabled={busy}>Refresh</Button>
+                </div>
+                <Row icon="mdi:chip" label="Firmware"><Tag variant="primary" className="font-mono">{info?.fw ?? "Unknown"}</Tag></Row>
+                <Row icon="mdi:identifier" label="MAC"><Tag variant="primary" className="font-mono">{info?.mac ?? "Unknown"}</Tag></Row>
+                <StatusRow icon="mdi:wifi" label="WiFi" value={status?.wifi_connected} onLabel="Connected" offLabel="Disconnected" />
+                <StatusRow icon="mdi:server-network" label="MQTT" value={status?.mqtt_connected} onLabel="Connected" offLabel="Disconnected" />
+                <StatusRow icon="mdi:nfc" label="PN532 Reader" value={status?.nfc_reader_ok} onLabel="Connected" offLabel="Not Detected" />
+                <div className="flex items-center justify-between gap-3 py-3 pr-2 pl-4">
+                  <span className="text-xs text-label-tertiary">Polled every 2 s</span>
+                  <Button tag="device_setup_reboot" variant="ghost" size="sm" icon="mdi:restart" onClick={handleReboot} disabled={busy}>Reboot</Button>
+                </div>
+              </div>
+
+              <div className={cardClass + " p-4"}>
+                <div className="-mt-1 -mr-2 mb-3 flex items-center justify-between gap-2">
+                  <h3 className="font-display text-sm font-bold text-label-primary">Settings</h3>
+                  <Button tag="device_setup_generate_mqtt_creds" variant="ghost" size="sm" icon="mdi:key-variant" onClick={handleFillFromServer} disabled={busy}>
+                    Fill MQTT credentials
+                  </Button>
+                </div>
+                <DeviceSettingsForm
+                  schema={schema}
+                  values={values}
+                  draft={draft}
+                  errors={fieldErrors}
+                  disabled={busy}
+                  onChange={(key, value) => setDraft((d) => ({ ...d, [key]: value }))}
+                />
+                <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-separator-secondary pt-4">
+                  <Button tag="device_setup_save" variant="primary" size="sm" icon="mdi:content-save" onClick={handleSave} disabled={busy}>Save</Button>
+                  {rebootRequired ? (
+                    <Button tag="device_setup_reboot_to_apply" variant="primary" size="sm" icon="mdi:restart" onClick={handleReboot} disabled={busy}>Reboot to apply</Button>
+                  ) : (
+                    <span className="text-xs text-label-tertiary">Fields marked (reboot) apply after a restart.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            phase === "idle" && <p className="text-sm text-label-secondary">The device doesn't respond to setup commands.</p>
+          )}
+
+          <DeviceFlash compact />
+        </div>
+      )}
+
+      {log.length > 0 && (
+        <details className={cardClass + " mt-3 px-4 py-3"}>
+          <summary className="cursor-pointer text-sm font-bold text-label-primary">Device log ({log.length})</summary>
+          <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap break-all font-mono text-xs text-label-secondary">{log.join("\n")}</pre>
+        </details>
+      )}
+    </Panel>
   );
 }

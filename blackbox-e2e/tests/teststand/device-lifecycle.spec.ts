@@ -105,7 +105,7 @@ test("device lifecycle: flash, configure, online, trigger, NFC tag access, and r
         await emulator!.emulate(tagUid);
         // The device publishes the denied scan; it reaches the page via the sync socket.
         await expect(
-          page.getByRole("heading", { name: "Last Unauthorized Scan" }),
+          page.getByRole("heading", { name: "Unknown key scanned" }),
         ).toBeVisible({
           timeout: 30_000,
         });
@@ -125,7 +125,7 @@ test("device lifecycle: flash, configure, online, trigger, NFC tag access, and r
 
     await test.step("Key added through the UI → the same tag opens the door", async () => {
       await page.getByPlaceholder("Name (e.g. Alice)").fill(tagName);
-      await page.getByRole("button", { name: "Add", exact: true }).click();
+      await page.getByRole("button", { name: "Grant access" }).click();
       await expect(
         page.locator(`[data-allowed-key-id="${scannedKeyId}"]`),
       ).toBeVisible();
