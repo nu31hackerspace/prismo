@@ -29,7 +29,7 @@ import {
 } from "./lib/gpio";
 import { apDown, apUp, ensureApUp } from "./lib/wifi";
 import { watchDeviceStatus, type StatusWatcher } from "./lib/status-watcher";
-import { firstHeartbeat } from "./lib/reconnect-helpers";
+import { expectFirstOnline, firstHeartbeat } from "./lib/reconnect-helpers";
 import { TagEmulator } from "./lib/tag-emulator";
 import { flashAppFirmware, configureForStand } from "./lib/stand-device";
 import {
@@ -104,9 +104,7 @@ test("many keys: bulk grant, device allowlist convergence, NFC access, bulk revo
     });
 
     await test.step("Device comes Online with an empty allowlist", async () => {
-      await expect(page.getByText("Online", { exact: true })).toBeVisible({
-        timeout: config.onlineTimeoutMs,
-      });
+      await expectFirstOnline(page);
       const sample = await firstHeartbeat(
         watcher!,
         Date.now() - config.onlineTimeoutMs,

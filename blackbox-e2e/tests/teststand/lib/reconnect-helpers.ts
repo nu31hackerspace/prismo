@@ -2,10 +2,41 @@
  * Small assertions shared by the reconnection phases of the device-lifecycle
  * spec: the no-reboot proof and the "commands still reach the pin" check.
  */
-import { expect, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { waitForSignalActive, waitForSignalInactive } from "./gpio";
 import type { StatusWatcher, StatusSample } from "./status-watcher";
+import { restartAp } from "./wifi";
 import { config } from "./env";
+
+/**
+ * Wait for the freshly flashed and configured device to come Online for the
+ * first time.
+ *
+ * The hotspot is test infrastructure here, not the thing under test, and the
+ * Pi's WiFi radio sometimes comes up in a state the device can't use: it keeps
+ * logging status 201 (no AP found) or associates but can't reach the broker,
+ * although NetworkManager reports the hotspot active. If the device is not
+ * Online within onlineTimeoutMs, recreate the hotspot through start-ap.sh (the
+ * bring-up the job starts with) and give the device apRecoveryOnlineMs more.
+ * The recovery is logged and recorded as a test annotation so it stays visible
+ * in the report instead of hiding a flaky stand.
+ *
+ * Only for the first join. In the reconnection phases the device recovering by
+ * itself *is* the assertion, so kicking the AP there would mask a firmware bug.
+ */
+export async function expectFirstOnline(page: Page): Promise<void> {
+  const online = page.getByText("Online", { exact: true });
+  try {
+    await expect(online).toBeVisible({ timeout: config.onlineTimeoutMs });
+    return;
+  } catch {
+    const note = `device not Online ${config.onlineTimeoutMs}ms after configuration; recreating the hotspot`;
+    console.warn(`[ap-recovery] ${note}`);
+    test.info().annotations.push({ type: "ap-recovery", description: note });
+  }
+  await restartAp();
+  await expect(online).toBeVisible({ timeout: config.apRecoveryOnlineMs });
+}
 
 /**
  * First heartbeat after the device comes Online. Fails fast with a pointer at
