@@ -7,15 +7,35 @@ import type { UUID } from '@prismo/shared/entities';
 import type { TypedEntityRow } from '@/db/entities';
 import { pushDeviceSync } from '@/devices/device-service';
 import type { ScanPayload, StatusPayload } from '@/lib/mqtt-contract/mqtt-contract.generated';
-import { SCAN_WILDCARD, STATUS_WILDCARD } from '@/lib/mqtt-contract/mqtt-contract.generated';
+import { SCAN_WILDCARD, STATUS_WILDCARD, SUBTOPICS, TOPIC_PREFIX } from '@/lib/mqtt-contract/mqtt-contract.generated';
 
 let initialized = false;
 
-export function initializeScanListener(): void {
-  console.log(`[scan-listener] initializeScanListener`);
+export interface MessageHandlerDeps {
+  pushDeviceSync: (deviceUuid: string) => Promise<void>;
+}
+
+// Routes one `prismo/<deviceUuid>/<subtopic>` message. Never throws: a failing
+// handler is logged so one bad message cannot break the listener, and the
+// returned promise lets callers (and tests) wait until the message is fully
+// processed.
+export function createMessageHandler(deps: MessageHandlerDeps = { pushDeviceSync }) {
+  return async function handleMqttMessage(topic: string, payload: Buffer): Promise<void> {
+    const parts = topic.split('/');
+    const [prefix, deviceUuid, subtopic] = parts;
+    if (parts.length !== 3 || prefix !== TOPIC_PREFIX) return;
+    try {
+      if (subtopic === SUBTOPICS.status) await handleHeartbeat(deviceUuid, payload, deps);
+      else if (subtopic === SUBTOPICS.scan) await handleScan(deviceUuid, payload);
+    } catch (err) {
+      console.error(`[scan-listener] ${subtopic} handler failed for "${deviceUuid}":`, err);
+    }
+  };
+}
+
+export function initializeScanListener(): mqtt.MqttClient | undefined {
   if (initialized) return;
   initialized = true;
-  console.log(`[scan-listener] initializeScanListener real`);
 
   const url = process.env.MQTT_URL;
   if (!url) { console.warn('[scan-listener] MQTT_URL not set, skipping'); return; }
@@ -27,29 +47,33 @@ export function initializeScanListener(): void {
     reconnectPeriod: 5_000,
     clientId,
   });
+  const handleMqttMessage = createMessageHandler();
 
   client.on('connect', () => {
-    console.log(`[scan-listener] connect`);
-    client.subscribe([SCAN_WILDCARD, STATUS_WILDCARD], { qos: 1 });
+    console.log(`[scan-listener] connected as "${clientId}"`);
+    client.subscribe([SCAN_WILDCARD, STATUS_WILDCARD], { qos: 1 }, (err, granted) => {
+      if (err) { console.error('[scan-listener] subscribe failed:', err); return; }
+      // The broker reports an ACL-denied subscription as qos 128, not as an error.
+      for (const g of granted ?? []) {
+        if (g.qos === 128) console.error(`[scan-listener] broker refused subscription to "${g.topic}"`);
+      }
+    });
   });
+  client.on('error', (err) => console.error('[scan-listener] mqtt error:', err));
 
   client.on('message', (topic, payload) => {
     console.log(`[scan-listener] message on "${topic}": ${payload.toString()}`);
-    const parts = topic.split('/');
-    const subtopic = parts[2];
-    if (subtopic === 'status') {
-      handleHeartbeat(parts[1], payload).catch(err => console.error('[scan-listener] heartbeat error:', err));
-    } else if (subtopic === 'scan') {
-      handleScan(parts[1], payload).catch(err => console.error('[scan-listener] scan error:', err));
-    }
+    void handleMqttMessage(topic, payload);
   });
+
+  return client;
 }
 
 function computeKeysChecksum(uids: string[]): string {
   return crypto.createHash('sha256').update([...uids].sort().join(',')).digest('hex');
 }
 
-async function handleHeartbeat(deviceUuid: string, rawPayload: Buffer): Promise<void> {
+async function handleHeartbeat(deviceUuid: string, rawPayload: Buffer, deps: MessageHandlerDeps): Promise<void> {
   const { rows: [device] } = await pool.query<TypedEntityRow & { workspaceId: UUID }>(
     `SELECT id, type, workspace_id AS "workspaceId", data FROM entities
      WHERE id = $1 AND type = $2 AND deleted = false`,
@@ -85,7 +109,7 @@ async function handleHeartbeat(deviceUuid: string, rawPayload: Buffer): Promise<
   const expected = computeKeysChecksum(rows.map((r) => r.uid));
   if (expected !== payload.keys_checksum) {
     console.log(`[scan-listener] keys_checksum mismatch for "${deviceUuid}" — pushing sync`);
-    await pushDeviceSync(deviceUuid);
+    await deps.pushDeviceSync(deviceUuid);
   }
 }
 
