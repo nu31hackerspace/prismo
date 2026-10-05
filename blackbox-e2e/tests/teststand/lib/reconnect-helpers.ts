@@ -9,20 +9,11 @@ import { restartAp } from "./wifi";
 import { config } from "./env";
 
 /**
- * Wait for the freshly flashed and configured device to come Online for the
- * first time.
- *
- * The hotspot is test infrastructure here, not the thing under test, and the
- * Pi's WiFi radio sometimes comes up in a state the device can't use: it keeps
- * logging status 201 (no AP found) or associates but can't reach the broker,
- * although NetworkManager reports the hotspot active. If the device is not
- * Online within onlineTimeoutMs, recreate the hotspot through start-ap.sh (the
- * bring-up the job starts with) and give the device apRecoveryOnlineMs more.
- * The recovery is logged and recorded as a test annotation so it stays visible
- * in the report instead of hiding a flaky stand.
- *
- * Only for the first join. In the reconnection phases the device recovering by
- * itself *is* the assertion, so kicking the AP there would mask a firmware bug.
+ * Wait for the freshly configured device to come Online for the first time.
+ * If it doesn't within onlineTimeoutMs, recreate the hotspot once (the Pi radio
+ * sometimes comes up unusable to the device) and wait apRecoveryOnlineMs more,
+ * recording an `ap-recovery` annotation. Only for the first join: in the
+ * reconnection phases the device recovering by itself is the assertion.
  */
 export async function expectFirstOnline(page: Page): Promise<void> {
   const online = page.getByText("Online", { exact: true });

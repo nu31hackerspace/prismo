@@ -28,11 +28,8 @@ type LineWaiter = {
 export class TagEmulator {
   private port?: SerialPort;
   private waiters: LineWaiter[] = [];
-  // True between the emulator's "Now emulating" line and the WAITING_FOR_SERIAL
-  // line that closes the window. The closing line is printed exactly once, so
-  // waitForStop() must know whether the window is already over: a spec that
-  // spent the window waiting on the UI would otherwise wait for a line that
-  // has come and gone.
+  // The window-closing line is printed once, so waitForStop() must know if it
+  // already passed.
   private emulating = false;
 
   async provision(): Promise<void> {
@@ -107,10 +104,7 @@ export class TagEmulator {
     await confirmed;
   }
 
-  /**
-   * Resolves when the current emulation window ends and the emulator idles —
-   * immediately if it already has.
-   */
+  /** Resolves when the current emulation window ends (immediately if it has). */
   async waitForStop(
     timeoutMs: number = (config.emulateSeconds + 10) * 1000,
   ): Promise<void> {
@@ -131,8 +125,6 @@ export class TagEmulator {
   private onLine(line: string): void {
     if (!line) return;
     console.log(`[tag-emulator] ${line}`);
-    // Serial order is preserved, so the state is current before any waiter
-    // below resolves (emulate() returns with `emulating` already true).
     if (line.includes("Now emulating NFCID1")) this.emulating = true;
     else if (line.includes("WAITING_FOR_SERIAL")) this.emulating = false;
     this.waiters = this.waiters.filter((w) => {

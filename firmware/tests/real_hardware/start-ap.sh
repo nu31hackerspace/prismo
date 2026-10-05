@@ -9,14 +9,10 @@ SSID="PrismoTest"
 PSK="prismotest123"
 AP_IP="192.168.10.1/24"
 IFACE="wlan0"
-# Without an explicit channel the radio picks one on every bring-up. Pin one
-# inside 1-11, which every ESP32-C3 country setting scans (12-13 are passive or
-# skipped), so the device's WiFi scan can't miss the AP.
+# Pinned inside 1-11, which the ESP32-C3 always scans.
 CHANNEL="${AP_CHANNEL:-6}"
 
-# True when the radio is really in AP mode serving our SSID. NetworkManager
-# reports the hotspot "activated" even on bring-ups the device can't see. If
-# iw is not installed we can't tell, so assume yes.
+# True when the radio is in AP mode serving our SSID (assumed if iw is missing).
 ap_serving() {
     command -v iw >/dev/null 2>&1 || return 0
     local info
@@ -68,8 +64,7 @@ sudo nmcli con modify "$AP_NAME" \
     wifi-sec.group ccmp \
     wifi-sec.psk "$PSK"
 
-# Up to 3 tries: a bring-up that leaves the radio out of AP mode is torn down
-# and repeated instead of being handed to the tests as "active".
+# NetworkManager can report "activated" with the radio not in AP mode; retry.
 for attempt in 1 2 3; do
     echo "[*] Bringing AP up (attempt $attempt)..."
     sudo nmcli con up "$AP_NAME" ifname "$IFACE" || true

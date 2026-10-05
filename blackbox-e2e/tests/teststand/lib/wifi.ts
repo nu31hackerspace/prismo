@@ -43,10 +43,8 @@ interface RadioInfo {
 }
 
 /**
- * What the radio is really doing, from `iw dev <iface> info`. NetworkManager
- * reports the hotspot "activated" even on bring-ups after which the device
- * cannot see (status 201) or reach the AP, so this is the closer signal.
- * Returns null when iw is missing or prints nothing usable.
+ * Radio state from `iw dev <iface> info`; NetworkManager can report the hotspot
+ * active while the device still can't see it. Null when iw is unavailable.
  */
 async function radioInfo(): Promise<RadioInfo | null> {
   const { stdout } = await run("iw", ["dev", config.wifiIface, "info"], {
@@ -75,20 +73,14 @@ async function waitForApServing(timeoutMs = 15_000): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   do {
     const info = await radioInfo();
-    if (!info) return true; // can't tell — don't fail the stand over a missing tool
+    if (!info) return true; // iw unavailable
     if (info.type === "AP" && info.ssid === config.wifiSsid) return true;
     await sleep(1_000);
   } while (Date.now() < deadline);
   return false;
 }
 
-/**
- * Tear the hotspot down and bring it up from scratch through start-ap.sh —
- * the same bring-up the CI job starts with: leave nothing on the interface,
- * recreate the profile, activate it. Use when a plain `connection up` did not
- * leave a working AP. Throws if the script fails: a stand without its hotspot
- * must fail loudly.
- */
+/** Recreate the hotspot from scratch via start-ap.sh (the job's own bring-up). */
 export async function restartAp(): Promise<void> {
   await run("bash", [path.resolve(repoRoot, config.startApScript)]);
   await logRadio();
@@ -101,11 +93,8 @@ export async function restartAp(): Promise<void> {
  * profile. If that fails too, the error propagates — a stand without its
  * hotspot must fail loudly, not silently.
  *
- * An AP that is already active is left alone: re-activating it bounces the
- * hotspot for nothing, and every bring-up is a chance for the radio to come
- * up in a state the device can't use. After bringing it up, the radio is
- * checked to really be serving the SSID before the caller starts a timer on
- * the device.
+ * An already-active AP is left alone (re-activating only bounces it), and the
+ * radio is verified to be serving the SSID before returning.
  */
 export async function apUp(): Promise<void> {
   if (!(await isApActive())) {

@@ -83,10 +83,7 @@ export const config = {
   // Time allowed for the device to boot, join WiFi, connect MQTT and appear
   // Online after the config is injected and the board soft-resets.
   onlineTimeoutMs: Number(envStr("TESTSTAND_ONLINE_TIMEOUT_MS", "60000")),
-  // If the device is still not Online after onlineTimeoutMs on its very first
-  // join, the hotspot is recreated (see expectFirstOnline) and the device gets
-  // this long to come Online. Covers the firmware's WiFi backoff (≤60s) plus
-  // association/DHCP/MQTT/heartbeat.
+  // Extra time after expectFirstOnline recreates the hotspot.
   apRecoveryOnlineMs: Number(
     envStr("TESTSTAND_AP_RECOVERY_ONLINE_MS", "90000"),
   ),
