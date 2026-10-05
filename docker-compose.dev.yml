@@ -108,6 +108,7 @@ services:
     environment:
       - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - VITE_PUBLIC_MQTT_URL=${PUBLIC_MQTT_URL}
+      - VITE_WATCH_POLLING=1
     command:
       - bash
       - -c

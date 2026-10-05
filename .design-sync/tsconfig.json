@@ -1,0 +1,13 @@
+{
+  "extends": "../client/tsconfig.app.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": "..",
+    "outDir": ".cache/pkg/types",
+    "baseUrl": "../client",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["entry.ts"]
+}

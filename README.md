@@ -121,6 +121,10 @@ The skill will setup a few domains:
 - `mqtt.prismo.local.nu31.space`
 - `postgres-viewer.prismo.local.nu31.space`
 
+## Design system
+
+The UI components in `client/src/components/ui` are synced to Claude Design: [Prismo Design System](https://claude.ai/design/p/379d545b-be93-4bb9-a126-a196f9bd313b). Sync config and notes live in `.design-sync/`.
+
 ## Project CI
 
 The project uses GitHub Actions for CI. Every change is built, linted, and — for the firmware — tested on **real ESP32-C3 hardware** running on a Raspberry Pi rig before it lands on `main`. The CI also builds the firmware `*.bin` that the web flasher serves.

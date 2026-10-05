@@ -29,5 +29,8 @@ export default defineConfig({
     // localhost:5173 — Vite's dev-server Host check would otherwise reject
     // them.
     allowedHosts: ['app.prismo.local.nu31.space', 'prismo.nu31.space'],
+    // Colima's virtiofs mount doesn't deliver file-change events into the
+    // dev container, so docker-compose.dev.yml opts into polling.
+    watch: process.env.VITE_WATCH_POLLING ? { usePolling: true, interval: 300 } : undefined,
   },
 });

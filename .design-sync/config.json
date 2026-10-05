@@ -1,0 +1,22 @@
+{
+  "projectId": "379d545b-be93-4bb9-a126-a196f9bd313b",
+  "shape": "package",
+  "pkg": "@prismo/ui",
+  "globalName": "PrismoUI",
+  "buildCmd": ".design-sync/build.sh",
+  "srcDir": "../../../client/src/components/ui",
+  "dtsPropsFor": {
+    "Button": "variant?: \"primary\" | \"ghost\"; size?: \"sm\" | \"md\"; /** Analytics id: every click sends `click_<tag>`. Required. */ tag: string; /** Iconify name, e.g. \"lucide:check\" or \"mdi:delete-outline\". Omit children for an icon-only square button. */ icon?: string; className?: string; children?: React.ReactNode; \"aria-label\"?: string; \"aria-pressed\"?: boolean | \"mixed\"; /** Renders a plain <a> (downloads, external links). */ href?: string; target?: React.HTMLAttributeAnchorTarget; rel?: string; /** Renders a client-side router <Link>; requires a react-router context. */ to?: string; type?: \"button\" | \"submit\" | \"reset\"; disabled?: boolean; onClick?: React.MouseEventHandler<HTMLElement>;",
+    "SegmentedControl": "options: readonly { value: string; label: string; /** Iconify name; when set the segment shows only the icon and `label` becomes its aria-label. */ icon?: string }[]; value: string; onChange: (value: string) => void;",
+    "TextInput": "type?: string; value?: string; defaultValue?: string; placeholder?: string; disabled?: boolean; id?: string; name?: string; className?: string; onChange?: React.ChangeEventHandler<HTMLInputElement>;",
+    "TextArea": "value?: string; defaultValue?: string; placeholder?: string; rows?: number; disabled?: boolean; id?: string; name?: string; className?: string; ref?: React.Ref<HTMLTextAreaElement>; onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;",
+    "SelectInput": "value?: string; defaultValue?: string; disabled?: boolean; id?: string; name?: string; className?: string; /** <option> elements. */ children?: React.ReactNode; onChange?: React.ChangeEventHandler<HTMLSelectElement>;",
+    "FieldLabel": "htmlFor?: string; className?: string; children?: React.ReactNode;"
+  },
+  "overrides": {
+    "TextArea": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}
