@@ -2,10 +2,32 @@
  * Small assertions shared by the reconnection phases of the device-lifecycle
  * spec: the no-reboot proof and the "commands still reach the pin" check.
  */
-import { expect, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { waitForSignalActive, waitForSignalInactive } from "./gpio";
 import type { StatusWatcher, StatusSample } from "./status-watcher";
+import { restartAp } from "./wifi";
 import { config } from "./env";
+
+/**
+ * Wait for the freshly configured device to come Online for the first time.
+ * If it doesn't within onlineTimeoutMs, recreate the hotspot once (the Pi radio
+ * sometimes comes up unusable to the device) and wait apRecoveryOnlineMs more,
+ * recording an `ap-recovery` annotation. Only for the first join: in the
+ * reconnection phases the device recovering by itself is the assertion.
+ */
+export async function expectFirstOnline(page: Page): Promise<void> {
+  const online = page.getByText("Online", { exact: true });
+  try {
+    await expect(online).toBeVisible({ timeout: config.onlineTimeoutMs });
+    return;
+  } catch {
+    const note = `device not Online ${config.onlineTimeoutMs}ms after configuration; recreating the hotspot`;
+    console.warn(`[ap-recovery] ${note}`);
+    test.info().annotations.push({ type: "ap-recovery", description: note });
+  }
+  await restartAp();
+  await expect(online).toBeVisible({ timeout: config.apRecoveryOnlineMs });
+}
 
 /**
  * First heartbeat after the device comes Online. Fails fast with a pointer at

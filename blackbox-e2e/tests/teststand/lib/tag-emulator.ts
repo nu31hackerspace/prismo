@@ -28,6 +28,9 @@ type LineWaiter = {
 export class TagEmulator {
   private port?: SerialPort;
   private waiters: LineWaiter[] = [];
+  // The window-closing line is printed once, so waitForStop() must know if it
+  // already passed.
+  private emulating = false;
 
   async provision(): Promise<void> {
     // Hard-reset out of whatever ran before (chip-id talks to the ROM
@@ -101,10 +104,11 @@ export class TagEmulator {
     await confirmed;
   }
 
-  /** Resolves when the current emulation window ends and the emulator idles. */
+  /** Resolves when the current emulation window ends (immediately if it has). */
   async waitForStop(
     timeoutMs: number = (config.emulateSeconds + 10) * 1000,
   ): Promise<void> {
+    if (!this.emulating) return;
     await this.waitForLine("WAITING_FOR_SERIAL", timeoutMs);
   }
 
@@ -112,6 +116,7 @@ export class TagEmulator {
     const port = this.port;
     this.port = undefined;
     this.waiters = [];
+    this.emulating = false;
     if (port?.isOpen) {
       await new Promise<void>((resolve) => port.close(() => resolve()));
     }
@@ -120,6 +125,8 @@ export class TagEmulator {
   private onLine(line: string): void {
     if (!line) return;
     console.log(`[tag-emulator] ${line}`);
+    if (line.includes("Now emulating NFCID1")) this.emulating = true;
+    else if (line.includes("WAITING_FOR_SERIAL")) this.emulating = false;
     this.waiters = this.waiters.filter((w) => {
       if (!w.match(line)) return true;
       w.resolve(line);

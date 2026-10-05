@@ -83,6 +83,10 @@ export const config = {
   // Time allowed for the device to boot, join WiFi, connect MQTT and appear
   // Online after the config is injected and the board soft-resets.
   onlineTimeoutMs: Number(envStr("TESTSTAND_ONLINE_TIMEOUT_MS", "60000")),
+  // Extra time after expectFirstOnline recreates the hotspot.
+  apRecoveryOnlineMs: Number(
+    envStr("TESTSTAND_AP_RECOVERY_ONLINE_MS", "90000"),
+  ),
   // Window to observe the success pin after clicking Open Door.
   // Firmware holds the pin for SUCCESS_SIGNAL_DURATION (5s); allow MQTT latency.
   signalTimeoutMs: Number(envStr("TESTSTAND_SIGNAL_TIMEOUT_MS", "8000")),
