@@ -154,8 +154,15 @@ jobs:
           mpremote devs || true
           echo "--- wlan0 ---"
           ip -4 addr show wlan0 || true
+          echo "--- wlan0 radio (is the AP really serving? which channel?) ---"
+          iw dev wlan0 info || true
+          echo "--- wlan0 associated stations ---"
+          iw dev wlan0 station dump || true
+          echo "--- AP profile ---"
+          nmcli -f GENERAL.STATE,IP4.ADDRESS device show wlan0 || true
+          nmcli -g 802-11-wireless.band,802-11-wireless.channel,802-11-wireless.powersave connection show prismo-ap || true
           echo "--- AP clients (dnsmasq leases) ---"
-          sudo -n cat /var/lib/NetworkManager/dnsmasq-wlan0.leases || true
+          cat /var/lib/NetworkManager/dnsmasq-wlan0.leases || true
           echo "--- device health.log (soft-resets the board) ---"
           timeout 30 mpremote connect $ESP32_PORT exec "print(open('health.log').read())" || true
 

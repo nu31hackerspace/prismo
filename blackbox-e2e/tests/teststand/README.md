@@ -144,12 +144,31 @@ All knobs live in `lib/env.ts`, overridable via env vars. Common ones:
 | `TESTSTAND_MQTT_CONTAINER`        | `blackbox-e2e-mqtt-1`    | Broker container (broker-outage spec)      |
 | `TESTSTAND_OFFLINE_TIMEOUT_MS`    | `30000`                  | Wait for the Offline badge after an outage |
 | `TESTSTAND_RECONNECT_TIMEOUT_MS`  | `120000`                 | Wait for Online after restoring AP/broker  |
+| `TESTSTAND_AP_RECOVERY_ONLINE_MS` | `90000`                  | Extra wait for first Online after AP reset |
 | `TESTSTAND_BOOT_OFFLINE_GRACE_MS` | `25000`                  | Boot-with-no-AP settling time              |
 | `TESTSTAND_MANY_KEYS_COUNT`       | `50`                     | Keys granted by `many-keys.spec.ts`        |
 | `TESTSTAND_KEY_SYNC_TIMEOUT_MS`   | `90000`                  | Wait for the device allowlist to converge  |
 
 > The hotspot must be **2.4 GHz** — the ESP32-C3 has no 5 GHz radio. On
 > dual-band adapters force the band if `nmcli` picks 5 GHz.
+
+### Hotspot stability
+
+`start-ap.sh` pins the AP to channel 6 (`AP_CHANNEL` overrides it) and, when
+`iw` is installed, retries the bring-up until the radio is really in AP mode
+serving the SSID — NetworkManager reports the profile "activated" even when the
+device can't see it. `lib/wifi.ts` applies the same check in `apUp()`, and
+leaves an already-active AP alone instead of bouncing it.
+
+If a stand run still fails with the device stuck on `status 201` (no AP found)
+in `health.log`, the CI "Capture diagnostics" step now prints `iw dev wlan0
+info` (channel, mode) and the station list to show whether the AP was serving.
+For the **first** Online wait only (`expectFirstOnline`), a device that is still
+not Online after `TESTSTAND_ONLINE_TIMEOUT_MS` gets the hotspot recreated
+through `start-ap.sh` and another `TESTSTAND_AP_RECOVERY_ONLINE_MS`; this is
+logged as `[ap-recovery]` and recorded as an `ap-recovery` annotation in the
+Playwright report so a flaky stand stays visible. The reconnection phases never
+do this — the device recovering by itself is what they assert.
 
 ## Phase flags (for `teststand:run`)
 

@@ -39,6 +39,7 @@ import {
 import { apDown, apUp, ensureApUp } from "./lib/wifi";
 import { watchDeviceStatus, type StatusWatcher } from "./lib/status-watcher";
 import {
+  expectFirstOnline,
   firstHeartbeat,
   expectTriggerReachesPin,
   expectReconnectCycle,
@@ -92,9 +93,7 @@ test("device lifecycle: flash, configure, online, trigger, NFC tag access, and r
     });
 
     await test.step("Device comes Online and the success button drives the pin", async () => {
-      await expect(page.getByText("Online", { exact: true })).toBeVisible({
-        timeout: config.onlineTimeoutMs,
-      });
+      await expectFirstOnline(page);
       await firstHeartbeat(watcher!, Date.now() - config.onlineTimeoutMs);
       await expectTriggerReachesPin(page);
     });
