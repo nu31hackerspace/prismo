@@ -47,8 +47,9 @@ export default function DeviceHistory({ items }: { items: DeviceActivity[] }) {
                     <span className="ml-auto whitespace-nowrap text-xs text-label-tertiary">{formatDate(event.createdAt)}</span>
                   </div>
                   {event.uidHash && (
-                    <div className="truncate font-mono text-xs text-label-secondary">
-                      {event.username ?? event.uidHash}
+                    <div className="flex gap-1 font-mono text-xs text-label-secondary">
+                      <span className="truncate">{event.uidHash}</span>
+                      {event.username && <span className="shrink-0">· {event.username}</span>}
                     </div>
                   )}
                 </div>
