@@ -121,6 +121,8 @@ The skill will setup a few domains:
 - `mqtt.prismo.local.nu31.space`
 - `postgres-viewer.prismo.local.nu31.space`
 
+Over `mqtt.prismo.local.nu31.space` in your browser and accept the security permision
+
 ## Design system
 
 The UI components in `client/src/components/ui` are synced to Claude Design: [Prismo Design System](https://claude.ai/design/p/379d545b-be93-4bb9-a126-a196f9bd313b). Sync config and notes live in `.design-sync/`.

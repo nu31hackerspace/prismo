@@ -1,18 +1,3 @@
-# Black-box end-to-end test environment.
-#
-# Unlike docker-compose.dev.yml (which runs `vite dev` / `tsx watch` with the
-# source bind-mounted), this brings the stack up the way it runs in
-# production: `backend` and `client` are the images built from
-# backend/Dockerfile and client/Dockerfile — the exact artifacts that get
-# deployed — fronted by the same same-origin Caddy routing docker-stack.yml
-# uses. Infrastructure (Postgres, Mosquitto) mirrors docker-stack.yml.
-#
-# Login goes through the real Google OAuth flow, so the client is built with
-# the real client ID: set GOOGLE_CLIENT_ID in blackbox-e2e/.env.
-#
-# Postgres (5432) and MQTT (1883) are published to the host so the test runner
-# can watch device messages.
-
 services:
   postgres:
     image: postgres:16
@@ -70,9 +55,9 @@ services:
     build:
       context: ..
       dockerfile: client/Dockerfile
-      args:
-        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     image: prismo-client:blackbox
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:5173/"]
       interval: 5s

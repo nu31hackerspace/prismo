@@ -4,20 +4,28 @@
  */
 import { expect, type Page, type TestInfo } from "@playwright/test";
 import { execSync } from "child_process";
-import { writeFileSync } from "node:fs";
+import { statSync } from "node:fs";
 import type { MqttCredentials } from "../../helpers";
 import { configureDevice } from "./device-config";
 import { config } from "./env";
 
-/** Download /firmware.bin from the app under test and flash it via esptool. */
+/**
+ * Download the firmware through the device page's "Download Firmware" button
+ * (the page must already be on a device's detail view) and flash it via esptool.
+ */
 export async function flashAppFirmware(
   page: Page,
   testInfo: TestInfo,
 ): Promise<void> {
-  const res = await page.request.get("/firmware.bin");
-  expect(res.ok(), "app does not serve /firmware.bin").toBe(true);
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download Firmware" }).click();
+  const download = await downloadPromise;
+  expect(await download.failure(), "firmware download failed").toBeNull();
   const fwPath = testInfo.outputPath("firmware.bin");
-  writeFileSync(fwPath, await res.body());
+  await download.saveAs(fwPath);
+  expect(statSync(fwPath).size, "downloaded firmware is empty").toBeGreaterThan(
+    0,
+  );
 
   console.log(`Flashing ${fwPath} to ${config.serialPort} via esptool…`);
   execSync(

@@ -9,6 +9,7 @@ import { useStore } from "@/store/provider";
 import { draft } from "@/store/models/base";
 import DeviceActions from "./device-actions";
 import DeviceDangerZone from "./device-danger-zone";
+import DeviceFirmwareDownload from "./device-firmware-download";
 import DeviceHistory from "./device-history";
 import DeviceHooks from "./device-hooks";
 import DeviceHardware from "./device-hardware";
@@ -168,6 +169,7 @@ const DeviceDetailPage = observer(function DeviceDetailPage() {
         </div>
 
         <DeviceHardware deviceId={device.id} deviceMode={device.mode} />
+        <DeviceFirmwareDownload />
         <DeviceDangerZone deviceId={device.id} />
       </main>
     </>
