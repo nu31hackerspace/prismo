@@ -74,7 +74,7 @@ async function deleteEntity(
 
 /**
  * Create one named key per tag and grant each to the device — exactly the
- * key + keyAccess pair the "Add" button in the unauthorized-scan panel saves.
+ * key + keyAccess pair the "Grant access" button in the unknown-key callout saves.
  */
 export async function grantKeys(
   page: Page,

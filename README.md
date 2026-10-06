@@ -123,6 +123,9 @@ The skill will setup a few domains:
 
 Over `mqtt.prismo.local.nu31.space` in your browser and accept the security permision
 
+## Design system
+
+The UI components in `client/src/components/ui` are synced to Claude Design: [Prismo Design System](https://claude.ai/design/p/379d545b-be93-4bb9-a126-a196f9bd313b). The local sync config lives in `.design-sync/` and is not committed.
 
 ## Project CI
 

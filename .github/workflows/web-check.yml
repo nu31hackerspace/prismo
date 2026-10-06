@@ -41,3 +41,33 @@ jobs:
 
       - name: Lint
         run: npm run lint --workspace=client
+
+  backend-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      POSTGRES_URL: postgresql://admin:admin@localhost:5432/prismo
+      MQTT_URL: mqtt://localhost:1883
+      USERNAME: admin
+      PASSWORD: admin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Start Postgres and Mosquitto
+        run: docker compose -f docker-compose.ci.yml up -d --build --wait
+        env:
+          MQTT_ADMIN_USER: admin
+          MQTT_ADMIN_PASSWORD: admin
+
+      - name: Install dependencies
+        run: npm install --workspace=backend
+
+      - name: Test
+        run: npm test --workspace=backend

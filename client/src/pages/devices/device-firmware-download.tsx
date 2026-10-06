@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function DeviceFirmwareDownload() {
   return (
-    <div className="mt-6 rounded-2xl border border-separator-secondary bg-fill-tertiary p-6">
+    <div className="rounded-2xl border border-separator-secondary bg-fill-tertiary p-4 md:p-6">
       <div className="flex flex-wrap items-center gap-4">
         <div className="rounded-xl bg-background-primary p-2 text-label-secondary">
           <Icon name="mdi:chip" className="h-5 w-5" />

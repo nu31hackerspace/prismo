@@ -11,6 +11,7 @@ import { resolveSessionFromToken, SESSION_COOKIE } from '@/auth';
 import { resolveWorkspace } from '@/workspace-service';
 import { initializeScanListener } from '@/devices/scan-listener';
 import { registerKeySyncReactions } from '@/devices/key-sync-reactions';
+import { registerDiscordHooks } from '@/hooks/discord-hook';
 import { deviceSession } from '@/middleware/device-session';
 
 import { healthRouter } from '@/routes/health';
@@ -67,6 +68,7 @@ async function main() {
 
   initializeScanListener();
   registerKeySyncReactions();
+  registerDiscordHooks();
 
   server.listen(port, '0.0.0.0', () => {
     console.log(`> Backend ready on http://0.0.0.0:${port}`);
