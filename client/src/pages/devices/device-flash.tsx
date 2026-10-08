@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { flashFirmware } from "@/client/flasher";
+import { env } from "@/lib/env";
 import { outlineClass } from "./panel";
 
 export default function DeviceFlash({ compact = false }: { compact?: boolean }) {
@@ -17,7 +18,7 @@ export default function DeviceFlash({ compact = false }: { compact?: boolean }) 
     setPhase("flashing");
     try {
       const port = await navigator.serial.requestPort();
-      await flashFirmware(port, "/firmware.bin", setBusyLabel);
+      await flashFirmware(port, `/${env.firmwareFile}`, setBusyLabel);
       setNotice("Firmware flashed successfully.");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Flashing failed.");

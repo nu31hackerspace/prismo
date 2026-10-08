@@ -1,5 +1,6 @@
 import { Icon } from "@/components/ui/icon";
 import { Button } from "@/components/ui/button";
+import { env } from "@/lib/env";
 
 export default function DeviceFirmwareDownload() {
   return (
@@ -12,7 +13,7 @@ export default function DeviceFirmwareDownload() {
           <h2 className="font-display text-lg font-bold text-label-primary">Firmware</h2>
           <p className="mt-1 text-sm text-label-secondary">Download the latest Prismo firmware binary to flash it manually with esptool.</p>
         </div>
-        <Button tag="device_firmware_download" variant="ghost" href="/firmware.bin" download="prismo-firmware.bin" icon="mdi:download" className="border border-separator-secondary font-bold">
+        <Button tag="device_firmware_download" variant="ghost" href={`/${env.firmwareFile}`} download={env.firmwareFile} icon="mdi:download" className="border border-separator-secondary font-bold">
           Download Firmware
         </Button>
       </div>

@@ -1,13 +1,16 @@
 import { spawn } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const distDir = path.resolve(import.meta.dirname, "../dist");
 const port = process.env.PORT ?? "5173";
 
+const firmwareFile = readdirSync(distDir).find((name) => /^prismo-firmware-.+\.bin$/.test(name));
+
 const runtimeEnv = {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "",
   PUBLIC_MQTT_URL: process.env.PUBLIC_MQTT_URL ?? "",
+  FIRMWARE_FILE: firmwareFile ?? "",
 };
 
 console.log(`> Client starting (commit ${process.env.COMMIT_SHA ?? "unknown"})`);

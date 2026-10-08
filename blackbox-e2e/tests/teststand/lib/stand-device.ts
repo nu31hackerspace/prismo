@@ -1,5 +1,5 @@
 /**
- * Bring-up shared by the hardware specs: flash the app's own firmware.bin onto
+ * Bring-up shared by the hardware specs: flash the app's own firmware onto
  * the device under test and point it at the stand's hotspot + broker.
  */
 import { expect, type Page, type TestInfo } from "@playwright/test";

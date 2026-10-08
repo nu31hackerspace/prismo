@@ -34,7 +34,7 @@ to the Raspberry Pi, and asserts on the **physical** success output pin.
    set `TESTSTAND_BASE_URL` in `blackbox-e2e/.env`).
 2. **Create device** through the UI and generate its MQTT credentials (the
    same `POST /api/devices/:id/token` the "Fill MQTT credentials" button uses).
-3. **Flash** the app's `/firmware.bin` onto the ESP32-C3 with `esptool`, then
+3. **Flash** the app's `/prismo-firmware-<sha>.bin` onto the ESP32-C3 with `esptool`, then
    write WiFi + MQTT settings over the serial `@cfg` protocol — what "Setup
    Device" does over Web Serial, which Playwright can't drive
    (`lib/device-config.ts`).

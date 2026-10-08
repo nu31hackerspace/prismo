@@ -32,12 +32,13 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           ./build.sh
-          ls -l dist/firmware.bin
+          cp dist/firmware.bin "dist/prismo-firmware-$(git rev-parse --short HEAD).bin"
+          ls -l dist/prismo-firmware-*.bin
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: firmware
-          path: firmware/dist/firmware.bin
+          path: firmware/dist/prismo-firmware-*.bin
           if-no-files-found: error
           retention-days: 7

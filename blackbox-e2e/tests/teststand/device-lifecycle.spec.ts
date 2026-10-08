@@ -2,7 +2,7 @@
  * Full device lifecycle + connectivity-recovery e2e test (hardware-in-the-loop).
  *
  * Drives the production web app as a user would — create a device, generate
- * its MQTT credentials, download the app's firmware.bin and flash the real
+ * its MQTT credentials, download the app's firmware and flash the real
  * ESP32-C3 with esptool, then write WiFi/MQTT settings over the serial @cfg
  * protocol (what "Setup Device" does over Web Serial) — and verifies the live
  * device:
