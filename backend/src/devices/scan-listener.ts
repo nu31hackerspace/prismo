@@ -39,7 +39,7 @@ export function initializeScanListener(): mqtt.MqttClient | undefined {
 
   const url = process.env.MQTT_URL;
   if (!url) { console.warn('[scan-listener] MQTT_URL not set, skipping'); return; }
-  const clientId = `prismo-scan-listener-${process.pid}`;
+  const clientId = `prismo-scan-listener-${crypto.randomUUID()}`;
 
   const client = mqtt.connect(url, {
     username: process.env.USERNAME,
