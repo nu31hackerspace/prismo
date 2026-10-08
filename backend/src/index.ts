@@ -19,6 +19,7 @@ import { authRouter } from '@/routes/auth';
 import { devicesRouter } from '@/routes/devices';
 import { entitiesRouter } from '@/routes/entities';
 import { analyticsRouter } from '@/routes/analytics';
+import { createServiceRouter } from '@/routes/service';
 
 const port = parseInt(process.env.PORT || '4000', 10);
 
@@ -30,7 +31,10 @@ async function main() {
   app.use(cookieParser());
   app.use(deviceSession);
 
+  const mqttClient = initializeScanListener();
+
   app.use('/api/health', healthRouter);
+  app.use('/api/service', createServiceRouter(mqttClient));
   app.use('/api/auth', authRouter);
   app.use('/api/devices', devicesRouter);
   app.use('/api/entities', entitiesRouter);
@@ -66,7 +70,6 @@ async function main() {
     });
   });
 
-  initializeScanListener();
   registerKeySyncReactions();
   registerDiscordHooks();
 
