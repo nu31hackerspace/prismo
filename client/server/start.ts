@@ -11,6 +11,7 @@ const runtimeEnv = {
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "",
   PUBLIC_MQTT_URL: process.env.PUBLIC_MQTT_URL ?? "",
   FIRMWARE_FILE: firmwareFile ?? "",
+  COMMIT_SHA: process.env.COMMIT_SHA ?? "",
 };
 
 console.log(`> Client starting (commit ${process.env.COMMIT_SHA ?? "unknown"})`);
