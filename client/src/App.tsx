@@ -14,6 +14,7 @@ import DevicesPage from '@/pages/DevicesPage';
 import DeviceDetailPage from '@/pages/devices/DeviceDetailPage';
 import KeysPage from '@/pages/KeysPage';
 import MqttPage from '@/pages/MqttPage';
+import ServicePage from '@/pages/ServicePage';
 
 type AuthUser = { id: string; name: string; email: string };
 type AuthState =
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="/" element={auth.status === 'authed' ? <Navigate to="/devices" replace /> : <Landing />} />
           <Route path="/google/callback" element={<GoogleCallback />} />
           <Route path="/system/design-system" element={<DesignSystemPage />} />
+          <Route path="/service" element={<ServicePage />} />
 
           <Route element={<RequireAuth store={store} />}>
             <Route path="/devices" element={<DevicesPage />} />
