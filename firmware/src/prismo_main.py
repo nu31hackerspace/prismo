@@ -21,9 +21,11 @@ scan_queue = mqtt_worker.ScanQueue()
 # ReaderUI, whose methods call each other — a non-reentrant lock would deadlock).
 ui_lock = _thread.allocate_lock()
 
-# A card left on the reader is one scan; a single missed poll (~500ms) must not
-# count as removal, or machine mode would toggle off again.
+# Machine mode: a card left on the reader is one scan; a single missed poll
+# (~500ms) must not count as removal, or the machine would toggle off again.
 HELD_CARD_GAP_MS = 1500
+_held_uid = None
+_held_seen_ms = 0
 
 wifi_manager = wifi_manager.WiFiManager()
 wifi_ok = wifi_manager.connect(
@@ -36,9 +38,22 @@ def on_new_config_callback():
     with ui_lock:
         ui.show_configuration_save()
 
+def _mark_card_seen(uid):
+    global _held_uid, _held_seen_ms
+    _held_uid = uid
+    _held_seen_ms = utime.ticks_ms()
+
+def _is_card_held(uid):
+    held = uid == _held_uid and utime.ticks_diff(utime.ticks_ms(), _held_seen_ms) < HELD_CARD_GAP_MS
+    _mark_card_seen(uid)
+    return held
+
 def on_key_read(uid):
-    allowed = config.is_user_allowed(uid)
     machine_mode = config.DEVICE_MODE == config.DEVICE_MODE_MACHINE
+    if machine_mode and _is_card_held(uid):
+        return
+
+    allowed = config.is_user_allowed(uid)
     with ui_lock:
         if machine_mode and ui.machine_active:
             ui.machine_off()
@@ -54,6 +69,8 @@ def on_key_read(uid):
     # Hand off to the MQTT worker thread; never touch the socket from here so a
     # slow reconnect can't stall the next card scan.
     scan_queue.put(uid, allowed, machine_active)
+    time.sleep(1)
+    _mark_card_seen(uid)
 
 def on_trigger(action):
     health_log.write_info("Trigger command received", action=action)
@@ -127,19 +144,10 @@ nfc = reader.init()
 if nfc is not None:
     health_log.write_info("Waiting for RFID/NFC card")
     _last_log_ms = utime.ticks_ms()
-    _held_uid = None
-    _held_seen_ms = 0
     while True:
         uid_hash = reader.read_uid(nfc)
         if uid_hash is not None:
-            now = utime.ticks_ms()
-            is_held = uid_hash == _held_uid and utime.ticks_diff(now, _held_seen_ms) < HELD_CARD_GAP_MS
-            _held_uid = uid_hash
-            _held_seen_ms = now
-            if not is_held:
-                on_key_read(uid_hash)
-                time.sleep(1)
-                _held_seen_ms = utime.ticks_ms()
+            on_key_read(uid_hash)
 
         wdt.feed()
 
