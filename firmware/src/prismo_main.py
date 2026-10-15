@@ -21,6 +21,10 @@ scan_queue = mqtt_worker.ScanQueue()
 # ReaderUI, whose methods call each other — a non-reentrant lock would deadlock).
 ui_lock = _thread.allocate_lock()
 
+# A card left on the reader is one scan; a single missed poll (~500ms) must not
+# count as removal, or machine mode would toggle off again.
+HELD_CARD_GAP_MS = 1500
+
 wifi_manager = wifi_manager.WiFiManager()
 wifi_ok = wifi_manager.connect(
     on_attempt=color.wifi_connecting_pulse,
@@ -34,15 +38,17 @@ def on_new_config_callback():
 
 def on_key_read(uid):
     allowed = config.is_user_allowed(uid)
+    machine_mode = config.DEVICE_MODE == config.DEVICE_MODE_MACHINE
     with ui_lock:
-        if allowed:
-            if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE:
-                ui.machine_toggle(uid)
-            else:
-                ui.success()
-        else:
+        if machine_mode and ui.machine_active:
+            ui.machine_off()
+        elif not allowed:
             ui.error()
-        machine_active = ui.machine_active if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE else None
+        elif machine_mode:
+            ui.machine_on()
+        else:
+            ui.success()
+        machine_active = ui.machine_active if machine_mode else None
 
     health_log.write_info("Key scanned", uid=uid, allowed=allowed)
     # Hand off to the MQTT worker thread; never touch the socket from here so a
@@ -121,11 +127,19 @@ nfc = reader.init()
 if nfc is not None:
     health_log.write_info("Waiting for RFID/NFC card")
     _last_log_ms = utime.ticks_ms()
+    _held_uid = None
+    _held_seen_ms = 0
     while True:
         uid_hash = reader.read_uid(nfc)
         if uid_hash is not None:
-            on_key_read(uid_hash)
-            time.sleep(1)
+            now = utime.ticks_ms()
+            is_held = uid_hash == _held_uid and utime.ticks_diff(now, _held_seen_ms) < HELD_CARD_GAP_MS
+            _held_uid = uid_hash
+            _held_seen_ms = now
+            if not is_held:
+                on_key_read(uid_hash)
+                time.sleep(1)
+                _held_seen_ms = utime.ticks_ms()
 
         wdt.feed()
 

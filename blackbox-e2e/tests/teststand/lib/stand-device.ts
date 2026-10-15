@@ -39,13 +39,16 @@ export async function flashAppFirmware(
 }
 
 /** Write the stand's WiFi + MQTT settings over the serial @cfg protocol. */
-export async function configureForStand(creds: MqttCredentials): Promise<void> {
+export async function configureForStand(
+  creds: MqttCredentials,
+  mode: "door" | "machine" = "door",
+): Promise<void> {
   await configureDevice({
     wifi_ssid: config.wifiSsid,
     wifi_pass: config.wifiPass,
     mqtt_url: `mqtt://${config.deviceMqttHost}:${config.deviceMqttPort}`,
     mqtt_user: creds.mqttUser,
     mqtt_pass: creds.mqttPass,
-    mode: "door",
+    mode,
   });
 }
