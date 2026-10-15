@@ -81,7 +81,7 @@ Run just this spec with `npm run teststand:test -- many-keys`.
 
 `machine-mode.spec.ts` flashes the device in **machine mode**, where only an
 allowed key turns the machine on but any key turns it off. The allowed tag
-turns it on and the pin must hold for 2 minutes; then an unknown tag turns it
+turns it on and the pin must hold for 60 seconds; then an unknown tag turns it
 off. The cycle repeats with the same allowed tag turning it off. The firmware
 treats a tag held across the whole emulation window as a single scan.
 

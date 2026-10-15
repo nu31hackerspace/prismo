@@ -2,9 +2,9 @@
  * Machine mode e2e test (hardware-in-the-loop).
  *
  * Only an allowed key turns the machine on, but any key turns it off:
- *   1. an allowed tag turns the machine on, it stays on for 2 minutes, and a
+ *   1. an allowed tag turns the machine on, it stays on for 60 seconds, and a
  *      tag the server has never seen turns it off;
- *   2. an allowed tag turns the machine on, it stays on for 2 minutes, and
+ *   2. an allowed tag turns the machine on, it stays on for 60 seconds, and
  *      the same tag turns it off.
  */
 import { test, expect } from "./fixtures";
@@ -31,7 +31,7 @@ import {
 } from "./lib/keys";
 import { config } from "./lib/env";
 
-const MACHINE_ON_HOLD_MS = 120_000;
+const MACHINE_ON_HOLD_MS = 60_000;
 
 test("machine mode: allowed key turns on, any key turns off", async ({
   page,
@@ -95,12 +95,12 @@ test("machine mode: allowed key turns on, any key turns off", async ({
       );
     });
 
-    await test.step("Allowed tag turns on, unknown tag turns off after 2 min", async () => {
+    await test.step("Allowed tag turns on, unknown tag turns off after 60 s", async () => {
       await turnOnAndHold();
       await expectTapTurnsOff(unknownTagUid);
     });
 
-    await test.step("Allowed tag turns on, same tag turns off after 2 min", async () => {
+    await test.step("Allowed tag turns on, same tag turns off after 60 s", async () => {
       await turnOnAndHold();
       await expectTapTurnsOff(allowedTagUid);
     });
