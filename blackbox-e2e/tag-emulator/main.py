@@ -124,6 +124,7 @@ def main():
                         print("Activated by external reader")
                         time.sleep(0.5)
                         
+                nfc.SAM_configuration()
                 if serial_cmd and serial_cmd.lower() == 'stop':
                     serial_cmd = None
             else:

@@ -21,6 +21,10 @@ scan_queue = mqtt_worker.ScanQueue()
 # ReaderUI, whose methods call each other — a non-reentrant lock would deadlock).
 ui_lock = _thread.allocate_lock()
 
+# A card left on the reader is one scan; a single missed poll (~500ms) must not
+# count as removal, or machine mode would toggle off again.
+HELD_CARD_GAP_MS = 1500
+
 wifi_manager = wifi_manager.WiFiManager()
 wifi_ok = wifi_manager.connect(
     on_attempt=color.wifi_connecting_pulse,
@@ -123,11 +127,19 @@ nfc = reader.init()
 if nfc is not None:
     health_log.write_info("Waiting for RFID/NFC card")
     _last_log_ms = utime.ticks_ms()
+    _held_uid = None
+    _held_seen_ms = 0
     while True:
         uid_hash = reader.read_uid(nfc)
         if uid_hash is not None:
-            on_key_read(uid_hash)
-            time.sleep(1)
+            now = utime.ticks_ms()
+            is_held = uid_hash == _held_uid and utime.ticks_diff(now, _held_seen_ms) < HELD_CARD_GAP_MS
+            _held_uid = uid_hash
+            _held_seen_ms = now
+            if not is_held:
+                on_key_read(uid_hash)
+                time.sleep(1)
+                _held_seen_ms = utime.ticks_ms()
 
         wdt.feed()
 

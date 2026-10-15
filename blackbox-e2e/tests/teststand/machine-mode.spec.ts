@@ -46,10 +46,11 @@ test("machine mode: allowed key turns on, any key turns off", async ({
 
   const turnOnAndHold = async () => {
     expect(await waitForSignalInactive(10_000)).toBe(true);
-    await emulator!.tap(allowedTagUid);
+    await emulator!.emulate(allowedTagUid);
     expect(await waitForSignalActive(), "allowed tag did not turn on").toBe(
       true,
     );
+    await emulator!.waitForStop();
     expect(
       await signalStayedActive(MACHINE_ON_HOLD_MS),
       "machine turned off on its own",
@@ -57,10 +58,9 @@ test("machine mode: allowed key turns on, any key turns off", async ({
   };
 
   const expectTapTurnsOff = async (tagUid: string) => {
-    await emulator!.tap(tagUid);
-    expect(await waitForSignalInactive(5_000), "tag did not turn off").toBe(
-      true,
-    );
+    await emulator!.emulate(tagUid);
+    expect(await waitForSignalInactive(), "tag did not turn off").toBe(true);
+    await emulator!.waitForStop();
   };
 
   try {

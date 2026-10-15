@@ -104,21 +104,6 @@ export class TagEmulator {
     await confirmed;
   }
 
-  /**
-   * Present the tag for a single reader activation, then stop — so a reader
-   * that toggles on each scan (machine mode) sees exactly one scan.
-   */
-  async tap(key: string): Promise<void> {
-    const activated = this.waitForLine(
-      "Activated by external reader",
-      (config.emulateSeconds + 5) * 1000,
-    );
-    await this.emulate(key);
-    await activated;
-    this.port!.write("stop\n");
-    await this.waitForStop();
-  }
-
   /** Resolves when the current emulation window ends (immediately if it has). */
   async waitForStop(
     timeoutMs: number = (config.emulateSeconds + 10) * 1000,
