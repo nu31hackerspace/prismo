@@ -75,9 +75,6 @@ const DeviceDetailPage = observer(function DeviceDetailPage() {
     await fetch(`/api/entities/${keyAccess.id}`, { method: "DELETE", headers: workspaceHeader() });
   };
 
-  const initials = (label: string) =>
-    label.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-
   return (
     <>
       <header className="sticky top-14 z-30 border-b border-separator-secondary bg-background-primary/80 backdrop-blur-lg md:top-0">
@@ -146,8 +143,7 @@ const DeviceDetailPage = observer(function DeviceDetailPage() {
               ) : (
                 <div className={listClass}>
                   {device.keys.map((key) => (
-                    <div key={key.id} data-allowed-key-id={key.uidHash} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-1.5 pr-1 pl-3 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:py-2.5 md:pr-2 md:pl-4">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-separator-secondary bg-fill-tertiary text-xs font-semibold text-label-primary">{initials(key.label)}</span>
+                    <div key={key.id} data-allowed-key-id={key.uidHash} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-1.5 pr-1 pl-3 md:grid-cols-[minmax(0,1fr)_auto_auto] md:py-2.5 md:pr-2 md:pl-4">
                       <div className="min-w-0">
                         <div className="truncate text-sm font-semibold text-label-primary">{key.label}</div>
                         <div className="truncate font-mono text-xs text-label-tertiary">{key.uidHash}</div>
