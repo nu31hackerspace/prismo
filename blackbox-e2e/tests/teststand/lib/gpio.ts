@@ -71,6 +71,19 @@ export async function waitForSignalInactive(
   return waitForSignal(false, timeoutMs, pollMs);
 }
 
+async function signalStayed(
+  active: boolean,
+  windowMs: number,
+  pollMs: number,
+): Promise<boolean> {
+  const deadline = Date.now() + windowMs;
+  do {
+    if ((await isSignalActive()) !== active) return false;
+    await new Promise((r) => setTimeout(r, pollMs));
+  } while (Date.now() < deadline);
+  return true;
+}
+
 /**
  * True when the line stays inactive for the whole window (denied-scan checks).
  * A wrongly-allowed scan holds the pin active for 5s, far longer than the
@@ -80,10 +93,13 @@ export async function signalStayedInactive(
   windowMs: number,
   pollMs = 200,
 ): Promise<boolean> {
-  const deadline = Date.now() + windowMs;
-  do {
-    if (await isSignalActive()) return false;
-    await new Promise((r) => setTimeout(r, pollMs));
-  } while (Date.now() < deadline);
-  return true;
+  return signalStayed(false, windowMs, pollMs);
+}
+
+/** True when the line stays active for the whole window (machine mode hold). */
+export async function signalStayedActive(
+  windowMs: number,
+  pollMs = 500,
+): Promise<boolean> {
+  return signalStayed(true, windowMs, pollMs);
 }

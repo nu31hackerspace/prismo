@@ -34,15 +34,17 @@ def on_new_config_callback():
 
 def on_key_read(uid):
     allowed = config.is_user_allowed(uid)
+    machine_mode = config.DEVICE_MODE == config.DEVICE_MODE_MACHINE
     with ui_lock:
-        if allowed:
-            if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE:
-                ui.machine_toggle(uid)
-            else:
-                ui.success()
-        else:
+        if machine_mode and ui.machine_active:
+            ui.machine_off()
+        elif not allowed:
             ui.error()
-        machine_active = ui.machine_active if config.DEVICE_MODE == config.DEVICE_MODE_MACHINE else None
+        elif machine_mode:
+            ui.machine_on()
+        else:
+            ui.success()
+        machine_active = ui.machine_active if machine_mode else None
 
     health_log.write_info("Key scanned", uid=uid, allowed=allowed)
     # Hand off to the MQTT worker thread; never touch the socket from here so a
