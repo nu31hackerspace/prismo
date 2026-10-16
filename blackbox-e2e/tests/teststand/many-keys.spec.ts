@@ -10,9 +10,11 @@
  *      proven by the keys_checksum in its heartbeat matching the server's set;
  *   3. tags from the start, middle and end of the list open the door over
  *      real RF, while a tag outside the list is denied;
- *   4. revoking a batch of keys shrinks the device's allowlist accordingly:
+ *   4. a tag held on the reader in door mode opens the door again once the
+ *      first success signal ends (no held-card suppression outside machine mode);
+ *   5. revoking a batch of keys shrinks the device's allowlist accordingly:
  *      a revoked tag is denied, a remaining one still opens the door;
- *   5. the large allowlist survives a reboot with no AP: it is loaded back
+ *   6. the large allowlist survives a reboot with no AP: it is loaded back
  *      from flash and opens the door offline, and once reconnected the
  *      heartbeat reports the expected checksum.
  */
@@ -136,6 +138,19 @@ test("many keys: bulk grant, device allowlist convergence, NFC access, bulk revo
         await expectTagOpensDoor(key);
         await expectScanInHistory("Allowed", key.label);
       }
+    });
+
+    await test.step("A held tag re-opens the door in door mode", async () => {
+      expect(await waitForSignalInactive(10_000)).toBe(true);
+      await emulator!.emulate(keys[0].tagUid, 15);
+      expect(await waitForSignalActive(), "first scan did not open").toBe(true);
+      expect(await waitForSignalInactive(10_000)).toBe(true);
+      expect(
+        await waitForSignalActive(5_000),
+        "held tag was not re-scanned in door mode",
+      ).toBe(true);
+      await emulator!.waitForStop(25_000);
+      expect(await waitForSignalInactive(10_000)).toBe(true);
     });
 
     await test.step("A tag outside the allowlist is denied", async () => {

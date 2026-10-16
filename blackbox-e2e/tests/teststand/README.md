@@ -71,9 +71,11 @@ allowlist (`TESTSTAND_MANY_KEYS_COUNT`, default 50):
    its heartbeat (sha256 of the sorted allowlist), which must then hold steady.
 2. **Access across the list** — tags from the start, middle and end of the
    list open the door over real RF; a tag outside the list is denied.
-3. **Bulk revoke** — a fifth of the keys are detached; the device's checksum
+3. **Held tag** — a tag left on the reader opens the door again after the
+   first success signal ends: held-card suppression is machine-mode only.
+4. **Bulk revoke** — a fifth of the keys are detached; the device's checksum
    follows, a revoked tag is denied and a remaining tag still opens the door.
-4. **Persistence** — the board is reset with the AP down; a remaining tag
+5. **Persistence** — the board is reset with the AP down; a remaining tag
    opens the door from the allowlist reloaded from flash, and after the AP
    returns the heartbeat reports the expected checksum.
 
