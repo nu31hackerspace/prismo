@@ -2054,7 +2054,7 @@
 		(uuid "88e3f62a-5b34-4bc3-a2a0-3cba3558ee07")
 	)
 	(gr_text "Prismo 1.0.0-RC.2"
-		(at 121.93 92.25 0)
+		(at 127.45 86.97 0)
 		(layer "B.SilkS")
 		(uuid "e836cf17-fc47-4d31-ae4a-cb36d5fc9818")
 		(effects
