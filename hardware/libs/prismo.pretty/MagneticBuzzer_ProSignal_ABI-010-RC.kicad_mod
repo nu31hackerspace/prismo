@@ -8,7 +8,7 @@
 	(property "Reference" "REF**"
 		(at 3.8 -7 0)
 		(layer "F.SilkS")
-		(uuid "62bf9029-8003-4dfd-87b4-ed84abc9c939")
+		(uuid "a9e40912-a0a2-4b8e-ba3d-87463cc6015c")
 		(effects
 			(font
 				(size 1 1)
@@ -19,7 +19,7 @@
 	(property "Value" "MagneticBuzzer_ProSignal_ABI-010-RC"
 		(at 3.8 7 0)
 		(layer "F.Fab")
-		(uuid "b983653a-a710-4f34-be31-887f1f2816ab")
+		(uuid "74f4260a-7250-4aee-a4f3-b540106e4e4d")
 		(effects
 			(font
 				(size 1 1)
@@ -32,7 +32,7 @@
 		(unlocked yes)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "836e6e34-da55-42c0-8d60-8e0dce273274")
+		(uuid "e3b1c2da-e5fb-44fa-a7c3-54647c5890e6")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -45,7 +45,7 @@
 		(unlocked yes)
 		(layer "F.Fab")
 		(hide yes)
-		(uuid "0332af24-2153-4f41-ae62-c67bed6d3225")
+		(uuid "51e96a8f-fdec-40b1-ac92-9596f73d0d11")
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -64,7 +64,7 @@
 		)
 		(fill no)
 		(layer "F.SilkS")
-		(uuid "bc1717fe-8198-420a-8a31-945f48fc876f")
+		(uuid "1265eb74-7358-4bf4-9597-0c1706a6d103")
 	)
 	(fp_circle
 		(center 3.8 0)
@@ -75,7 +75,7 @@
 		)
 		(fill no)
 		(layer "F.CrtYd")
-		(uuid "c621b972-c045-4fc7-90f8-b262ba6cd329")
+		(uuid "b979ddf6-5413-4c20-b594-13b928a343db")
 	)
 	(fp_circle
 		(center 3.8 0)
@@ -86,7 +86,7 @@
 		)
 		(fill no)
 		(layer "F.Fab")
-		(uuid "2d7cf196-3b0f-41ff-8824-81003da477ae")
+		(uuid "200d8173-b4ce-4f54-8e02-f55d2228f23d")
 	)
 	(fp_circle
 		(center 3.8 0)
@@ -97,12 +97,12 @@
 		)
 		(fill no)
 		(layer "F.Fab")
-		(uuid "85c2bbe1-825b-44ae-aa6c-41ade1acc0db")
+		(uuid "cf4247cc-822a-462f-b154-9148c258208e")
 	)
 	(fp_text user "+"
 		(at 0 -1.8 0)
 		(layer "F.SilkS")
-		(uuid "da166392-c6a7-437f-9be0-402f49c3aa49")
+		(uuid "2339875c-1c20-4236-b210-f7bf422be7e0")
 		(effects
 			(font
 				(size 1 1)
@@ -113,7 +113,7 @@
 	(fp_text user "+"
 		(at 0 -1.8 0)
 		(layer "F.Fab")
-		(uuid "7105846e-ec37-4d8b-bda7-72b0cff87211")
+		(uuid "ce0f879d-5c5f-4188-85c1-3de1701dd880")
 		(effects
 			(font
 				(size 1 1)
@@ -124,7 +124,7 @@
 	(fp_text user "${REFERENCE}"
 		(at 3.8 -7 0)
 		(layer "F.Fab")
-		(uuid "9c194bd2-be82-492c-acf7-3632d65b4e52")
+		(uuid "de68215f-9711-4598-b0d8-54d5e47e95b6")
 		(effects
 			(font
 				(size 1 1)
@@ -134,19 +134,19 @@
 	)
 	(pad "1" thru_hole rect
 		(at 0 0)
-		(size 1.6 1.6)
-		(drill 1)
+		(size 3.2 1.6)
+		(drill oval 2 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "f34fed2d-4ead-4afe-8e2e-7597f883796f")
+		(uuid "5faa1818-f8db-4ba4-a351-5f9b47fac72e")
 	)
-	(pad "2" thru_hole circle
+	(pad "2" thru_hole oval
 		(at 7.6 0)
-		(size 1.6 1.6)
-		(drill 1)
+		(size 3.2 1.6)
+		(drill oval 2 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
-		(uuid "ff7de042-7d29-4107-9f02-c59bdb576803")
+		(uuid "2bfbb277-d476-4c66-b4d8-20d994c4718e")
 	)
 	(embedded_fonts no)
 	(model "${KIPRJMOD}/../libs/models/MagneticBuzzer_ProSignal_ABI-010-RC.step"
