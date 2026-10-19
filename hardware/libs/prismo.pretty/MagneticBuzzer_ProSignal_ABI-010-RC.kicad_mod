@@ -1,0 +1,163 @@
+(footprint "MagneticBuzzer_ProSignal_ABI-010-RC"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Buzzer, Elektromagnetic Beeper, Summer, 12V-DC,")
+	(tags "Pro Signal ABI-010-RC ")
+	(property "Reference" "REF**"
+		(at 3.8 -7 0)
+		(layer "F.SilkS")
+		(uuid "62bf9029-8003-4dfd-87b4-ed84abc9c939")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "MagneticBuzzer_ProSignal_ABI-010-RC"
+		(at 3.8 7 0)
+		(layer "F.Fab")
+		(uuid "b983653a-a710-4f34-be31-887f1f2816ab")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "836e6e34-da55-42c0-8d60-8e0dce273274")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "0332af24-2153-4f41-ae62-c67bed6d3225")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_circle
+		(center 3.8 0)
+		(end 9.9 0)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "bc1717fe-8198-420a-8a31-945f48fc876f")
+	)
+	(fp_circle
+		(center 3.8 0)
+		(end 10.05 0)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "c621b972-c045-4fc7-90f8-b262ba6cd329")
+	)
+	(fp_circle
+		(center 3.8 0)
+		(end 5.1 0.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "2d7cf196-3b0f-41ff-8824-81003da477ae")
+	)
+	(fp_circle
+		(center 3.8 0)
+		(end 9.8 0)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "85c2bbe1-825b-44ae-aa6c-41ade1acc0db")
+	)
+	(fp_text user "+"
+		(at 0 -1.8 0)
+		(layer "F.SilkS")
+		(uuid "da166392-c6a7-437f-9be0-402f49c3aa49")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(fp_text user "+"
+		(at 0 -1.8 0)
+		(layer "F.Fab")
+		(uuid "7105846e-ec37-4d8b-bda7-72b0cff87211")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(fp_text user "${REFERENCE}"
+		(at 3.8 -7 0)
+		(layer "F.Fab")
+		(uuid "9c194bd2-be82-492c-acf7-3632d65b4e52")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "1" thru_hole rect
+		(at 0 0)
+		(size 1.6 1.6)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "f34fed2d-4ead-4afe-8e2e-7597f883796f")
+	)
+	(pad "2" thru_hole circle
+		(at 7.6 0)
+		(size 1.6 1.6)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "ff7de042-7d29-4107-9f02-c59bdb576803")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/../libs/models/MagneticBuzzer_ProSignal_ABI-010-RC.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

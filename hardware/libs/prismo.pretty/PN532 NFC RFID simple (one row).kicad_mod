@@ -1,0 +1,179 @@
+(footprint "PN532 NFC RFID simple (one row)"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(property "Reference" "U2"
+		(at 0 -0.5 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(hide yes)
+		(uuid "cda7ad38-f51c-4026-9385-6492ba2277bb")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+		)
+	)
+	(property "Value" "~"
+		(at 0 1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "b21da09e-9cad-482a-8a52-a10871044c09")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "66cc824f-efd4-409e-9a95-d5b10dd61a05")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "ed51a975-5256-42cc-9243-b2f9f9e45633")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(sheetname "/")
+	(sheetfile "pcb.kicad_sch")
+	(attr through_hole)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_text user "${REFERENCE}"
+		(at 0 2.5 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "a4caebc7-500c-403d-b30b-8f83fc8c40a9")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(pad "5" thru_hole rect
+		(at -6.604 13.5)
+		(size 1.64 1.64)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "addd13a3-4970-4ceb-8507-2231f831b363")
+	)
+	(pad "6" thru_hole circle
+		(at -4.064 13.5)
+		(size 1.64 1.64)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "dcbd15f9-9650-45c9-b046-eeb2f748b71a")
+	)
+	(pad "7" thru_hole circle
+		(at -1.524 13.5)
+		(size 1.64 1.64)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "adf7dcec-e65e-4dd0-a155-0c0e20ecefa6")
+	)
+	(pad "8" thru_hole circle
+		(at 1.016 13.5)
+		(size 1.64 1.64)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "6c453d6b-c8b2-4780-bedf-5ffa16a46266")
+	)
+	(pad "9" thru_hole circle
+		(at 3.556 13.5)
+		(size 1.64 1.64)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "d4e61b70-0b89-47dc-9489-b8a4baa319b8")
+	)
+	(pad "10" thru_hole circle
+		(at 6.096 13.5)
+		(size 1.64 1.64)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "c6d8fbac-6643-48a7-adbe-16a7d18894e1")
+	)
+	(pad "11" thru_hole circle
+		(at 8.636 13.5)
+		(size 1.64 1.64)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "103198b5-203a-4799-b2eb-762243d56d99")
+	)
+	(pad "12" thru_hole circle
+		(at 11.176 13.5)
+		(size 1.64 1.64)
+		(drill 0.9)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "5315b7d0-4034-499f-898f-18cce6180328")
+	)
+	(zone
+		(layer "F.SilkS")
+		(uuid "18e6f5f5-350a-4984-a265-ca03fdaf56d1")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(keepout
+			(tracks allowed)
+			(vias allowed)
+			(pads not_allowed)
+			(copperpour allowed)
+			(footprints allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 0)
+		)
+		(polygon
+			(pts
+				(xy -21 -20) (xy 22 -20) (xy 22 21) (xy -21 21)
+			)
+		)
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/../libs/models/PN532_NFC_Assembly_with_pins.step"
+		(offset
+			(xyz -0.4 0.2 12.8)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz -90 180 -180)
+		)
+	)
+)
