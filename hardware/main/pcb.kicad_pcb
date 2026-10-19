@@ -184,7 +184,7 @@
 			(uuid "4bf6b6f0-9664-4664-aac9-ad364718d215")
 		)
 		(fp_text user "SIG"
-			(at 5.295 2.745 0)
+			(at 7.14 -0.16 0)
 			(layer "B.SilkS")
 			(uuid "0279e700-31fb-4d9f-a11c-a1c49eb40f91")
 			(effects
@@ -196,7 +196,7 @@
 			)
 		)
 		(fp_text user "GND"
-			(at 2.655 2.715 0)
+			(at 2.62 1.81 0)
 			(layer "B.SilkS")
 			(uuid "815354d8-8d2d-475b-a31b-7d93846c4512")
 			(effects
@@ -208,7 +208,7 @@
 			)
 		)
 		(fp_text user "+5V"
-			(at 0.095 2.645 0)
+			(at -2.24 -0.08 0)
 			(layer "B.SilkS")
 			(uuid "c9de7b99-39c8-490e-8416-0415ef131c9c")
 			(effects
@@ -2053,10 +2053,10 @@
 		(layer "Edge.Cuts")
 		(uuid "88e3f62a-5b34-4bc3-a2a0-3cba3558ee07")
 	)
-	(gr_text "Prismo 1.0.0-RC.2"
-		(at 127.45 86.97 0)
+	(gr_text "Kyiv, Ukraine\nHackerSpace \nNU31"
+		(at 127.64 51.42 0)
 		(layer "B.SilkS")
-		(uuid "e836cf17-fc47-4d31-ae4a-cb36d5fc9818")
+		(uuid "b9f6d86a-386b-4e2e-8811-ea32f82e947f")
 		(effects
 			(font
 				(size 1 1)
@@ -2065,10 +2065,10 @@
 			(justify left bottom mirror)
 		)
 	)
-	(gr_text "Kyiv, Ukraine\nHackerSpace \nNU31"
-		(at 127.64 51.42 0)
+	(gr_text "Prismo 1.0.0-RC.2"
+		(at 128.57 86.97 0)
 		(layer "B.SilkS")
-		(uuid "b9f6d86a-386b-4e2e-8811-ea32f82e947f")
+		(uuid "e836cf17-fc47-4d31-ae4a-cb36d5fc9818")
 		(effects
 			(font
 				(size 1 1)
