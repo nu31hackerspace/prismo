@@ -1658,6 +1658,111 @@
 			)
 			(embedded_fonts no)
 		)
+	(symbol "prismo:D_Schottky"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 2.54 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Value" "SB560"
+			(at 2.54 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Footprint" "Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "Schottky diode, K=1 A=2"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "D_Schottky_0_1"
+			(polyline
+				(pts
+					(xy -1.27 -1.27)
+					(xy 1.27 -1.27)
+					(xy 0 1.27)
+					(xy -1.27 -1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type outline))
+			)
+			(polyline
+				(pts
+					(xy -1.27 1.27)
+					(xy 1.27 1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+		)
+		(symbol "D_Schottky_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 	)
 	(no_connect
 		(at 77.47 116.84)
@@ -1979,13 +2084,80 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 83.82) (xy 138.43 83.82)
+			(xy 128.27 83.82) (xy 129.54 83.82)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "fc739f4a-e222-49b3-816b-45c22df247ac")
+	)
+	(wire
+		(pts
+			(xy 137.16 83.82) (xy 138.43 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a07db76c-233b-4285-a6f9-a394073eef50")
+	)
+	(symbol
+		(lib_id "prismo:D_Schottky")
+		(at 133.35 83.82 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "4356e82c-0943-4f87-84ae-24f8a314118f")
+		(property "Reference" "D5"
+			(at 133.35 80.01 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1N5819"
+			(at 133.35 87.63 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal"
+			(at 133.35 83.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f243fb59-a428-438c-b720-ffffa419de0a")
+		)
+		(pin "2"
+			(uuid "12e36afb-aa5c-4c2e-ae89-343ee75462c8")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "D5")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "prismo:PN532_NFC_RFID_module_V3")

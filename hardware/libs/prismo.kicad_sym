@@ -1656,4 +1656,1442 @@
 		)
 		(embedded_fonts no)
 	)
+	(symbol "LM2596-5.0"
+		(pin_names (offset 0.254))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "U"
+			(at 0 8.89 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Value" "LM2596HV-5.0"
+			(at 0 6.985 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-5_Vertical"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "Simple switcher 3A step-down regulator, fixed 5V, TO-220-5 (HV version for 60V input)"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "LM2596-5.0_0_1"
+			(rectangle
+				(start -7.62 -5.08)
+				(end 7.62 5.08)
+				(stroke (width 0.254) (type default))
+				(fill (type background))
+			)
+		)
+		(symbol "LM2596-5.0_1_1"
+			(pin power_in line
+				(at -10.16 2.54 0)
+				(length 2.54)
+				(name "VIN"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin power_out line
+				(at 10.16 2.54 180)
+				(length 2.54)
+				(name "OUT"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin power_in line
+				(at 0 -7.62 90)
+				(length 2.54)
+				(name "GND"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "3"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin input line
+				(at 10.16 -2.54 180)
+				(length 2.54)
+				(name "FB"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "4"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin input line
+				(at -10.16 -2.54 0)
+				(length 2.54)
+				(name "~{ON}/OFF"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "5"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "Q_PMOS_GDS"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "Q"
+			(at 5.08 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Value" "IRF9540N"
+			(at 5.08 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "P-channel MOSFET, G=1 D=2 S=3"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "Q_PMOS_GDS_0_1"
+			(polyline
+				(pts
+					(xy -2.54 0)
+					(xy -0.762 0)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -0.762 -1.905)
+					(xy -0.762 1.905)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -2.54)
+					(xy 0.254 -1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -0.635)
+					(xy 0.254 0.635)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 1.27)
+					(xy 0.254 2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -1.905)
+					(xy 2.54 -1.905)
+					(xy 2.54 -2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 1.905)
+					(xy 2.54 1.905)
+					(xy 2.54 2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 0)
+					(xy 2.54 0)
+					(xy 2.54 1.905)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 1.778 0)
+					(xy 1.016 0.508)
+					(xy 1.016 -0.508)
+					(xy 1.778 0)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type outline))
+			)
+		)
+		(symbol "Q_PMOS_GDS_1_1"
+			(pin passive line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "G"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "D"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "S"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "3"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	
+	(symbol "Q_NMOS_2N7000"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "Q"
+			(at 5.08 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Value" "2N7000"
+			(at 5.08 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-92_Inline"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "N-channel MOSFET, S=1 G=2 D=3"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "Q_NMOS_2N7000_0_1"
+			(polyline
+				(pts
+					(xy -2.54 0)
+					(xy -0.762 0)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -0.762 -1.905)
+					(xy -0.762 1.905)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -2.54)
+					(xy 0.254 -1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -0.635)
+					(xy 0.254 0.635)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 1.27)
+					(xy 0.254 2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 1.905)
+					(xy 2.54 1.905)
+					(xy 2.54 2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -1.905)
+					(xy 2.54 -1.905)
+					(xy 2.54 -2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 0)
+					(xy 2.54 0)
+					(xy 2.54 -1.905)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 1.016 0)
+					(xy 1.778 0.508)
+					(xy 1.778 -0.508)
+					(xy 1.016 0)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type outline))
+			)
+		)
+		(symbol "Q_NMOS_2N7000_1_1"
+			(pin passive line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "G"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "D"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "3"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "S"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "Q_NMOS_GDS"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "Q"
+			(at 5.08 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Value" "2N7000"
+			(at 5.08 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-92_Inline"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "N-channel MOSFET, S=1 G=2 D=3"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "Q_NMOS_GDS_0_1"
+			(polyline
+				(pts
+					(xy -2.54 0)
+					(xy -0.762 0)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -0.762 -1.905)
+					(xy -0.762 1.905)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -2.54)
+					(xy 0.254 -1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -0.635)
+					(xy 0.254 0.635)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 1.27)
+					(xy 0.254 2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 1.905)
+					(xy 2.54 1.905)
+					(xy 2.54 2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 -1.905)
+					(xy 2.54 -1.905)
+					(xy 2.54 -2.54)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 0.254 0)
+					(xy 2.54 0)
+					(xy 2.54 -1.905)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy 1.016 0)
+					(xy 1.778 0.508)
+					(xy 1.778 -0.508)
+					(xy 1.016 0)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type outline))
+			)
+		)
+		(symbol "Q_NMOS_GDS_1_1"
+			(pin passive line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "G"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 5.08 270)
+				(length 2.54)
+				(name "D"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 2.54 -5.08 90)
+				(length 2.54)
+				(name "S"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "3"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "D_Schottky"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 2.54 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Value" "SB560"
+			(at 2.54 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Footprint" "Diode_THT:D_DO-201AD_P15.24mm_Horizontal"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "Schottky diode, K=1 A=2"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "D_Schottky_0_1"
+			(polyline
+				(pts
+					(xy -1.27 -1.27)
+					(xy 1.27 -1.27)
+					(xy 0 1.27)
+					(xy -1.27 -1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type outline))
+			)
+			(polyline
+				(pts
+					(xy -1.27 1.27)
+					(xy 1.27 1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+		)
+		(symbol "D_Schottky_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "D_Zener"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "D"
+			(at 2.54 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Value" "D_Zener"
+			(at 2.54 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Footprint" "Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "Zener diode, K=1 A=2"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "D_Zener_0_1"
+			(polyline
+				(pts
+					(xy -1.27 -1.27)
+					(xy 1.27 -1.27)
+					(xy 0 1.27)
+					(xy -1.27 -1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type outline))
+			)
+			(polyline
+				(pts
+					(xy -0.762 1.778)
+					(xy -1.27 1.27)
+					(xy 1.27 1.27)
+					(xy 0.762 0.762)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+		)
+		(symbol "D_Zener_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.54)
+				(name "K"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "CP"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "C"
+			(at 2.54 1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Value" "CP"
+			(at 2.54 -1.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "Polarized capacitor, + = pin 1"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "CP_0_1"
+			(polyline
+				(pts
+					(xy -1.524 0.762)
+					(xy 1.524 0.762)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -1.524 -0.762)
+					(xy 1.524 -0.762)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -2.032 1.524)
+					(xy -1.016 1.524)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(polyline
+				(pts
+					(xy -1.524 1.016)
+					(xy -1.524 2.032)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+		)
+		(symbol "CP_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 3.048)
+				(name "+"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 3.048)
+				(name "-"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "L"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "L"
+			(at 0 5.08 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Value" "L"
+			(at 0 3.175 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "Inductor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "L_0_1"
+			(arc
+				(start -2.54 0)
+				(mid -1.905 0.635)
+				(end -1.27 0)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(arc
+				(start -1.27 0)
+				(mid -0.635 0.635)
+				(end 0 0)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(arc
+				(start 0 0)
+				(mid 0.635 0.635)
+				(end 1.27 0)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(arc
+				(start 1.27 0)
+				(mid 1.905 0.635)
+				(end 2.54 0)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+		)
+		(symbol "L_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 1.27)
+				(name "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at 3.81 0 180)
+				(length 1.27)
+				(name "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "Screw_Terminal_01x02"
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "J"
+			(at 0 -6.35 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Value" "Screw_Terminal_01x02"
+			(at 0 -8.255 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "Screw terminal, 2 pins"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "Screw_Terminal_01x02_0_1"
+			(rectangle
+				(start -1.27 -3.81)
+				(end 1.27 1.27)
+				(stroke (width 0.254) (type default))
+				(fill (type none))
+			)
+			(circle
+				(center 0 0)
+				(radius 0.635)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+			(circle
+				(center 0 -2.54)
+				(radius 0.635)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+		)
+		(symbol "Screw_Terminal_01x02_1_1"
+			(pin passive line
+				(at -3.81 0 0)
+				(length 2.54)
+				(name "Pin_1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+			(pin passive line
+				(at -3.81 -2.54 0)
+				(length 2.54)
+				(name "Pin_2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "2"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "PWR_FLAG"
+		(power global)
+		(pin_numbers (hide yes))
+		(pin_names (offset 0.254) (hide yes))
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(in_pos_files no)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "#FLG"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 0 3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font (size 1.27 1.27))
+			)
+		)
+		(symbol "PWR_FLAG_0_1"
+			(polyline
+				(pts
+					(xy 0 0)
+					(xy 0 1.27)
+					(xy -1.016 1.905)
+					(xy 0 2.54)
+					(xy 1.016 1.905)
+					(xy 0 1.27)
+				)
+				(stroke (width 0.1524) (type default))
+				(fill (type none))
+			)
+		)
+		(symbol "PWR_FLAG_1_1"
+			(pin power_out line
+				(at 0 0 90)
+				(length 0)
+				(name "pwr"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+				(number "1"
+					(effects
+						(font (size 1.27 1.27))
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
+	(symbol "VIN"
+		(power global)
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "#PWR"
+			(at 0 -3.81 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "VIN"
+			(at 0 3.556 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"VIN\""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "global power"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "VIN_0_1"
+			(polyline
+				(pts
+					(xy -0.762 1.27) (xy 0 2.54)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 2.54) (xy 0.762 1.27)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 0) (xy 0 2.54)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "VIN_1_1"
+			(pin power_in line
+				(at 0 0 90)
+				(length 0)
+				(name ""
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 )
