@@ -2364,7 +2364,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "PRISMO: DC-DC 7-40V power board"
+	(text "PRISMO: DC-DC 7-36V power board"
 		(exclude_from_sim no)
 		(at 25.4 38.1 0)
 		(effects
@@ -3814,7 +3814,7 @@
 				)
 			)
 		)
-		(property "Value" "DC IN 7-40V"
+		(property "Value" "DC IN 7-36V"
 			(at 25.4 57.785 0)
 			(show_name no)
 			(do_not_autoplace no)
