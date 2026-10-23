@@ -64,38 +64,35 @@
 	)
 	(fp_text user "+5V"
 		(at 0 4.9 0)
-		(layer "B.SilkS")
+		(layer "F.SilkS")
 		(uuid "b51e1d9d-58f0-4310-b382-c4380383caa2")
 		(effects
 			(font
 				(size 0.9 0.9)
 				(thickness 0.15)
 			)
-			(justify mirror)
 		)
 	)
 	(fp_text user "GND"
 		(at 2.54 4.9 0)
-		(layer "B.SilkS")
+		(layer "F.SilkS")
 		(uuid "010fb3fe-953e-455b-af71-08c1b2ba4b41")
 		(effects
 			(font
 				(size 0.9 0.9)
 				(thickness 0.15)
 			)
-			(justify mirror)
 		)
 	)
 	(fp_text user "SIG"
 		(at 5.08 4.9 0)
-		(layer "B.SilkS")
+		(layer "F.SilkS")
 		(uuid "fe9fdf10-1cdd-447f-b65e-2ccb10a2766b")
 		(effects
 			(font
 				(size 0.9 0.9)
 				(thickness 0.15)
 			)
-			(justify mirror)
 		)
 	)
 	(pad "1" thru_hole rect

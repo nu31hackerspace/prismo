@@ -20,7 +20,7 @@
 	(property "Value" "~"
 		(at -1.22 1 270)
 		(unlocked yes)
-		(layer "F.SilkS")
+		(layer "B.SilkS")
 		(hide yes)
 		(uuid "f38715bd-58b9-4069-a1dc-93a058ac58a0")
 		(effects
@@ -28,6 +28,7 @@
 				(size 1 1)
 				(thickness 0.15)
 			)
+			(justify mirror)
 		)
 	)
 	(property "Datasheet" ""
@@ -67,7 +68,7 @@
 			(width 0.1)
 			(type default)
 		)
-		(layer "F.SilkS")
+		(layer "B.SilkS")
 		(uuid "6020bc79-591d-4169-b0aa-20ec9a09c20a")
 	)
 	(fp_line
@@ -77,7 +78,7 @@
 			(width 0.1)
 			(type default)
 		)
-		(layer "F.SilkS")
+		(layer "B.SilkS")
 		(uuid "ccf3107a-804e-4ab7-9874-1d63e756b89c")
 	)
 	(fp_line
@@ -87,7 +88,7 @@
 			(width 0.1)
 			(type default)
 		)
-		(layer "F.SilkS")
+		(layer "B.SilkS")
 		(uuid "6dce747e-ad6a-4bc9-8824-b75316508ad3")
 	)
 	(fp_line
@@ -97,8 +98,55 @@
 			(width 0.1)
 			(type default)
 		)
-		(layer "F.SilkS")
+		(layer "B.SilkS")
 		(uuid "176de9a8-361f-4c40-bad9-b2a37df940ae")
+	)
+	(fp_rect
+		(start -4.5 -12.7)
+		(end 4.5 -9.4)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill no)
+		(layer "B.SilkS")
+		(uuid "02614871-bd27-4702-8ca3-b210fe6c5e0c")
+	)
+	(fp_text user "USB"
+		(at 0 -11.05 0)
+		(layer "B.SilkS")
+		(uuid "4c227cae-6a6f-47fd-a24a-96a42c2df2b9")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify mirror)
+		)
+	)
+	(fp_text user "ESP32-C3"
+		(at 0 -1 0)
+		(layer "B.SilkS")
+		(uuid "317ec313-7f51-41d1-8fab-5fad72738c45")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify mirror)
+		)
+	)
+	(fp_text user "SuperMini"
+		(at 0 1 0)
+		(layer "B.SilkS")
+		(uuid "4093c0dd-7136-4507-86c5-6ccdee1b3c16")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify mirror)
+		)
 	)
 	(pad "1" thru_hole roundrect
 		(at -7.62 -10.16)

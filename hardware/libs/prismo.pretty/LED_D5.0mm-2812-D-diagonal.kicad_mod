@@ -62,7 +62,7 @@
 			(type solid)
 		)
 		(fill yes)
-		(layer "B.SilkS")
+		(layer "F.SilkS")
 		(uuid "6fd285e0-91ea-4130-b365-2d5333508597")
 	)
 	(fp_circle
@@ -78,14 +78,13 @@
 	)
 	(fp_text user "GND"
 		(at 4.5 -1.5 0)
-		(layer "B.SilkS")
+		(layer "F.SilkS")
 		(uuid "3387b67e-8b8f-480d-8700-0aa22ded0cd4")
 		(effects
 			(font
 				(size 0.8 0.8)
 				(thickness 0.15)
 			)
-			(justify mirror)
 		)
 	)
 	(point
@@ -93,6 +92,17 @@
 		(size 2)
 		(layer "F.Fab")
 		(uuid "a63e697d-7a8d-423d-a0b9-89d83bc519f5")
+	)
+	(fp_circle
+		(center 1.905 0)
+		(end 4.805 0)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "2059d38a-d70b-45b0-81be-6cc2fd1cf429")
 	)
 	(pad "1" thru_hole oval
 		(at 0.52 -1.38)

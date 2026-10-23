@@ -73,5 +73,38 @@
 		(drill 3.2)
 		(layers "*.Cu" "*.Mask")
 	)
+	(zone
+		(net 0)
+		(net_name "")
+		(layers "F.Cu" "B.Cu")
+		(uuid "8bdad2bd-118b-41db-8d60-0f7eb9396311")
+		(name "Bolt head keepout")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(filled_areas_thickness no)
+		(keepout
+			(tracks not_allowed)
+			(vias not_allowed)
+			(pads allowed)
+			(copperpour not_allowed)
+			(footprints allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+		)
+		(polygon
+			(pts
+				(xy 3.25 0.0) (xy 3.2006 0.5644) (xy 3.054 1.1116) (xy 2.8146 1.625) (xy 2.4896 2.0891) (xy 2.0891 2.4896) (xy 1.625 2.8146) (xy 1.1116 3.054) (xy 0.5644 3.2006) (xy 0.0 3.25) (xy -0.5644 3.2006) (xy -1.1116 3.054) (xy -1.625 2.8146) (xy -2.0891 2.4896) (xy -2.4896 2.0891) (xy -2.8146 1.625) (xy -3.054 1.1116) (xy -3.2006 0.5644) (xy -3.25 0.0) (xy -3.2006 -0.5644) (xy -3.054 -1.1116) (xy -2.8146 -1.625) (xy -2.4896 -2.0891) (xy -2.0891 -2.4896) (xy -1.625 -2.8146) (xy -1.1116 -3.054) (xy -0.5644 -3.2006) (xy -0.0 -3.25) (xy 0.5644 -3.2006) (xy 1.1116 -3.054) (xy 1.625 -2.8146) (xy 2.0891 -2.4896) (xy 2.4896 -2.0891) (xy 2.8146 -1.625) (xy 3.054 -1.1116) (xy 3.2006 -0.5644)
+			)
+		)
+	)
 	(embedded_fonts no)
 )
