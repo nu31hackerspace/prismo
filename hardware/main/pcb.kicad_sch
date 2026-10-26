@@ -498,6 +498,161 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "prismo:C"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C"
+				(at 0.635 -2.54 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "prismo:C_Disc_D3.0mm_W1.6mm_P2.50mm"
+				(at 0.9652 -3.81 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Unpolarized capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "C_0_1"
+				(polyline
+					(pts
+						(xy -2.032 0.762) (xy 2.032 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "prismo:Conn_01x03_Socket"
 			(pin_names
 				(offset 1.016)
@@ -1842,6 +1997,30 @@
 		(color 0 0 0 0)
 		(uuid "3aa3a152-0820-4296-b7ab-b87466b27e67")
 	)
+	(junction
+		(at 177.8 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "6f466224-5c49-410c-8565-28286f60c741")
+	)
+	(junction
+		(at 201.93 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d1583088-581a-4100-9348-75c6e7bc0952")
+	)
+	(junction
+		(at 226.06 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "13f6e49e-f43f-444c-988c-38fb59f3c7c3")
+	)
+	(junction
+		(at 250.19 106.68)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3f5e4bc0-0bc1-4a7d-8994-94997a5e8f84")
+	)
 	(no_connect
 		(at 77.47 116.84)
 		(uuid "318e4dc9-2a0f-4b47-80c4-571eef04db45")
@@ -1867,8 +2046,48 @@
 		(uuid "9d1dee18-ae24-4e0b-a7a4-eb1beb2cb489")
 	)
 	(no_connect
-		(at 236.22 120.65)
+		(at 257.81 120.65)
 		(uuid "d5c6ff8c-8479-4dad-a58b-65c217a01ca3")
+	)
+	(wire
+		(pts
+			(xy 168.91 106.68) (xy 177.8 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "11a1b2c3-d4e5-4f60-8111-000000000001")
+	)
+	(wire
+		(pts
+			(xy 193.04 106.68) (xy 201.93 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "22a1b2c3-d4e5-4f60-8222-000000000002")
+	)
+	(wire
+		(pts
+			(xy 217.17 106.68) (xy 226.06 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "33a1b2c3-d4e5-4f60-8333-000000000003")
+	)
+	(wire
+		(pts
+			(xy 241.3 106.68) (xy 250.19 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "44a1b2c3-d4e5-4f60-8444-000000000004")
 	)
 	(wire
 		(pts
@@ -1952,6 +2171,16 @@
 	)
 	(wire
 		(pts
+			(xy 250.19 106.68) (xy 250.19 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3e7539e3-e3a5-4f61-8c73-87e9d33e4e57")
+	)
+	(wire
+		(pts
 			(xy 82.55 97.79) (xy 82.55 99.06)
 		)
 		(stroke
@@ -1992,6 +2221,16 @@
 	)
 	(wire
 		(pts
+			(xy 201.93 106.68) (xy 201.93 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "63a0b390-2644-41a2-8f52-c9e3facc4ef8")
+	)
+	(wire
+		(pts
 			(xy 82.55 99.06) (xy 85.09 99.06)
 		)
 		(stroke
@@ -2002,7 +2241,7 @@
 	)
 	(wire
 		(pts
-			(xy 163.83 120.65) (xy 172.72 120.65)
+			(xy 185.42 120.65) (xy 194.31 120.65)
 		)
 		(stroke
 			(width 0)
@@ -2032,7 +2271,7 @@
 	)
 	(wire
 		(pts
-			(xy 187.96 120.65) (xy 196.85 120.65)
+			(xy 209.55 120.65) (xy 218.44 120.65)
 		)
 		(stroke
 			(width 0)
@@ -2052,7 +2291,7 @@
 	)
 	(wire
 		(pts
-			(xy 138.43 120.65) (xy 148.59 120.65)
+			(xy 138.43 120.65) (xy 170.18 120.65)
 		)
 		(stroke
 			(width 0)
@@ -2072,7 +2311,7 @@
 	)
 	(wire
 		(pts
-			(xy 212.09 120.65) (xy 220.98 120.65)
+			(xy 233.68 120.65) (xy 242.57 120.65)
 		)
 		(stroke
 			(width 0)
@@ -2109,6 +2348,16 @@
 			(type default)
 		)
 		(uuid "ab63362f-10a1-41be-bf72-4abb7dbda4b9")
+	)
+	(wire
+		(pts
+			(xy 226.06 106.68) (xy 226.06 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ae44f979-bcab-4453-a1f4-71b0883c6115")
 	)
 	(wire
 		(pts
@@ -2169,6 +2418,16 @@
 			(type default)
 		)
 		(uuid "ebadd723-a922-4f43-bb03-df5f67144f5d")
+	)
+	(wire
+		(pts
+			(xy 177.8 106.68) (xy 177.8 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ee5f0058-70fc-4fe8-8c4f-bba11e67b985")
 	)
 	(wire
 		(pts
@@ -2289,7 +2548,7 @@
 	)
 	(symbol
 		(lib_id "prismo:WS2812-D")
-		(at 228.6 120.65 0)
+		(at 250.19 120.65 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2300,7 +2559,7 @@
 		(fields_autoplaced yes)
 		(uuid "0cf34f88-59c2-4ff9-bb07-8257adb6b975")
 		(property "Reference" "D4"
-			(at 240.03 114.2298 0)
+			(at 259.08 124.46 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2310,7 +2569,7 @@
 			)
 		)
 		(property "Value" "WS2812B"
-			(at 240.03 116.7698 0)
+			(at 259.08 127 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2320,7 +2579,7 @@
 			)
 		)
 		(property "Footprint" "prismo:LED_D5.0mm-2812-D-diagonal"
-			(at 229.87 128.27 0)
+			(at 251.46 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2332,7 +2591,7 @@
 			)
 		)
 		(property "Datasheet" "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf"
-			(at 232.918 136.144 0)
+			(at 254.508 136.144 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2344,7 +2603,7 @@
 			)
 		)
 		(property "Description" "RGB LED with integrated controller"
-			(at 228.6 120.65 0)
+			(at 250.19 120.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2535,7 +2794,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 180.34 113.03 180)
+		(at 201.93 106.68 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2545,7 +2804,7 @@
 		(dnp no)
 		(uuid "13321842-a9ed-4818-bfe1-8ca1df650467")
 		(property "Reference" "#PWR012"
-			(at 180.34 106.68 0)
+			(at 201.93 100.33 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2556,7 +2815,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 180.3399 109.22 90)
+			(at 201.9299 102.87 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2567,7 +2826,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 180.34 113.03 0)
+			(at 201.93 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2578,7 +2837,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 180.34 113.03 0)
+			(at 201.93 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2589,7 +2848,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 180.34 113.03 0)
+			(at 201.93 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2613,7 +2872,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 156.21 113.03 180)
+		(at 177.8 106.68 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2623,7 +2882,7 @@
 		(dnp no)
 		(uuid "1f517718-a7a9-487d-89b6-ebc319575ddc")
 		(property "Reference" "#PWR011"
-			(at 156.21 106.68 0)
+			(at 177.8 100.33 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2634,7 +2893,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 156.2099 109.22 90)
+			(at 177.7999 102.87 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2645,7 +2904,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 156.21 113.03 0)
+			(at 177.8 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2656,7 +2915,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 156.21 113.03 0)
+			(at 177.8 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2667,7 +2926,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 156.21 113.03 0)
+			(at 177.8 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2691,7 +2950,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 228.6 128.27 0)
+		(at 250.19 128.27 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2701,7 +2960,7 @@
 		(dnp no)
 		(uuid "255e39f0-8fe7-4685-b7c0-9d7e44504bee")
 		(property "Reference" "#PWR020"
-			(at 228.6 134.62 0)
+			(at 250.19 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2712,7 +2971,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 228.6001 132.08 90)
+			(at 250.1901 132.08 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2723,7 +2982,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 128.27 0)
+			(at 250.19 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2734,7 +2993,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 228.6 128.27 0)
+			(at 250.19 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2745,7 +3004,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 228.6 128.27 0)
+			(at 250.19 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3053,7 +3312,7 @@
 	)
 	(symbol
 		(lib_id "prismo:WS2812-D")
-		(at 204.47 120.65 0)
+		(at 226.06 120.65 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3064,7 +3323,7 @@
 		(fields_autoplaced yes)
 		(uuid "530281d6-eafd-4b1f-a3da-136e655bbc79")
 		(property "Reference" "D3"
-			(at 215.9 114.2298 0)
+			(at 234.95 124.46 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3074,7 +3333,7 @@
 			)
 		)
 		(property "Value" "WS2812B"
-			(at 215.9 116.7698 0)
+			(at 234.95 127 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3084,7 +3343,7 @@
 			)
 		)
 		(property "Footprint" "prismo:LED_D5.0mm-2812-D-diagonal"
-			(at 205.74 128.27 0)
+			(at 227.33 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3096,7 +3355,7 @@
 			)
 		)
 		(property "Datasheet" "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf"
-			(at 208.788 136.144 0)
+			(at 230.378 136.144 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3108,7 +3367,7 @@
 			)
 		)
 		(property "Description" "RGB LED with integrated controller"
-			(at 204.47 120.65 0)
+			(at 226.06 120.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3305,7 +3564,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 204.47 113.03 180)
+		(at 226.06 106.68 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3315,7 +3574,7 @@
 		(dnp no)
 		(uuid "801beaf6-db72-4262-809d-296b503867f5")
 		(property "Reference" "#PWR017"
-			(at 204.47 106.68 0)
+			(at 226.06 100.33 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3326,7 +3585,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 204.4699 109.22 90)
+			(at 226.0599 102.87 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3337,7 +3596,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 204.47 113.03 0)
+			(at 226.06 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3348,7 +3607,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 204.47 113.03 0)
+			(at 226.06 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3359,7 +3618,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 204.47 113.03 0)
+			(at 226.06 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3461,7 +3720,7 @@
 	)
 	(symbol
 		(lib_id "prismo:WS2812-D")
-		(at 180.34 120.65 0)
+		(at 201.93 120.65 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3472,7 +3731,7 @@
 		(fields_autoplaced yes)
 		(uuid "848acb2a-8c9b-4d07-b476-e05abd00f626")
 		(property "Reference" "D2"
-			(at 191.77 114.2298 0)
+			(at 210.82 124.46 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3482,7 +3741,7 @@
 			)
 		)
 		(property "Value" "WS2812B"
-			(at 191.77 116.7698 0)
+			(at 210.82 127 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3492,7 +3751,7 @@
 			)
 		)
 		(property "Footprint" "prismo:LED_D5.0mm-2812-D-diagonal"
-			(at 181.61 128.27 0)
+			(at 203.2 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3504,7 +3763,7 @@
 			)
 		)
 		(property "Datasheet" "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf"
-			(at 184.658 136.144 0)
+			(at 206.248 136.144 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3516,7 +3775,7 @@
 			)
 		)
 		(property "Description" "RGB LED with integrated controller"
-			(at 180.34 120.65 0)
+			(at 201.93 120.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3628,7 +3887,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 156.21 128.27 0)
+		(at 177.8 128.27 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3638,7 +3897,7 @@
 		(dnp no)
 		(uuid "ad926865-4239-494e-b965-3d7e4a29fb13")
 		(property "Reference" "#PWR015"
-			(at 156.21 134.62 0)
+			(at 177.8 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3649,7 +3908,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 156.2101 132.08 90)
+			(at 177.8001 132.08 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3660,7 +3919,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 156.21 128.27 0)
+			(at 177.8 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3671,7 +3930,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 156.21 128.27 0)
+			(at 177.8 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3682,7 +3941,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 156.21 128.27 0)
+			(at 177.8 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3706,7 +3965,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 204.47 128.27 0)
+		(at 226.06 128.27 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3716,7 +3975,7 @@
 		(dnp no)
 		(uuid "b0dccdfe-3747-463d-b1e8-aa668cb99a4b")
 		(property "Reference" "#PWR018"
-			(at 204.47 134.62 0)
+			(at 226.06 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3727,7 +3986,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 204.4701 132.08 90)
+			(at 226.0601 132.08 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3738,7 +3997,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 204.47 128.27 0)
+			(at 226.06 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3749,7 +4008,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 204.47 128.27 0)
+			(at 226.06 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3760,7 +4019,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 204.47 128.27 0)
+			(at 226.06 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3939,7 +4198,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 228.6 113.03 180)
+		(at 250.19 106.68 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3949,7 +4208,7 @@
 		(dnp no)
 		(uuid "b77d7e2b-ffc9-4505-b991-5094cf4071ba")
 		(property "Reference" "#PWR019"
-			(at 228.6 106.68 0)
+			(at 250.19 100.33 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3960,7 +4219,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 228.5999 109.22 90)
+			(at 250.1899 102.87 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3971,7 +4230,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 113.03 0)
+			(at 250.19 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3982,7 +4241,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 228.6 113.03 0)
+			(at 250.19 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3993,7 +4252,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 228.6 113.03 0)
+			(at 250.19 106.68 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4017,7 +4276,7 @@
 	)
 	(symbol
 		(lib_id "prismo:WS2812-D")
-		(at 156.21 120.65 0)
+		(at 177.8 120.65 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4028,7 +4287,7 @@
 		(fields_autoplaced yes)
 		(uuid "b7db9286-5e29-4d4b-abb9-def1dce6f2d8")
 		(property "Reference" "D1"
-			(at 167.64 114.2298 0)
+			(at 186.69 124.46 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4038,7 +4297,7 @@
 			)
 		)
 		(property "Value" "WS2812B"
-			(at 167.64 116.7698 0)
+			(at 186.69 127 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4048,7 +4307,7 @@
 			)
 		)
 		(property "Footprint" "prismo:LED_D5.0mm-2812-D-diagonal"
-			(at 157.48 128.27 0)
+			(at 179.07 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4060,7 +4319,7 @@
 			)
 		)
 		(property "Datasheet" "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf"
-			(at 160.528 136.144 0)
+			(at 182.118 136.144 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4072,7 +4331,7 @@
 			)
 		)
 		(property "Description" "RGB LED with integrated controller"
-			(at 156.21 120.65 0)
+			(at 177.8 120.65 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4421,7 +4680,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 180.34 128.27 0)
+		(at 201.93 128.27 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4431,7 +4690,7 @@
 		(dnp no)
 		(uuid "f0c086c3-5fb6-43e4-b047-cd4faf099711")
 		(property "Reference" "#PWR016"
-			(at 180.34 134.62 0)
+			(at 201.93 134.62 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4442,7 +4701,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 180.3401 132.08 90)
+			(at 201.9301 132.08 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4453,7 +4712,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 180.34 128.27 0)
+			(at 201.93 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4464,7 +4723,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 180.34 128.27 0)
+			(at 201.93 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4475,7 +4734,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 180.34 128.27 0)
+			(at 201.93 128.27 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4492,6 +4751,638 @@
 			(project "pcb"
 				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
 					(reference "#PWR016")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "prismo:C")
+		(at 168.91 110.49 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "c3000001-a1b2-4c3d-8e9f-000000000003")
+		(property "Reference" "C3"
+			(at 166.37 109.22 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100nF"
+			(at 166.37 111.76 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "prismo:C_Disc_D3.0mm_W1.6mm_P2.50mm"
+			(at 168.91 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 168.91 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 168.91 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c3000001-0001-4c3d-8e9f-000000000003")
+		)
+		(pin "2"
+			(uuid "c3000001-0002-4c3d-8e9f-000000000003")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "C3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "prismo:C")
+		(at 193.04 110.49 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "c4000002-a1b2-4c3d-8e9f-000000000004")
+		(property "Reference" "C4"
+			(at 190.5 109.22 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100nF"
+			(at 190.5 111.76 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "prismo:C_Disc_D3.0mm_W1.6mm_P2.50mm"
+			(at 193.04 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 193.04 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 193.04 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c4000002-0001-4c3d-8e9f-000000000004")
+		)
+		(pin "2"
+			(uuid "c4000002-0002-4c3d-8e9f-000000000004")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "C4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "prismo:C")
+		(at 217.17 110.49 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "c5000003-a1b2-4c3d-8e9f-000000000005")
+		(property "Reference" "C5"
+			(at 214.63 109.22 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100nF"
+			(at 214.63 111.76 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "prismo:C_Disc_D3.0mm_W1.6mm_P2.50mm"
+			(at 217.17 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 217.17 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 217.17 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c5000003-0001-4c3d-8e9f-000000000005")
+		)
+		(pin "2"
+			(uuid "c5000003-0002-4c3d-8e9f-000000000005")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "C5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "prismo:C")
+		(at 241.3 110.49 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "c6000004-a1b2-4c3d-8e9f-000000000006")
+		(property "Reference" "C6"
+			(at 238.76 109.22 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "100nF"
+			(at 238.76 111.76 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "prismo:C_Disc_D3.0mm_W1.6mm_P2.50mm"
+			(at 241.3 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 241.3 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 241.3 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c6000004-0001-4c3d-8e9f-000000000006")
+		)
+		(pin "2"
+			(uuid "c6000004-0002-4c3d-8e9f-000000000006")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "C6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "prismo:GND")
+		(at 168.91 114.3 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a0000023-a1b2-4c3d-8e9f-000000000023")
+		(property "Reference" "#PWR023"
+			(at 168.91 120.65 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 168.91 118.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 168.91 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 168.91 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 168.91 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a0000023-0001-4c3d-8e9f-000000000023")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "#PWR023")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "prismo:GND")
+		(at 193.04 114.3 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a0000024-a1b2-4c3d-8e9f-000000000024")
+		(property "Reference" "#PWR024"
+			(at 193.04 120.65 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 193.04 118.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 193.04 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 193.04 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 193.04 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a0000024-0001-4c3d-8e9f-000000000024")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "#PWR024")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "prismo:GND")
+		(at 217.17 114.3 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a0000025-a1b2-4c3d-8e9f-000000000025")
+		(property "Reference" "#PWR025"
+			(at 217.17 120.65 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 217.17 118.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 217.17 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 217.17 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 217.17 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a0000025-0001-4c3d-8e9f-000000000025")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "#PWR025")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "prismo:GND")
+		(at 241.3 114.3 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a0000026-a1b2-4c3d-8e9f-000000000026")
+		(property "Reference" "#PWR026"
+			(at 241.3 120.65 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 241.3 118.11 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 241.3 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 241.3 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 241.3 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a0000026-0001-4c3d-8e9f-000000000026")
+		)
+		(instances
+			(project "pcb"
+				(path "/e0f69ff1-e3b8-4d01-8d2a-72fcb9b35158"
+					(reference "#PWR026")
 					(unit 1)
 				)
 			)
