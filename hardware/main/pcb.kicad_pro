@@ -542,7 +542,7 @@
       "plot": "gerbe/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "../led_pcb_just_board.step",
+      "step": "../prismo.step",
       "svg": "",
       "vrml": ""
     },

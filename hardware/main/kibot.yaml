@@ -2,10 +2,20 @@ kibot:
   version: 1
 
 outputs:
+  - name: top_render
+    comment: Top-side PCB render
+    type: pcbdraw
+    dir: render/top
+    options:
+      format: png
+      bottom: false
+      dpi: 300
+      style: set-blue-enig
+
   - name: bottom_render
     comment: Bottom-side PCB render
     type: pcbdraw
-    dir: render
+    dir: render/bottom
     options:
       format: png
       bottom: true
