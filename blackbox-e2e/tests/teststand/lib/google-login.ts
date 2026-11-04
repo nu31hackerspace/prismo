@@ -65,8 +65,14 @@ export async function googleLogin(page: Page): Promise<void> {
     .locator('[data-challengetype="6"]')
     .or(page.getByText(/Authenticator app|Google Authenticator/i))
     .filter({ visible: true });
+  // On /challenge/selection, Google may list only the phone factor; the other
+  // methods (authenticator app included) hide behind "Try another way", which
+  // there is not a <button> but a plain clickable element, so match the text
+  // too.
   const tryAnotherWay = page
     .getByRole("button", { name: /Try another way/i })
+    .or(page.getByRole("link", { name: /Try another way/i }))
+    .or(page.getByText(/^\s*Try another way\s*$/i))
     .filter({ visible: true });
   const consent = page
     .getByRole("button", { name: /^(Continue|Allow)$/ })
