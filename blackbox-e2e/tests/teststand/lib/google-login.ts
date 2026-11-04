@@ -54,10 +54,23 @@ export async function googleLogin(page: Page): Promise<void> {
   // (authenticator challenge, method picker, consent) until we land back on
   // the app.
   const appOrigin = new URL(config.baseUrl).origin;
-  const totpInput = page.locator('input[name="totpPin"]');
-  const authenticatorOption = page.getByText(/Google Authenticator/i);
-  const tryAnotherWay = page.getByRole("button", { name: /Try another way/i });
-  const consent = page.getByRole("button", { name: /^(Continue|Allow)$/ });
+  // Only ever match elements the user could actually see: Google's pages keep
+  // hidden copies of some labels in the DOM, and `.first()` on an unfiltered
+  // locator can land on one of those, so the option is never clicked.
+  const totpInput = page.locator('input[name="totpPin"]').filter({ visible: true });
+  // Challenge-method picker (/challenge/selection). Type 6 is the
+  // authenticator-app challenge; the text match is the fallback in case the
+  // attribute changes.
+  const authenticatorOption = page
+    .locator('[data-challengetype="6"]')
+    .or(page.getByText(/Authenticator app|Google Authenticator/i))
+    .filter({ visible: true });
+  const tryAnotherWay = page
+    .getByRole("button", { name: /Try another way/i })
+    .filter({ visible: true });
+  const consent = page
+    .getByRole("button", { name: /^(Continue|Allow)$/ })
+    .filter({ visible: true });
   const visible = (l: { first(): { isVisible(): Promise<boolean> } }) =>
     l
       .first()
@@ -67,7 +80,16 @@ export async function googleLogin(page: Page): Promise<void> {
   const deadline = Date.now() + 90_000;
   while (!page.url().startsWith(appOrigin)) {
     if (Date.now() > deadline) {
-      throw new Error(`Google login stuck at ${page.url()}`);
+      // Say what Google is asking for, so a CI log alone is enough to tell
+      // a new challenge type from a slow page.
+      const text = await page
+        .locator("body")
+        .innerText({ timeout: 2_000 })
+        .catch(() => "<no body text>");
+      throw new Error(
+        `Google login stuck at ${page.url()}\n--- visible page text ---\n` +
+          text.replace(/\n{2,}/g, "\n").slice(0, 2_000),
+      );
     }
     if (!totpSubmitted && (await visible(totpInput))) {
       if (!googleTotpSecret) {
