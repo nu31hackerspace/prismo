@@ -16,11 +16,20 @@ export const config = {
   // blackbox-e2e publishes the production app on host port 13000.
   baseUrl: envStr("TESTSTAND_BASE_URL", "http://localhost:13000"),
 
-  // ── Real Google account used to sign in (2-step verification via TOTP) ──
-  googleEmail: envStr("TESTSTAND_GOOGLE_EMAIL", ""),
-  googlePassword: envStr("TESTSTAND_GOOGLE_PASSWORD", ""),
-  // Base32 secret shown as "Can't scan it?" when adding an authenticator app.
-  googleTotpSecret: envStr("TESTSTAND_GOOGLE_TOTP_SECRET", ""),
+  // ── Signed-in test user (seeded into Postgres, see lib/session.ts) ─────
+  testUserEmail: envStr("TESTSTAND_USER_EMAIL", "teststand@prismo.test"),
+  testUserName: envStr("TESTSTAND_USER_NAME", "Test Stand"),
+  // Must match the backend's SESSION_SECRET (blackbox-e2e/docker-compose.yml).
+  sessionSecret: envStr(
+    "TESTSTAND_SESSION_SECRET",
+    "blackbox-secret-not-for-production",
+  ),
+  postgresContainer: envStr(
+    "TESTSTAND_POSTGRES_CONTAINER",
+    "blackbox-e2e-postgres-1",
+  ),
+  postgresUser: envStr("TESTSTAND_POSTGRES_USER", "admin"),
+  postgresDb: envStr("TESTSTAND_POSTGRES_DB", "prismo"),
 
   // ── WiFi hotspot the Pi serves and the device joins ───────────────────
   // Defaults MUST match firmware/tests/real_hardware/start-ap.sh (the proven
