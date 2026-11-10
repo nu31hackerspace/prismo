@@ -100,7 +100,7 @@
 		(uuid "e9516d0c-5606-4800-8811-125e503d52a5")
 	)
 	(embedded_fonts no)
-	(model "${KICAD10_3DMODEL_DIR}/Capacitor_THT.3dshapes/C_Disc_D3.0mm_W1.6mm_P2.50mm.step"
+	(model "${KIPRJMOD}/../libs/models/C_Disc_D3.0mm_W1.6mm_P2.50mm.step"
 		(offset
 			(xyz 0 0 0)
 		)
