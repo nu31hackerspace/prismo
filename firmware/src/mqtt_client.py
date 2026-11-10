@@ -11,11 +11,10 @@ from src.mqtt_contract import (
 )
 from src import config
 
-# Hard ceiling on any single blocking socket operation (connect, CONNACK read,
-# publish, ping). Keeps a poor link from stalling the shared loop for long. A
-# full _establish() is a handful of these ops, so its worst case stays under
-# the 20 s watchdog.
-_SOCKET_TIMEOUT_S = 3
+# Hard ceiling on any single blocking socket operation (connect, TLS handshake,
+# CONNACK read, publish, ping). A TLS handshake over a weak link regularly
+# needs 3+ s, so a tighter bound turns slow connects into failures.
+_SOCKET_TIMEOUT_S = 5
 
 
 class _PrismoMQTTClient(_SimpleClient):
@@ -105,10 +104,20 @@ class PrismoMQTT:
         c = _PrismoMQTTClient(self._user, self._server_host(), port=self._port, user=self._user, password=self._password, ssl=self._use_ssl, keepalive=60)
         c.set_callback(self._on_message)
         try:
-            c.connect(timeout=_SOCKET_TIMEOUT_S)
-        except TypeError:
-            # Older umqtt without a connect timeout kwarg.
-            c.connect()
+            try:
+                c.connect(timeout=_SOCKET_TIMEOUT_S)
+            except TypeError:
+                # Older umqtt without a connect timeout kwarg.
+                c.connect()
+        except Exception:
+            # The client isn't stored yet, so _mark_disconnected() can't reach
+            # it: close here or the TLS context (~30 KB) leaks and the next
+            # handshake dies with MBEDTLS_ERR_X509_ALLOC_FAILED.
+            try:
+                c.sock.close()
+            except Exception:
+                pass
+            raise
         try:
             c.sock.settimeout(_SOCKET_TIMEOUT_S)
         except Exception:

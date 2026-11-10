@@ -12,6 +12,16 @@ from libs.PN532 import PN532
 # False = PN532 init failed
 reader_ok = None
 
+def _toggle_cs(cs_pin, count=3):
+    for _ in range(count):
+        cs_pin.on()
+        time.sleep_ms(50)
+        cs_pin.off()
+        time.sleep_ms(50)
+    cs_pin.on()
+    time.sleep_ms(50)
+
+
 def init():
     """Initialize the PN532 reader over SPI. Returns an nfc handle on success,
     or None (with reader_ok=False) if the hardware never comes up. The
@@ -38,6 +48,7 @@ def init():
     _retries = 0
     while True:
         try:
+            _toggle_cs(cs_pin)
             nfc = PN532(spi, cs_pin, debug=config.DEBUG)
 
             time.sleep(0.1)
