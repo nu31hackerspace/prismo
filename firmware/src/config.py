@@ -23,6 +23,13 @@ ENABLE_MQTT=True
 WIFI_CONNECT_ATTEMPTS=10
 MQTT_CONNECT_ATTEMPTS=10
 
+WIFI_SSID = ""
+WIFI_PASS = ""
+MQTT_URL = ""
+MQTT_USER = ""
+MQTT_PASS = ""
+DEVICE_MODE = DEVICE_MODE_DOOR
+
 # Local dev overrides (gitignored)
 try:
     from src.config_dev import *
@@ -50,12 +57,12 @@ BOOL = "bool"
 ENUM = "enum"
 
 SETTINGS = (
-    {"key": "wifi_ssid", "type": STR, "label": "Wi-Fi SSID", "max_len": 32, "default": "", "reboot": True},
-    {"key": "wifi_pass", "type": STR, "label": "Wi-Fi password", "max_len": 63, "default": "", "secret": True, "reboot": True},
-    {"key": "mqtt_url", "type": STR, "label": "MQTT URL", "max_len": 128, "default": "", "reboot": True},
-    {"key": "mqtt_user", "type": STR, "label": "MQTT user", "max_len": 64, "default": "", "reboot": True},
-    {"key": "mqtt_pass", "type": STR, "label": "MQTT password", "max_len": 64, "default": "", "secret": True, "reboot": True},
-    {"key": "mode", "type": ENUM, "label": "Device mode", "options": [DEVICE_MODE_DOOR, DEVICE_MODE_MACHINE], "default": DEVICE_MODE_DOOR, "reboot": True},
+    {"key": "wifi_ssid", "type": STR, "label": "Wi-Fi SSID", "max_len": 32, "default": WIFI_SSID, "reboot": True},
+    {"key": "wifi_pass", "type": STR, "label": "Wi-Fi password", "max_len": 63, "default": WIFI_PASS, "secret": True, "reboot": True},
+    {"key": "mqtt_url", "type": STR, "label": "MQTT URL", "max_len": 128, "default": MQTT_URL, "reboot": True},
+    {"key": "mqtt_user", "type": STR, "label": "MQTT user", "max_len": 64, "default": MQTT_USER, "reboot": True},
+    {"key": "mqtt_pass", "type": STR, "label": "MQTT password", "max_len": 64, "default": MQTT_PASS, "secret": True, "reboot": True},
+    {"key": "mode", "type": ENUM, "label": "Device mode", "options": [DEVICE_MODE_DOOR, DEVICE_MODE_MACHINE], "default": DEVICE_MODE, "reboot": True},
 )
 
 _DEFS = {d["key"]: d for d in SETTINGS}
@@ -260,12 +267,10 @@ def get_mac_suffix():
 SUCCESS_SIGNAL_DURATION = 5000
 ERROR_SIGNAL_DURATION = 1000
 
-PWM_FREQ = 1000
 NFC_BAUDRATE = 1_000_000
 
-PIN_RGB_RED = 9
-PIN_RGB_GREEN = 10
-PIN_RGB_BLUE = 20
+PIN_LED = 9
+LED_COUNT = 4
 
 PIN_NFC_SCK = 1
 PIN_NFC_MISO = 2

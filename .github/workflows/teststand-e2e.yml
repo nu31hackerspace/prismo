@@ -61,13 +61,10 @@ jobs:
     timeout-minutes: 60
 
     env:
-      ESP32_PORT: /dev/ttyESP32C3
-      TESTSTAND_SERIAL_PORT: /dev/ttyESP32C3
+      ESP32_PORT: /dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_7C:4F:AD:F4:56:D8-if00
+      TESTSTAND_SERIAL_PORT: /dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_7C:4F:AD:F4:56:D8-if00
       TESTSTAND_EMULATOR_PORT: /dev/ttyTagEmulator
       COMPOSE_FILES: -f docker-compose.yml -f docker-compose.teststand.yml
-      TESTSTAND_GOOGLE_EMAIL: ${{ secrets.TESTSTAND_GOOGLE_EMAIL }}
-      TESTSTAND_GOOGLE_PASSWORD: ${{ secrets.TESTSTAND_GOOGLE_PASSWORD }}
-      TESTSTAND_GOOGLE_TOTP_SECRET: ${{ secrets.TESTSTAND_GOOGLE_OTP_TOKEN }}
 
     steps:
       - name: Free up disk space on runner

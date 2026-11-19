@@ -1,31 +1,23 @@
 import utime
 import machine
+import neopixel
 
 from src.config import (
-    PWM_FREQ,
-    PIN_RGB_RED,
-    PIN_RGB_GREEN,
-    PIN_RGB_BLUE,
+    PIN_LED,
+    LED_COUNT,
 )
 
 MAX_BRIGHTNESS = 255
 
-_red_pin = machine.Pin(PIN_RGB_RED)
-_green_pin = machine.Pin(PIN_RGB_GREEN)
-_blue_pin = machine.Pin(PIN_RGB_BLUE)
-
-red_pwm = machine.PWM(_red_pin, freq=PWM_FREQ, duty_u16=0)
-green_pwm = machine.PWM(_green_pin, freq=PWM_FREQ, duty_u16=0)
-blue_pwm = machine.PWM(_blue_pin, freq=PWM_FREQ, duty_u16=0)
+_np = neopixel.NeoPixel(machine.Pin(PIN_LED, machine.Pin.OUT), LED_COUNT)
 
 def set_sub_light_color(hex_int):
     r = (hex_int >> 16) & 0xFF
     g = (hex_int >> 8) & 0xFF
     b = hex_int & 0xFF
 
-    red_pwm.duty_u16(r * 257)
-    green_pwm.duty_u16(g * 257)
-    blue_pwm.duty_u16(b * 257)
+    _np.fill((r, g, b))
+    _np.write()
 
 def turn_off_all():
     set_sub_light_color(0x000000)

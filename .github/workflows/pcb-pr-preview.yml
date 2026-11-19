@@ -28,15 +28,17 @@ jobs:
           board: hardware/main/pcb.kicad_pcb
           schema: hardware/main/pcb.kicad_sch
 
-      - name: Stash head render
+      - name: Stash head renders
         run: |
           mkdir -p /tmp/renders
-          cp hardware/main/kibot_output_head/render/*.png /tmp/renders/bottom_head.png
+          cp hardware/main/kibot_output_head/render/top/*.png /tmp/renders/top_head.png
+          cp hardware/main/kibot_output_head/render/bottom/*.png /tmp/renders/bottom_head.png
 
       - name: Check out base PCB files
         run: |
           git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.sha }}
           git checkout ${{ github.event.pull_request.base.sha }} -- hardware/main/
+          git checkout HEAD -- hardware/main/kibot.yaml
 
       - name: Render base PCB
         uses: INTI-CMNB/KiBot@v2_dk10
@@ -46,8 +48,10 @@ jobs:
           board: hardware/main/pcb.kicad_pcb
           schema: hardware/main/pcb.kicad_sch
 
-      - name: Stash base render
-        run: cp hardware/main/kibot_output_base/render/*.png /tmp/renders/bottom_base.png
+      - name: Stash base renders
+        run: |
+          cp hardware/main/kibot_output_base/render/top/*.png /tmp/renders/top_base.png
+          cp hardware/main/kibot_output_base/render/bottom/*.png /tmp/renders/bottom_base.png
 
       - name: Publish renders to preview branch
         id: publish
@@ -71,13 +75,17 @@ jobs:
           fi
           DEST="pr-${PR_NUM}/${HEAD_SHA}"
           mkdir -p "$DEST"
+          cp /tmp/renders/top_base.png "${DEST}/top_base.png"
+          cp /tmp/renders/top_head.png "${DEST}/top_head.png"
           cp /tmp/renders/bottom_base.png "${DEST}/bottom_base.png"
           cp /tmp/renders/bottom_head.png "${DEST}/bottom_head.png"
           git add "$DEST"
           git commit -q -m "PCB preview for PR #${PR_NUM} @ ${HEAD_SHA}"
           git push -q origin "$BRANCH"
-          echo "base_url=https://raw.githubusercontent.com/${REPO}/${BRANCH}/${DEST}/bottom_base.png" >> "$GITHUB_OUTPUT"
-          echo "head_url=https://raw.githubusercontent.com/${REPO}/${BRANCH}/${DEST}/bottom_head.png" >> "$GITHUB_OUTPUT"
+          echo "top_base_url=https://raw.githubusercontent.com/${REPO}/${BRANCH}/${DEST}/top_base.png" >> "$GITHUB_OUTPUT"
+          echo "top_head_url=https://raw.githubusercontent.com/${REPO}/${BRANCH}/${DEST}/top_head.png" >> "$GITHUB_OUTPUT"
+          echo "bottom_base_url=https://raw.githubusercontent.com/${REPO}/${BRANCH}/${DEST}/bottom_base.png" >> "$GITHUB_OUTPUT"
+          echo "bottom_head_url=https://raw.githubusercontent.com/${REPO}/${BRANCH}/${DEST}/bottom_head.png" >> "$GITHUB_OUTPUT"
 
       - name: Find previous preview comment
         uses: peter-evans/find-comment@v3
@@ -95,10 +103,18 @@ jobs:
           edit-mode: replace
           body: |
             <!-- pcb-preview-bot -->
-            ## PCB bottom-side preview
+            ## PCB preview
 
             Base (`${{ github.event.pull_request.base.ref }}` @ `${{ github.event.pull_request.base.sha }}`) vs this PR (`${{ github.event.pull_request.head.sha }}`).
 
+            ### Front (top)
+
             | Base | This PR |
             |---|---|
-            | <img src="${{ steps.publish.outputs.base_url }}" width="450"/> | <img src="${{ steps.publish.outputs.head_url }}" width="450"/> |
+            | <img src="${{ steps.publish.outputs.top_base_url }}" width="450"/> | <img src="${{ steps.publish.outputs.top_head_url }}" width="450"/> |
+
+            ### Back (bottom)
+
+            | Base | This PR |
+            |---|---|
+            | <img src="${{ steps.publish.outputs.bottom_base_url }}" width="450"/> | <img src="${{ steps.publish.outputs.bottom_head_url }}" width="450"/> |

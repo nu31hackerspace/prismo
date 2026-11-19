@@ -1,13 +1,16 @@
 /**
- * Playwright fixture that provides a page signed in through the real Google
- * OAuth flow (email + password + TOTP second factor), see lib/google-login.ts.
+ * Playwright fixture that provides a page signed in as the test user. The
+ * user is seeded straight into the stack's database and the session cookie
+ * minted locally (see lib/session.ts), as if they had signed up with Google
+ * earlier — the suite never talks to Google.
  */
 import { test as base, expect, type Page } from "@playwright/test";
-import { googleLogin } from "./lib/google-login";
+import { signIn } from "./lib/session";
 
 export const test = base.extend<{ page: Page }>({
   page: async ({ page }, use) => {
-    await googleLogin(page);
+    await signIn(page.context());
+    await page.goto("/devices");
     await expect(page.locator("h1", { hasText: "My Devices" })).toBeVisible({
       timeout: 15_000,
     });
