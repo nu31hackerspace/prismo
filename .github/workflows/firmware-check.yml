@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 15
 
     env:
-      ESP32_PORT: /dev/ttyESP32C3
+      ESP32_PORT: /dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_7C:4F:AD:F4:56:D8-if00
 
     steps:
       - uses: actions/checkout@v4

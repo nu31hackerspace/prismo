@@ -5,6 +5,7 @@ from src import health_log
 import utime
 
 _STAT_CONNECTING = getattr(network, "STAT_CONNECTING", 1001)
+_TX_POWER_DBM = 20
 
 
 class WiFiManager:
@@ -34,12 +35,18 @@ class WiFiManager:
             gc.collect()
             self._wlan = network.WLAN(network.STA_IF)
             self._wlan.active(True)
-            self._wlan.config(txpower=8.5)
+            self._wlan.config(txpower=_TX_POWER_DBM)
         return self._wlan
 
     def _status_safe(self):
         try:
             return self._wlan.status()
+        except Exception:
+            return None
+
+    def _rssi_safe(self):
+        try:
+            return self._wlan.status("rssi")
         except Exception:
             return None
 
@@ -84,7 +91,12 @@ class WiFiManager:
         if wlan_sta.isconnected():
             self._connecting = False
             self._was_connected = True
-            health_log.write_info("WiFi connected", ip=wlan_sta.ifconfig()[0], ssid=ssid)
+            health_log.write_info(
+                "WiFi connected",
+                ip=wlan_sta.ifconfig()[0],
+                ssid=ssid,
+                rssi_dbm=self._rssi_safe(),
+            )
             return True
 
         # Leave _connecting=True with its start timestamp: the attempt kicked
@@ -108,7 +120,11 @@ class WiFiManager:
 
         if self._wlan.isconnected():
             if self._connecting or self._failures:
-                health_log.write_info("WiFi reconnected", ip=self._wlan.ifconfig()[0])
+                health_log.write_info(
+                    "WiFi reconnected",
+                    ip=self._wlan.ifconfig()[0],
+                    rssi_dbm=self._rssi_safe(),
+                )
             self._connecting = False
             self._failures = 0
             self._backoff_ms = self._backoff_start_ms
@@ -157,7 +173,7 @@ class WiFiManager:
                 return False
             if not self._wlan.active():
                 self._wlan.active(True)
-                self._wlan.config(txpower=8.5)
+                self._wlan.config(txpower=_TX_POWER_DBM)
             ssid, password = config.get_wifi()
             self._wlan.connect(ssid, password)
             self._connecting = True

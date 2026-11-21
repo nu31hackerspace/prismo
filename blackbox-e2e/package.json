@@ -8,8 +8,7 @@
     "teststand:run": "tsx tests/teststand/run-stand.ts",
     "teststand:test": "playwright test --config playwright.teststand.config.ts",
     "lint": "prettier --check .",
-    "format": "prettier --write .",
-    "teststand:login": "playwright test --config playwright.teststand.config.ts google-login"
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
