@@ -26,7 +26,9 @@ for (const [key, value] of Object.entries(runtimeEnv)) {
 writeFileSync(path.join(distDir, "env.js"), `window.__ENV__ = ${JSON.stringify(runtimeEnv)};\n`);
 console.log(`> Wrote runtime config to ${path.join(distDir, "env.js")}`);
 
-const server = spawn("serve", ["-s", distDir, "-l", port], { stdio: "inherit" });
+const serveConfig = path.resolve(import.meta.dirname, "serve.json");
+
+const server = spawn("serve", ["-s", distDir, "-l", port, "-c", serveConfig], { stdio: "inherit" });
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, () => server.kill(signal));
