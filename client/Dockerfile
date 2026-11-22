@@ -7,6 +7,7 @@ COPY package.json package-lock.json* ./
 COPY shared ./shared
 COPY mqtt-contract ./mqtt-contract
 COPY client ./client
+COPY docs/instruction ./docs/instruction
 RUN npm install --workspace=client
 RUN npm run build --workspace=client
 
