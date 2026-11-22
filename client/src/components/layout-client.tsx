@@ -28,6 +28,7 @@ export function AppSidebarAndHeader({
   const isDevicesActive = pathname === "/devices" || pathname.startsWith("/devices/");
   const isKeysActive = pathname === "/keys" || pathname.startsWith("/keys/");
   const isMqttActive = pathname === "/mqtt" || pathname.startsWith("/mqtt/");
+  const isInstructionActive = pathname === "/instruction";
   const isDesignSystemActive = pathname === "/system/design-system" || pathname.startsWith("/system/design-system/");
 
   return (
@@ -115,10 +116,9 @@ export function AppSidebarAndHeader({
           <Button
             tag="nav_instruction"
             variant="ghost"
-            className="justify-start text-label-secondary hover:text-label-primary hover:bg-fill-tertiary"
+            className={`justify-start ${isInstructionActive ? "bg-fill-tertiary text-label-primary" : "text-label-secondary"}`}
             icon="mdi:book-open-page-variant"
-            href="https://github.com/nu31hackerspace/prismo/blob/main/docs/instruction/instruction.md"
-            target="_blank"
+            to="/instruction"
           >
             Instruction
           </Button>

@@ -41,10 +41,7 @@ const DevicesPage = observer(function DevicesPage() {
             <h1 className="font-display text-3xl font-bold tracking-tight text-label-primary md:text-4xl">
               My Devices
             </h1>
-            <p className="mt-2 text-label-secondary">
-              Manage your Prismo devices and generate API tokens.
-              {store.workspace && <span className="text-label-tertiary"> · {store.workspace.name}</span>}
-            </p>
+            {store.workspace && <p className="mt-2 text-label-secondary">{store.workspace.name}</p>}
           </div>
 
           <div className="flex flex-wrap gap-2">

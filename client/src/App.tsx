@@ -1,3 +1,4 @@
+import type React from 'react';
 import { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 
@@ -15,6 +16,7 @@ import DeviceDetailPage from '@/pages/devices/DeviceDetailPage';
 import KeysPage from '@/pages/KeysPage';
 import MqttPage from '@/pages/MqttPage';
 import ServicePage from '@/pages/ServicePage';
+import { InstructionContent, PublicInstructionPage } from '@/pages/InstructionPage';
 
 type AuthUser = { id: string; name: string; email: string };
 type AuthState =
@@ -68,13 +70,37 @@ function RequireAuth({ store }: { store: RootStore }) {
   if (auth.status !== 'authed') return <Navigate to="/" replace />;
 
   return (
+    <AppShell store={store} user={auth.user}>
+      <Outlet />
+    </AppShell>
+  );
+}
+
+function AppShell({ store, user, children }: { store: RootStore; user: AuthUser; children: React.ReactNode }) {
+  return (
     <StoreProvider store={store}>
       <ReconnectBanner />
-      <AppSidebarAndHeader user={auth.user} />
-      <div className="min-h-screen pt-14 md:pt-0 md:pl-64">
-        <Outlet />
-      </div>
+      <AppSidebarAndHeader user={user} />
+      <div className="min-h-screen pt-14 md:pt-0 md:pl-64">{children}</div>
     </StoreProvider>
+  );
+}
+
+// Public for visitors, but shown inside the sidebar shell when signed in so
+// the menu stays available.
+function PublicRoute({ store, publicElement, authedElement }: { store: RootStore; publicElement: React.ReactNode; authedElement: React.ReactNode }) {
+  const auth = useContext(AuthContext);
+  const { pathname } = useLocation();
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  if (auth.status !== 'authed') return publicElement;
+
+  return (
+    <AppShell store={store} user={auth.user}>
+      {authedElement}
+    </AppShell>
   );
 }
 
@@ -96,8 +122,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={auth.status === 'authed' ? <Navigate to="/devices" replace /> : <Landing />} />
           <Route path="/google/callback" element={<GoogleCallback />} />
-          <Route path="/system/design-system" element={<DesignSystemPage />} />
+          <Route path="/system/design-system" element={<PublicRoute store={store} publicElement={<DesignSystemPage />} authedElement={<DesignSystemPage />} />} />
           <Route path="/service" element={<ServicePage />} />
+          <Route path="/instruction" element={<PublicRoute store={store} publicElement={<PublicInstructionPage />} authedElement={<InstructionContent />} />} />
 
           <Route element={<RequireAuth store={store} />}>
             <Route path="/devices" element={<DevicesPage />} />

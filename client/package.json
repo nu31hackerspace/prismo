@@ -17,6 +17,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "esptool-js": "^0.6.1",
+    "marked": "^16.4.2",
     "mobx": "^7.0.3",
     "mobx-react-lite": "^5.0.3",
     "mqtt": "^5.15.2",

@@ -4,7 +4,6 @@ import { Icon } from "@/components/ui/icon";
 import { env } from "@/lib/env";
 
 const githubUrl = "https://github.com/nu31hackerspace/prismo";
-const instructionUrl = "https://github.com/nu31hackerspace/prismo";
 
 const features = [
   {
@@ -107,7 +106,7 @@ export default function Landing() {
             prismo
           </Link>
           <div className="flex items-center gap-3">
-            <Button tag="landing_header_instruction" variant="ghost" size="sm" icon="mdi:clipboard-list-outline" href={instructionUrl}>
+            <Button tag="landing_header_instruction" variant="ghost" size="sm" icon="mdi:clipboard-list-outline" to="/instruction">
               Instruction
             </Button>
             <Button tag="landing_header_github" variant="ghost" size="sm" icon="mdi:github" href={githubUrl} className="hidden sm:inline-flex">
@@ -131,13 +130,6 @@ export default function Landing() {
         ></div>
 
         <div className="relative mx-auto max-w-4xl px-6 text-center">
-          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-separator-secondary bg-fill-tertiary px-4 py-1.5">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-accent-primary"></span>
-            <span className="text-xs font-bold tracking-wide text-label-secondary uppercase">
-              Pre-release — In Active Development
-            </span>
-          </div>
-
           <h1 className="mb-6 text-4xl leading-tight font-bold tracking-tight text-label-primary md:text-6xl md:leading-tight">
             Open-source access control
             <br />
@@ -226,9 +218,9 @@ export default function Landing() {
               <a href={githubUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-label-tertiary transition-colors hover:text-label-primary">
                 GitHub
               </a>
-              <a href={instructionUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-label-tertiary transition-colors hover:text-label-primary">
+              <Link to="/instruction" className="text-sm text-label-tertiary transition-colors hover:text-label-primary">
                 Instruction
-              </a>
+              </Link>
               <Link to="/system/design-system" className="text-sm text-label-tertiary transition-colors hover:text-label-primary">
                 Design System
               </Link>
