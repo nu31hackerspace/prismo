@@ -139,28 +139,13 @@ jobs:
 
       - name: Purge Cloudflare cache
         if: ${{ vars.CLOUDFLARE_ZONE_ID != '' }}
-        # The deploy has already succeeded at this point; a failed purge only
-        # means stale assets until the cache expires, so don't fail the run.
-        continue-on-error: true
         env:
           CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          # Strip whitespace/newlines that often sneak in when pasting the secret.
-          token="$(printf '%s' "${CLOUDFLARE_API_TOKEN}" | tr -d '[:space:]')"
-          if [ -z "${token}" ]; then
-            echo "::warning title=Cloudflare purge skipped::CLOUDFLARE_API_TOKEN secret is not set"
-            exit 0
-          fi
-
-          verify="$(curl -sS https://api.cloudflare.com/client/v4/user/tokens/verify \
-            -H "Authorization: Bearer ${token}")"
-          if ! printf '%s' "${verify}" | grep -q '"status":"active"'; then
-            echo "::error title=Cloudflare token rejected::CLOUDFLARE_API_TOKEN is not a valid, active API Token (Global API Keys do not work with Bearer auth). Response: ${verify}"
-            exit 1
-          fi
-
-          curl -sS --fail-with-body -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+          # Add the "Bearer " prefix; drop it first in case the secret already has it.
+          token="${CLOUDFLARE_API_TOKEN#Bearer }"
+          curl -fsS -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
             -H "Authorization: Bearer ${token}" \
             -H "Content-Type: application/json" \
             --data '{"purge_everything":true}'
