@@ -136,16 +136,3 @@ jobs:
           prune: true
           resolve_image: "always"
           summary: true
-
-      - name: Purge Cloudflare cache
-        if: ${{ vars.CLOUDFLARE_ZONE_ID != '' }}
-        env:
-          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: |
-          # Add the "Bearer " prefix; drop it first in case the secret already has it.
-          token="${CLOUDFLARE_API_TOKEN#Bearer }"
-          curl -fsS -X POST "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
-            -H "Authorization: Bearer ${token}" \
-            -H "Content-Type: application/json" \
-            --data '{"purge_everything":true}'
