@@ -2,6 +2,8 @@ name: Docker merge request pipeline
 
 on:
   pull_request:
+    paths-ignore:
+      - '**.md'
 
 jobs:
   check-dev-flags:

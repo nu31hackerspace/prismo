@@ -2,6 +2,8 @@ name: MQTT Contract merge request pipeline
 
 on:
   pull_request:
+    paths-ignore:
+      - '**.md'
 
 jobs:
   mqtt-contract-lint:

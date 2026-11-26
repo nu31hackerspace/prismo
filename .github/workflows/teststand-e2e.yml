@@ -9,7 +9,34 @@ env:
   IMAGE_NAME: nu31hackerspace/prismo-web-admin
 
 jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      should_run: ${{ steps.filter.outputs.should_run }}
+    steps:
+      - name: Check for non-markdown changes
+        id: filter
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          FILES=$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename')
+          NON_MD=$(printf '%s\n' "$FILES" | grep -vE '(\.md$|^$)' || true)
+          if [ -n "$NON_MD" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build-firmware:
+    needs: changes
+    if: needs.changes.outputs.should_run == 'true'
     uses: ./.github/workflows/build-firmware.yml
 
   build-test-images:
