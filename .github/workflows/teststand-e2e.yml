@@ -17,7 +17,7 @@ jobs:
     outputs:
       should_run: ${{ steps.filter.outputs.should_run }}
     steps:
-      - name: Check for non-markdown changes
+      - name: Check for non-doc/media changes
         id: filter
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -27,8 +27,8 @@ jobs:
             exit 0
           fi
           FILES=$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename')
-          NON_MD=$(printf '%s\n' "$FILES" | grep -vE '(\.md$|^$)' || true)
-          if [ -n "$NON_MD" ]; then
+          NON_IGNORED=$(printf '%s\n' "$FILES" | grep -viE '(\.(md|png|jpg|jpeg|gif|webp|svg|ico|avif|mp4|webm|mov|mp3|wav|ogg|pdf)$|^$)' || true)
+          if [ -n "$NON_IGNORED" ]; then
             echo "should_run=true" >> "$GITHUB_OUTPUT"
           else
             echo "should_run=false" >> "$GITHUB_OUTPUT"

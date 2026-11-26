@@ -6,6 +6,21 @@ on:
       - 'hardware/main/**'
       - '.github/workflows/pcb-pr-preview.yml'
       - '!**.md'
+      - '!**.png'
+      - '!**.jpg'
+      - '!**.jpeg'
+      - '!**.gif'
+      - '!**.webp'
+      - '!**.svg'
+      - '!**.ico'
+      - '!**.avif'
+      - '!**.mp4'
+      - '!**.webm'
+      - '!**.mov'
+      - '!**.mp3'
+      - '!**.wav'
+      - '!**.ogg'
+      - '!**.pdf'
 
 permissions:
   contents: write

@@ -4,6 +4,21 @@ on:
   pull_request:
     paths-ignore:
       - '**.md'
+      - '**.png'
+      - '**.jpg'
+      - '**.jpeg'
+      - '**.gif'
+      - '**.webp'
+      - '**.svg'
+      - '**.ico'
+      - '**.avif'
+      - '**.mp4'
+      - '**.webm'
+      - '**.mov'
+      - '**.mp3'
+      - '**.wav'
+      - '**.ogg'
+      - '**.pdf'
 
 jobs:
   firmware-lint:
