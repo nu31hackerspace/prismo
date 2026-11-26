@@ -2756,14 +2756,6 @@
 		(path "/3bd52afa-5f97-4664-82cd-8786dc3d97dd")
 		(sheetname "/")
 		(sheetfile "pcb.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" "14" "15"
-					"16"
-				)
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2829,20 +2821,9 @@
 			)
 		)
 		(fp_text user "ESP32-C3"
-			(at 0 1 0)
+			(at 0 0.05 0)
 			(layer "F.SilkS")
 			(uuid "2a34971d-2a52-406d-964f-7bcbb14394a7")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(fp_text user "SuperMini"
-			(at 0 -1 0)
-			(layer "F.SilkS")
-			(uuid "4c3e9771-7c80-4ad3-b8b6-1f5ae195ec38")
 			(effects
 				(font
 					(size 1 1)

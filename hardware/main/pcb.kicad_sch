@@ -1756,7 +1756,7 @@
 				(pin bidirectional line
 					(at -16.51 1.27 0)
 					(length 2.54)
-					(name "GPIO4/SCK"
+					(name "GPIO4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1846,7 +1846,7 @@
 				(pin bidirectional line
 					(at 15.24 8.89 180)
 					(length 2.54)
-					(name "GPIO5/MISO"
+					(name "GPIO5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1864,7 +1864,7 @@
 				(pin bidirectional line
 					(at 15.24 6.35 180)
 					(length 2.54)
-					(name "GPIO6/MOSI"
+					(name "GPIO6"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1882,7 +1882,7 @@
 				(pin bidirectional line
 					(at 15.24 3.81 180)
 					(length 2.54)
-					(name "GPIO7/SS"
+					(name "GPIO7"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1900,7 +1900,7 @@
 				(pin bidirectional line
 					(at 15.24 1.27 180)
 					(length 2.54)
-					(name "GPIO8/SDA"
+					(name "GPIO8"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1918,7 +1918,7 @@
 				(pin bidirectional line
 					(at 15.24 -1.27 180)
 					(length 2.54)
-					(name "GPIO9/SCL"
+					(name "GPIO9"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2141,6 +2141,16 @@
 	)
 	(wire
 		(pts
+			(xy 128.27 109.22) (xy 128.27 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2fdd073c-b735-440b-b566-32409b30741e")
+	)
+	(wire
+		(pts
 			(xy 217.17 106.68) (xy 226.06 106.68)
 		)
 		(stroke
@@ -2208,16 +2218,6 @@
 			(type default)
 		)
 		(uuid "49c40ab4-3f27-42e3-ac5e-cce0985f03aa")
-	)
-	(wire
-		(pts
-			(xy 128.27 109.22) (xy 128.27 142.24)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4bbf581c-52cf-4176-abda-bf94b9f16bf7")
 	)
 	(wire
 		(pts
@@ -2441,7 +2441,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 142.24) (xy 138.43 142.24)
+			(xy 128.27 134.62) (xy 138.43 134.62)
 		)
 		(stroke
 			(width 0)
@@ -2717,7 +2717,7 @@
 	)
 	(symbol
 		(lib_id "prismo:+5V")
-		(at 138.43 139.7 90)
+		(at 138.43 132.08 90)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2727,7 +2727,7 @@
 		(dnp no)
 		(uuid "1150a056-a5f3-4ddb-851c-04427e595073")
 		(property "Reference" "#PWR010"
-			(at 142.24 139.7 0)
+			(at 142.24 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2738,7 +2738,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 132.842 139.7 90)
+			(at 132.842 132.08 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2748,7 +2748,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 138.43 139.7 0)
+			(at 138.43 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2759,7 +2759,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 138.43 139.7 0)
+			(at 138.43 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2770,7 +2770,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 138.43 139.7 0)
+			(at 138.43 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3400,7 +3400,7 @@
 	)
 	(symbol
 		(lib_id "prismo:Conn_01x03_Socket")
-		(at 143.51 139.7 0)
+		(at 143.51 132.08 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3411,7 +3411,7 @@
 		(fields_autoplaced yes)
 		(uuid "6f6e1920-c12c-4468-b0e0-544a3973e1ed")
 		(property "Reference" "J3"
-			(at 144.78 138.4299 0)
+			(at 144.78 130.8099 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3423,7 +3423,7 @@
 			)
 		)
 		(property "Value" "Conn_01x03_Socket"
-			(at 144.78 140.9699 0)
+			(at 144.78 133.3499 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3435,7 +3435,7 @@
 			)
 		)
 		(property "Footprint" "prismo:JST_1x03_P2.54mm_Vertical"
-			(at 143.51 139.7 0)
+			(at 143.51 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3446,7 +3446,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 143.51 139.7 0)
+			(at 143.51 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3457,7 +3457,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x03, script generated"
-			(at 143.51 139.7 0)
+			(at 143.51 132.08 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4672,7 +4672,7 @@
 	)
 	(symbol
 		(lib_id "prismo:GND")
-		(at 138.43 137.16 270)
+		(at 138.43 129.54 270)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4682,7 +4682,7 @@
 		(dnp no)
 		(uuid "b8369401-0209-4e52-91e3-8161ef795853")
 		(property "Reference" "#PWR09"
-			(at 132.08 137.16 0)
+			(at 132.08 129.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4693,7 +4693,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 134.62 137.1601 90)
+			(at 134.62 129.5401 90)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4704,7 +4704,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 138.43 137.16 0)
+			(at 138.43 129.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4715,7 +4715,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 138.43 137.16 0)
+			(at 138.43 129.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4726,7 +4726,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 138.43 137.16 0)
+			(at 138.43 129.54 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

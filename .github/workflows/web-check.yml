@@ -2,6 +2,8 @@ name: Web merge requset pipeline
 
 on:
   pull_request:
+    paths-ignore:
+      - '**.md'
 
 jobs:
   backend-lint:
