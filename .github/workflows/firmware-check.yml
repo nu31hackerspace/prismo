@@ -2,6 +2,8 @@ name: Firmware merge request pipeline
 
 on:
   pull_request:
+    paths-ignore:
+      - '**.md'
 
 jobs:
   firmware-lint:

@@ -5,6 +5,7 @@ on:
     paths:
       - 'hardware/main/**'
       - '.github/workflows/pcb-pr-preview.yml'
+      - '!**.md'
 
 permissions:
   contents: write
